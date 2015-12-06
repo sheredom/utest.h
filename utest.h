@@ -29,25 +29,52 @@
 #ifndef SHEREDOM_UTEST_H_INCLUDED
 #define SHEREDOM_UTEST_H_INCLUDED
 
+#ifdef _MSC_VER
+#pragma warning(push, 1)
+#endif
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #ifdef _MSC_VER
+#if defined(_M_IX86)
+#define _X86_
+#endif
+
+#if defined(_M_AMD64)
+#define _AMD64_
+#endif
+
+#include <windef.h>
+#include <winbase.h>
 #else
 #include <time.h>
+#endif
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
+#if defined(_MSC_VER)
+#define UTEST_INLINE __forceinline
+#else
+#define UTEST_INLINE inline
 #endif
 
 #if defined(__cplusplus)
 #define UTEST_CAST(type, x) static_cast<type>(x)
 #define UTEST_PTR_CAST(type, x) reinterpret_cast<type>(x)
+#define UTEST_EXTERN extern "C"
 #else
 #define UTEST_CAST(type, x) ((type)x)
 #define UTEST_PTR_CAST(type, x) ((type)x)
+#define UTEST_EXTERN extern
 #endif
 
-static inline long utest_ns() {
+static UTEST_INLINE long utest_ns(void) {
 #ifdef _MSC_VER
+  return 0;
 #else
   struct timespec ts;
   clock_gettime(CLOCK_REALTIME, &ts);
@@ -96,12 +123,12 @@ struct utest_state_s {
     return;                                                                    \
   }
 
-#define ASSERT_EQ(x, y) UTEST_ASSERT(x, y, ==)
-#define ASSERT_NE(x, y) UTEST_ASSERT(x, y, !=)
-#define ASSERT_LT(x, y) UTEST_ASSERT(x, y, <)
-#define ASSERT_LE(x, y) UTEST_ASSERT(x, y, <=)
-#define ASSERT_GT(x, y) UTEST_ASSERT(x, y, >)
-#define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >=)
+#define ASSERT_EQ(x, y) UTEST_ASSERT(x, y, == )
+#define ASSERT_NE(x, y) UTEST_ASSERT(x, y, != )
+#define ASSERT_LT(x, y) UTEST_ASSERT(x, y, < )
+#define ASSERT_LE(x, y) UTEST_ASSERT(x, y, <= )
+#define ASSERT_GT(x, y) UTEST_ASSERT(x, y, > )
+#define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >= )
 
 #define UTEST_EXPECT(x, y, cond)                                               \
   if (!((x)cond(y))) {                                                         \
@@ -121,35 +148,35 @@ struct utest_state_s {
     *utest_result = 1;                                                         \
   }
 
-#define EXPECT_EQ(x, y) UTEST_EXPECT(x, y, ==)
-#define EXPECT_NE(x, y) UTEST_EXPECT(x, y, !=)
-#define EXPECT_LT(x, y) UTEST_EXPECT(x, y, <)
-#define EXPECT_LE(x, y) UTEST_EXPECT(x, y, <=)
-#define EXPECT_GT(x, y) UTEST_EXPECT(x, y, >)
-#define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >=)
+#define EXPECT_EQ(x, y) UTEST_EXPECT(x, y, == )
+#define EXPECT_NE(x, y) UTEST_EXPECT(x, y, != )
+#define EXPECT_LT(x, y) UTEST_EXPECT(x, y, < )
+#define EXPECT_LE(x, y) UTEST_EXPECT(x, y, <= )
+#define EXPECT_GT(x, y) UTEST_EXPECT(x, y, > )
+#define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >= )
 
 #define TESTCASE(set, name)                                                    \
-  extern struct utest_state_s utest_state;                                     \
+  UTEST_EXTERN struct utest_state_s utest_state;                               \
   static void utest_run_##set##_##name(int *utest_result);                     \
   UTEST_INITIALIZER(utest_register_##set##_##name) {                           \
     const size_t index = utest_state.testcases_length++;                       \
     utest_state.testcases = UTEST_PTR_CAST(                                    \
         utest_testcase_t *,                                                    \
-        realloc(utest_state.testcases,                                         \
+        realloc(UTEST_PTR_CAST(void *, utest_state.testcases),                 \
                 sizeof(utest_testcase_t) * utest_state.testcases_length));     \
     utest_state.testcases[index] = &utest_run_##set##_##name;                  \
     utest_state.testcase_names = UTEST_PTR_CAST(                               \
         const char **,                                                         \
-        realloc(utest_state.testcase_names,                                    \
+        realloc(UTEST_PTR_CAST(void *, utest_state.testcase_names),            \
                 sizeof(char *) * utest_state.testcases_length));               \
     utest_state.testcase_names[index] = #set "." #name;                        \
   }                                                                            \
   void utest_run_##set##_##name(int *utest_result)
 
 #define UTEST_MAIN()                                                           \
-  extern struct utest_state_s utest_state;                                     \
+  UTEST_EXTERN struct utest_state_s utest_state;                               \
   struct utest_state_s utest_state;                                            \
-  int main() {                                                                 \
+  int main(void) {                                                             \
     size_t failed = 0;                                                         \
     size_t index = 0;                                                          \
     size_t *failed_testcases = 0;                                              \
@@ -166,7 +193,7 @@ struct utest_state_s {
       ns = utest_ns() - ns;                                                    \
       if (0 != result) {                                                       \
         const size_t failed_testcase_index = failed_testcases_length++;        \
-        failed_testcases = realloc(failed_testcases,                           \
+        failed_testcases = realloc(UTEST_PTR_CAST(void *, failed_testcases),   \
                                    sizeof(size_t) * failed_testcases_length);  \
         failed_testcases[failed_testcase_index] = index;                       \
         failed++;                                                              \
@@ -189,9 +216,9 @@ struct utest_state_s {
                utest_state.testcase_names[failed_testcases[index]]);           \
       }                                                                        \
     }                                                                          \
-    free(failed_testcases);                                                    \
-    free(utest_state.testcases);                                               \
-    free(utest_state.testcase_names);                                          \
+    free(UTEST_PTR_CAST(void *, failed_testcases));                            \
+    free(UTEST_PTR_CAST(void *, utest_state.testcases));                       \
+    free(UTEST_PTR_CAST(void *, utest_state.testcase_names));                  \
     return (int)failed;                                                        \
   }
 

@@ -25,6 +25,13 @@
 
 #include "utest.h"
 
+#ifdef _MSC_VER
+#pragma warning(push)
+
+// disable 'conditional expression is constant' - our examples below use this!
+#pragma warning(disable : 4127)
+#endif
+
 TESTCASE(cpp, ASSERT_TRUE) {
   ASSERT_TRUE(1);
 }
