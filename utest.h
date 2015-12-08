@@ -54,6 +54,14 @@
 // c libraries like musl. Instead we include limits.h, which we know on all 
 // glibc distributions includes features.h
 #include <limits.h>
+
+#if defined(__GLIBC__)
+#elif defined(__GNU_LIBRARY__)
+#error using __GNU_LIBRARY__
+#else
+#error neither was set!
+#endif
+
 #include <time.h>
 #else
 #error Unknown platform!
