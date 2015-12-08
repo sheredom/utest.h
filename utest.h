@@ -37,7 +37,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
 #if defined(_M_IX86)
 #define _X86_
 #endif
@@ -48,8 +48,15 @@
 
 #include <windef.h>
 #include <winbase.h>
-#else
+#elif defined(__linux__)
+// slightly obscure include here - we need to include glibc's features.h, but 
+// we don't want to just include a header that might not be defined for other 
+// c libraries like musl. Instead we include limits.h, which we know on all 
+// glibc distributions includes features.h
+#include <limits.h>
 #include <time.h>
+#else
+#error Unknown platform!
 #endif
 
 #if defined(_MSC_VER)
