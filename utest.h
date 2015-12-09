@@ -38,6 +38,10 @@
 #include <stdlib.h>
 
 #if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
+#if defined(_MSC_VER)
 #if defined(_M_IX86)
 #define _X86_
 #endif
@@ -46,8 +50,11 @@
 #define _AMD64_
 #endif
 
+#pragma warning(push, 1)
 #include <windef.h>
 #include <winbase.h>
+#pragma warning(pop)
+
 #elif defined(__linux__)
 // slightly obscure include here - we need to include glibc's features.h, but 
 // we don't want to just include a header that might not be defined for other 
@@ -55,26 +62,31 @@
 // glibc distributions includes features.h
 #include <limits.h>
 
-#if defined(__GLIBC__)
-#elif defined(__GNU_LIBRARY__)
-#error using __GNU_LIBRARY__
-#else
-#error neither was set!
+#if defined(__GLIBC__) && defined(__GLIBC_MINOR__) && \
+  ((2 < __GLIBC__) || ((2 == __GLIBC__) && (17 <= __GLIBC_MINOR__)))
+// glibc is version 2.17 or above, so we can just use clock_gettime
+#include <time.h>
+#define UTEST_USE_CLOCKGETTIME
 #endif
 
-#include <time.h>
 #else
 #error Unknown platform!
 #endif
 
 #if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
-
-#if defined(_MSC_VER)
 #define UTEST_INLINE __forceinline
+
+#pragma section(".CRT$XCU", read)
+#define UTEST_INITIALIZER(f)                                                   \
+  static void __cdecl f(void);                                                 \
+  __declspec(allocate(".CRT$XCU")) void(__cdecl * f##_)(void) = f;             \
+  static void __cdecl f(void)
 #else
 #define UTEST_INLINE inline
+  
+#define UTEST_INITIALIZER(f)                                                   \
+  static void f(void) __attribute__((constructor));                            \
+  static void f(void)
 #endif
 
 #if defined(__cplusplus)
@@ -88,12 +100,17 @@
 #endif
 
 static UTEST_INLINE long utest_ns(void) {
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
   return 0;
-#else
+#elif defined(__linux)
+#if defined(UTEST_USE_CLOCKGETTIME)
   struct timespec ts;
   clock_gettime(CLOCK_REALTIME, &ts);
   return UTEST_CAST(long, ts.tv_sec) * 1000 * 1000 * 1000 + ts.tv_nsec;
+#else
+  // no support yet on linux for glibc < 2.17
+  return 0;
+#endif
 #endif
 }
 
@@ -104,18 +121,6 @@ struct utest_state_s {
   const char **testcase_names;
   size_t testcases_length;
 };
-
-#ifdef _MSC_VER
-#pragma section(".CRT$XCU", read)
-#define UTEST_INITIALIZER(f)                                                   \
-  static void __cdecl f(void);                                                 \
-  __declspec(allocate(".CRT$XCU")) void(__cdecl * f##_)(void) = f;             \
-  static void __cdecl f(void)
-#else
-#define UTEST_INITIALIZER(f)                                                   \
-  static void f(void) __attribute__((constructor));                            \
-  static void f(void)
-#endif
 
 #define UTEST_ASSERT(x, y, cond)                                               \
   if (!((x)cond(y))) {                                                         \
