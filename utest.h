@@ -34,6 +34,7 @@
 #endif
 
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -57,9 +58,9 @@
 
 #elif defined(__linux__)
 
-// slightly obscure include here - we need to include glibc's features.h, but 
-// we don't want to just include a header that might not be defined for other 
-// c libraries like musl. Instead we include limits.h, which we know on all 
+// slightly obscure include here - we need to include glibc's features.h, but
+// we don't want to just include a header that might not be defined for other
+// c libraries like musl. Instead we include limits.h, which we know on all
 // glibc distributions includes features.h
 #include <limits.h>
 
@@ -78,6 +79,7 @@
 #endif
 
 #if defined(_MSC_VER)
+#define UTEST_PRId64 "I64d"
 #define UTEST_INLINE __forceinline
 
 #pragma section(".CRT$XCU", read)
@@ -86,6 +88,9 @@
   __declspec(allocate(".CRT$XCU")) void(__cdecl * f##_)(void) = f;             \
   static void __cdecl f(void)
 #else
+#include <inttypes.h>
+
+#define UTEST_PRId64 PRId64
 #define UTEST_INLINE inline
 
 #define UTEST_INITIALIZER(f)                                                   \
@@ -103,9 +108,14 @@
 #define UTEST_EXTERN extern
 #endif
 
-static UTEST_INLINE long utest_ns(void) {
-#if defined(_MSC_VER)
-  return 0;
+static UTEST_INLINE int64_t utest_ns(void) {
+#ifdef _MSC_VER
+  LARGE_INTEGER counter;
+  LARGE_INTEGER frequency;
+  QueryPerformanceCounter(&counter);
+  QueryPerformanceFrequency(&frequency);
+  return UTEST_CAST(int64_t,
+                    (counter.QuadPart * 1000000000) / frequency.QuadPart);
 #elif defined(__linux)
   struct timespec ts;
   const clockid_t cid = CLOCK_REALTIME;
@@ -114,7 +124,7 @@ static UTEST_INLINE long utest_ns(void) {
 #else
   syscall(SYS_clock_gettime, cid, &ts);
 #endif
-  return UTEST_CAST(long, ts.tv_sec) * 1000 * 1000 * 1000 + ts.tv_nsec;
+  return UTEST_CAST(int64_t, ts.tv_sec) * 1000 * 1000 * 1000 + ts.tv_nsec;
 #endif
 }
 
@@ -209,7 +219,7 @@ struct utest_state_s {
            (unsigned)utest_state.testcases_length);                            \
     for (index = 0; index < utest_state.testcases_length; index++) {           \
       int result = 0;                                                          \
-      long ns = 0;                                                             \
+      int64_t ns = 0;                                                          \
       printf("\033[32m[ RUN      ]\033[0m %s\n",                               \
              utest_state.testcase_names[index]);                               \
       ns = utest_ns();                                                         \
@@ -221,10 +231,10 @@ struct utest_state_s {
                                    sizeof(size_t) * failed_testcases_length);  \
         failed_testcases[failed_testcase_index] = index;                       \
         failed++;                                                              \
-        printf("\033[31m[  FAILED  ]\033[0m %s (%ldns)\n",                     \
+        printf("\033[31m[  FAILED  ]\033[0m %s (%" UTEST_PRId64 "ns)\n",       \
                utest_state.testcase_names[index], ns);                         \
       } else {                                                                 \
-        printf("\033[32m[       OK ]\033[0m %s (%ldns)\n",                     \
+        printf("\033[32m[       OK ]\033[0m %s (%" UTEST_PRId64 "ns)\n",       \
                utest_state.testcase_names[index], ns);                         \
       }                                                                        \
     }                                                                          \
