@@ -33,7 +33,6 @@
 #pragma warning(push, 1)
 #endif
 
-#include <inttypes.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -80,6 +79,7 @@
 #endif
 
 #if defined(_MSC_VER)
+#define UTEST_PRId64 "I64d"
 #define UTEST_INLINE __forceinline
 
 #pragma section(".CRT$XCU", read)
@@ -88,6 +88,9 @@
   __declspec(allocate(".CRT$XCU")) void(__cdecl * f##_)(void) = f;             \
   static void __cdecl f(void)
 #else
+#include <inttypes.h>
+
+#define UTEST_PRId64 PRId64
 #define UTEST_INLINE inline
 
 #define UTEST_INITIALIZER(f)                                                   \
@@ -228,10 +231,10 @@ struct utest_state_s {
                                    sizeof(size_t) * failed_testcases_length);  \
         failed_testcases[failed_testcase_index] = index;                       \
         failed++;                                                              \
-        printf("\033[31m[  FAILED  ]\033[0m %s (%" PRId64 "ns)\n",             \
+        printf("\033[31m[  FAILED  ]\033[0m %s (%" UTEST_PRId64 "ns)\n",       \
                utest_state.testcase_names[index], ns);                         \
       } else {                                                                 \
-        printf("\033[32m[       OK ]\033[0m %s (%" PRId64 "ns)\n",             \
+        printf("\033[32m[       OK ]\033[0m %s (%" UTEST_PRId64 "ns)\n",       \
                utest_state.testcase_names[index], ns);                         \
       }                                                                        \
     }                                                                          \
