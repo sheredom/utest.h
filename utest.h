@@ -38,6 +38,10 @@
 #include <stdlib.h>
 
 #if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
+#if defined(_MSC_VER)
 #if defined(_M_IX86)
 #define _X86_
 #endif
@@ -46,27 +50,47 @@
 #define _AMD64_
 #endif
 
+#pragma warning(push, 1)
 #include <windef.h>
 #include <winbase.h>
+#pragma warning(pop)
+
 #elif defined(__linux__)
+
 // slightly obscure include here - we need to include glibc's features.h, but 
 // we don't want to just include a header that might not be defined for other 
 // c libraries like musl. Instead we include limits.h, which we know on all 
 // glibc distributions includes features.h
 #include <limits.h>
-#include <time.h>
-#else
-#error Unknown platform!
-#endif
 
-#if defined(_MSC_VER)
-#pragma warning(pop)
+#if defined(__GLIBC__) && defined(__GLIBC_MINOR__)
+#include <time.h>
+
+#if ((2 < __GLIBC__) || ((2 == __GLIBC__) && (17 <= __GLIBC_MINOR__)))
+// glibc is version 2.17 or above, so we can just use clock_gettime
+#define UTEST_USE_CLOCKGETTIME
+#else // ((2 < __GLIBC__) || ((2 == __GLIBC__) && (17 <= __GLIBC_MINOR__)))
+#include <unistd.h>
+#include <sys/syscall.h>
+#endif // ((2 < __GLIBC__) || ((2 == __GLIBC__) && (17 <= __GLIBC_MINOR__)))
+#endif // defined(__GLIBC__) && defined(__GLIBC_MINOR__)
+
 #endif
 
 #if defined(_MSC_VER)
 #define UTEST_INLINE __forceinline
+
+#pragma section(".CRT$XCU", read)
+#define UTEST_INITIALIZER(f)                                                   \
+  static void __cdecl f(void);                                                 \
+  __declspec(allocate(".CRT$XCU")) void(__cdecl * f##_)(void) = f;             \
+  static void __cdecl f(void)
 #else
 #define UTEST_INLINE inline
+
+#define UTEST_INITIALIZER(f)                                                   \
+  static void f(void) __attribute__((constructor));                            \
+  static void f(void)
 #endif
 
 #if defined(__cplusplus)
@@ -80,11 +104,16 @@
 #endif
 
 static UTEST_INLINE long utest_ns(void) {
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
   return 0;
-#else
+#elif defined(__linux)
   struct timespec ts;
-  clock_gettime(CLOCK_REALTIME, &ts);
+  const clockid_t cid = CLOCK_REALTIME;
+#if defined(UTEST_USE_CLOCKGETTIME)
+  clock_gettime(cid, &ts);
+#else
+  syscall(SYS_clock_gettime, cid, &ts);
+#endif
   return UTEST_CAST(long, ts.tv_sec) * 1000 * 1000 * 1000 + ts.tv_nsec;
 #endif
 }
@@ -96,18 +125,6 @@ struct utest_state_s {
   const char **testcase_names;
   size_t testcases_length;
 };
-
-#ifdef _MSC_VER
-#pragma section(".CRT$XCU", read)
-#define UTEST_INITIALIZER(f)                                                   \
-  static void __cdecl f(void);                                                 \
-  __declspec(allocate(".CRT$XCU")) void(__cdecl * f##_)(void) = f;             \
-  static void __cdecl f(void)
-#else
-#define UTEST_INITIALIZER(f)                                                   \
-  static void f(void) __attribute__((constructor));                            \
-  static void f(void)
-#endif
 
 #define UTEST_ASSERT(x, y, cond)                                               \
   if (!((x)cond(y))) {                                                         \
