@@ -76,6 +76,8 @@
 #endif // ((2 < __GLIBC__) || ((2 == __GLIBC__) && (17 <= __GLIBC_MINOR__)))
 #endif // defined(__GLIBC__) && defined(__GLIBC_MINOR__)
 
+#elif defined(__APPLE__)
+#include <mach/mach_time.h>
 #endif
 
 #if defined(_MSC_VER)
@@ -125,6 +127,8 @@ static UTEST_INLINE int64_t utest_ns(void) {
   syscall(SYS_clock_gettime, cid, &ts);
 #endif
   return UTEST_CAST(int64_t, ts.tv_sec) * 1000 * 1000 * 1000 + ts.tv_nsec;
+#elif __APPLE__
+  return UTEST_CAST(int64_t, mach_absolute_time());
 #endif
 }
 
