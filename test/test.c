@@ -66,6 +66,14 @@ TESTCASE(c, ASSERT_GE) {
   ASSERT_GE(2, 1);
 }
 
+TESTCASE(c, ASSERT_STREQ) {
+  ASSERT_STREQ("foo", "foo");
+}
+
+TESTCASE(c, ASSERT_STRNE) {
+  ASSERT_STRNE("foo", "bar");
+}
+
 TESTCASE(c, EXPECT_TRUE) {
   EXPECT_TRUE(1);
 }
@@ -98,4 +106,12 @@ TESTCASE(c, EXPECT_GT) {
 TESTCASE(c, EXPECT_GE) {
   EXPECT_GE(1, 1);
   EXPECT_GE(2, 1);
+}
+
+TESTCASE(c, EXPECT_STREQ) {
+  EXPECT_STREQ("foo", "foo");
+}
+
+TESTCASE(c, EXPECT_STRNE) {
+  EXPECT_STRNE("foo", "bar");
 }

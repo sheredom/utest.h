@@ -37,6 +37,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #if defined(_MSC_VER)
 #pragma warning(pop)
@@ -168,6 +169,20 @@ struct utest_state_s {
 #define ASSERT_GT(x, y) UTEST_ASSERT(x, y, > )
 #define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >= )
 
+#define ASSERT_STREQ(x, y) \
+  if (0 != strcmp(x, y)) { \
+    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    *utest_result = 1; \
+    return; \
+  }
+
+#define ASSERT_STRNE(x, y) \
+  if (0 == strcmp(x, y)) { \
+    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    *utest_result = 1; \
+    return; \
+  }
+
 #define UTEST_EXPECT(x, y, cond)                                               \
   if (!((x)cond(y))) {                                                         \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
@@ -192,6 +207,19 @@ struct utest_state_s {
 #define EXPECT_LE(x, y) UTEST_EXPECT(x, y, <= )
 #define EXPECT_GT(x, y) UTEST_EXPECT(x, y, > )
 #define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >= )
+
+
+#define EXPECT_STREQ(x, y) \
+  if (0 != strcmp(x, y)) { \
+    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    *utest_result = 1; \
+  }
+
+#define EXPECT_STRNE(x, y) \
+  if (0 == strcmp(x, y)) { \
+    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    *utest_result = 1; \
+  }
 
 #define TESTCASE(set, name)                                                    \
   UTEST_EXTERN struct utest_state_s utest_state;                               \
