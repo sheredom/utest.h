@@ -141,9 +141,79 @@ struct utest_state_s {
   size_t testcases_length;
 };
 
+#if defined(__cplusplus)
+// if we are using c++ we can use overloaded methods (its in the language)
+#define UTEST_OVERLOADABLE
+#define UTEST_WEAK inline
+#elif !defined(_MSC_VER)
+// otherwise, if we are using c and not using MSVC's c compiler
+#define UTEST_OVERLOADABLE __attribute__((overloadable))
+#define UTEST_WEAK __attribute__((weak))
+#else
+// lastly we are on MSVC, using the c compiler
+#define UTEST_WEAK __forceinline
+#endif
+
+#if defined(UTEST_OVERLOADABLE)
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(float f);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(float f) {
+  printf("%f", f);
+}
+
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(double d);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(double d) {
+  printf("%f", d);
+}
+
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long double d);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long double d) {
+  printf("%Lf", d);
+}
+
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(int i);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(int i) {
+  printf("%d", i);
+}
+
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned int i);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned int i) {
+  printf("%u", i);
+}
+
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long int i);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long int i) {
+  printf("%ld", i);
+}
+
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long unsigned int i);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long unsigned int i) {
+  printf("%lu", i);
+}
+
+// long long is a c++11 extension
+// TODO: grok for c++11 version here
+#if !defined(__cplusplus)
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i) {
+  printf("%lld", i);
+}
+
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long unsigned int i);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long unsigned int i) {
+  printf("%llu", i);
+}
+#endif
+#else
+// we don't have the ability to print the values we got, so we create a macro to
+// tell our users we can't do anything fancy
+#define utest_type_printer(...) printf("undef")
+#endif
+
 #define UTEST_ASSERT(x, y, cond)                                               \
   if (!((x)cond(y))) {                                                         \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : "); utest_type_printer(x); printf("\n");              \
+    printf("    Actual : "); utest_type_printer(y); printf("\n");              \
     *utest_result = 1;                                                         \
     return;                                                                    \
   }
@@ -173,22 +243,22 @@ struct utest_state_s {
 #define ASSERT_GT(x, y) UTEST_ASSERT(x, y, > )
 #define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >= )
 
-#define ASSERT_STREQ(x, y) \
-  if (0 != strcmp(x, y)) { \
+#define ASSERT_STREQ(x, y)                                                     \
+  if (0 != strcmp(x, y)) {                                                     \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
     printf("  Expected : \"%s\"\n", x);                                        \
     printf("    Actual : \"%s\"\n", y);                                        \
-    *utest_result = 1; \
-    return; \
+    *utest_result = 1;                                                         \
+    return;                                                                    \
   }
 
-#define ASSERT_STRNE(x, y) \
-  if (0 == strcmp(x, y)) { \
+#define ASSERT_STRNE(x, y)                                                     \
+  if (0 == strcmp(x, y)) {                                                     \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
     printf("  Expected : \"%s\"\n", x);                                        \
     printf("    Actual : \"%s\"\n", y);                                        \
-    *utest_result = 1; \
-    return; \
+    *utest_result = 1;                                                         \
+    return;                                                                    \
   }
 
 #define UTEST_EXPECT(x, y, cond)                                               \
@@ -220,21 +290,20 @@ struct utest_state_s {
 #define EXPECT_GT(x, y) UTEST_EXPECT(x, y, > )
 #define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >= )
 
-
-#define EXPECT_STREQ(x, y) \
-  if (0 != strcmp(x, y)) { \
+#define EXPECT_STREQ(x, y)                                                     \
+  if (0 != strcmp(x, y)) {                                                     \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
     printf("  Expected : \"%s\"\n", x);                                        \
     printf("    Actual : \"%s\"\n", y);                                        \
-    *utest_result = 1; \
+    *utest_result = 1;                                                         \
   }
 
-#define EXPECT_STRNE(x, y) \
-  if (0 == strcmp(x, y)) { \
+#define EXPECT_STRNE(x, y)                                                     \
+  if (0 == strcmp(x, y)) {                                                     \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
     printf("  Expected : \"%s\"\n", x);                                        \
     printf("    Actual : \"%s\"\n", y);                                        \
-    *utest_result = 1; \
+    *utest_result = 1;                                                         \
   }
 
 #define TESTCASE(set, name)                                                    \
