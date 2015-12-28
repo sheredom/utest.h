@@ -151,6 +151,8 @@ struct utest_state_s {
 #define ASSERT_TRUE(x)                                                         \
   if (!(x)) {                                                                  \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : true\n");                                             \
+    printf("    Actual : %s\n", (x) ? "true" : "false");                       \
     *utest_result = 1;                                                         \
     return;                                                                    \
   }
@@ -158,6 +160,8 @@ struct utest_state_s {
 #define ASSERT_FALSE(x)                                                        \
   if (x) {                                                                     \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : false\n");                                            \
+    printf("    Actual : %s\n", (x) ? "true" : "false");                       \
     *utest_result = 1;                                                         \
     return;                                                                    \
   }
@@ -172,6 +176,8 @@ struct utest_state_s {
 #define ASSERT_STREQ(x, y) \
   if (0 != strcmp(x, y)) { \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : \"%s\"\n", x);                                        \
+    printf("    Actual : \"%s\"\n", y);                                        \
     *utest_result = 1; \
     return; \
   }
@@ -179,6 +185,8 @@ struct utest_state_s {
 #define ASSERT_STRNE(x, y) \
   if (0 == strcmp(x, y)) { \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : \"%s\"\n", x);                                        \
+    printf("    Actual : \"%s\"\n", y);                                        \
     *utest_result = 1; \
     return; \
   }
@@ -192,12 +200,16 @@ struct utest_state_s {
 #define EXPECT_TRUE(x)                                                         \
   if (!(x)) {                                                                  \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : true\n");                                             \
+    printf("    Actual : %s\n", (x) ? "true" : "false");                       \
     *utest_result = 1;                                                         \
   }
 
 #define EXPECT_FALSE(x)                                                        \
   if (x) {                                                                     \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : false\n");                                            \
+    printf("    Actual : %s\n", (x) ? "true" : "false");                       \
     *utest_result = 1;                                                         \
   }
 
@@ -212,12 +224,16 @@ struct utest_state_s {
 #define EXPECT_STREQ(x, y) \
   if (0 != strcmp(x, y)) { \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : \"%s\"\n", x);                                        \
+    printf("    Actual : \"%s\"\n", y);                                        \
     *utest_result = 1; \
   }
 
 #define EXPECT_STRNE(x, y) \
   if (0 == strcmp(x, y)) { \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : \"%s\"\n", x);                                        \
+    printf("    Actual : \"%s\"\n", y);                                        \
     *utest_result = 1; \
   }
 
