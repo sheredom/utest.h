@@ -144,17 +144,18 @@ struct utest_state_s {
   const char *filter;
 };
 
+#if defined(_MSC_VER)
+#define UTEST_WEAK __forceinline
+#else
+#define UTEST_WEAK __attribute__((weak))
+#endif
+
 #if defined(__cplusplus)
 // if we are using c++ we can use overloaded methods (its in the language)
 #define UTEST_OVERLOADABLE
-#define UTEST_WEAK inline
-#elif !defined(_MSC_VER)
-// otherwise, if we are using c and not using MSVC's c compiler
+#elif defined(__clang__)
+// otherwise, if we are using clang with c we can use the overloadable attribute
 #define UTEST_OVERLOADABLE __attribute__((overloadable))
-#define UTEST_WEAK __attribute__((weak))
-#else
-// lastly we are on MSVC, using the c compiler
-#define UTEST_WEAK __forceinline
 #endif
 
 #if defined(UTEST_OVERLOADABLE)
