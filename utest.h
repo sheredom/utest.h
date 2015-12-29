@@ -92,6 +92,7 @@
   __declspec(allocate(".CRT$XCU")) void(__cdecl * f##_)(void) = f;             \
   static void __cdecl f(void)
 #else
+#define __STDC_FORMAT_MACROS 1
 #include <inttypes.h>
 
 #define UTEST_PRId64 PRId64
