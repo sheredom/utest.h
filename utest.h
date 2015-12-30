@@ -83,6 +83,7 @@
 
 #if defined(_MSC_VER)
 #define UTEST_PRId64 "I64d"
+#define UTEST_PRIu64 "I64u"
 #define UTEST_INLINE __forceinline
 
 #pragma section(".CRT$XCU", read)
@@ -91,9 +92,11 @@
   __declspec(allocate(".CRT$XCU")) void(__cdecl * f##_)(void) = f;             \
   static void __cdecl f(void)
 #else
+#define __STDC_FORMAT_MACROS 1
 #include <inttypes.h>
 
 #define UTEST_PRId64 PRId64
+#define UTEST_PRIu64 PRIu64
 #define UTEST_INLINE inline
 
 #define UTEST_INITIALIZER(f)                                                   \
@@ -139,11 +142,83 @@ struct utest_state_s {
   utest_testcase_t *testcases;
   const char **testcase_names;
   size_t testcases_length;
+  const char *filter;
 };
+
+#if defined(_MSC_VER)
+#define UTEST_WEAK __forceinline
+#else
+#define UTEST_WEAK __attribute__((weak))
+#endif
+
+#if defined(__cplusplus)
+// if we are using c++ we can use overloaded methods (its in the language)
+#define UTEST_OVERLOADABLE
+#elif defined(__clang__)
+// otherwise, if we are using clang with c we can use the overloadable attribute
+#define UTEST_OVERLOADABLE __attribute__((overloadable))
+#endif
+
+#if defined(UTEST_OVERLOADABLE)
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(float f);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(float f) {
+  printf("%f", f);
+}
+
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(double d);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(double d) {
+  printf("%f", d);
+}
+
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long double d);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long double d) {
+  printf("%Lf", d);
+}
+
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(int i);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(int i) {
+  printf("%d", i);
+}
+
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned int i);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned int i) {
+  printf("%u", i);
+}
+
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long int i);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long int i) {
+  printf("%ld", i);
+}
+
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long unsigned int i);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long unsigned int i) {
+  printf("%lu", i);
+}
+
+// long long is a c++11 extension
+// TODO: grok for c++11 version here
+#if !defined(__cplusplus)
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i) {
+  printf("%lld", i);
+}
+
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long unsigned int i);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long unsigned int i) {
+  printf("%llu", i);
+}
+#endif
+#else
+// we don't have the ability to print the values we got, so we create a macro to
+// tell our users we can't do anything fancy
+#define utest_type_printer(...) printf("undef")
+#endif
 
 #define UTEST_ASSERT(x, y, cond)                                               \
   if (!((x)cond(y))) {                                                         \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : "); utest_type_printer(x); printf("\n");              \
+    printf("    Actual : "); utest_type_printer(y); printf("\n");              \
     *utest_result = 1;                                                         \
     return;                                                                    \
   }
@@ -151,6 +226,8 @@ struct utest_state_s {
 #define ASSERT_TRUE(x)                                                         \
   if (!(x)) {                                                                  \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : true\n");                                             \
+    printf("    Actual : %s\n", (x) ? "true" : "false");                       \
     *utest_result = 1;                                                         \
     return;                                                                    \
   }
@@ -158,6 +235,8 @@ struct utest_state_s {
 #define ASSERT_FALSE(x)                                                        \
   if (x) {                                                                     \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : false\n");                                            \
+    printf("    Actual : %s\n", (x) ? "true" : "false");                       \
     *utest_result = 1;                                                         \
     return;                                                                    \
   }
@@ -169,18 +248,22 @@ struct utest_state_s {
 #define ASSERT_GT(x, y) UTEST_ASSERT(x, y, > )
 #define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >= )
 
-#define ASSERT_STREQ(x, y) \
-  if (0 != strcmp(x, y)) { \
+#define ASSERT_STREQ(x, y)                                                     \
+  if (0 != strcmp(x, y)) {                                                     \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    *utest_result = 1; \
-    return; \
+    printf("  Expected : \"%s\"\n", x);                                        \
+    printf("    Actual : \"%s\"\n", y);                                        \
+    *utest_result = 1;                                                         \
+    return;                                                                    \
   }
 
-#define ASSERT_STRNE(x, y) \
-  if (0 == strcmp(x, y)) { \
+#define ASSERT_STRNE(x, y)                                                     \
+  if (0 == strcmp(x, y)) {                                                     \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    *utest_result = 1; \
-    return; \
+    printf("  Expected : \"%s\"\n", x);                                        \
+    printf("    Actual : \"%s\"\n", y);                                        \
+    *utest_result = 1;                                                         \
+    return;                                                                    \
   }
 
 #define UTEST_EXPECT(x, y, cond)                                               \
@@ -192,12 +275,16 @@ struct utest_state_s {
 #define EXPECT_TRUE(x)                                                         \
   if (!(x)) {                                                                  \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : true\n");                                             \
+    printf("    Actual : %s\n", (x) ? "true" : "false");                       \
     *utest_result = 1;                                                         \
   }
 
 #define EXPECT_FALSE(x)                                                        \
   if (x) {                                                                     \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : false\n");                                            \
+    printf("    Actual : %s\n", (x) ? "true" : "false");                       \
     *utest_result = 1;                                                         \
   }
 
@@ -208,21 +295,23 @@ struct utest_state_s {
 #define EXPECT_GT(x, y) UTEST_EXPECT(x, y, > )
 #define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >= )
 
-
-#define EXPECT_STREQ(x, y) \
-  if (0 != strcmp(x, y)) { \
+#define EXPECT_STREQ(x, y)                                                     \
+  if (0 != strcmp(x, y)) {                                                     \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    *utest_result = 1; \
+    printf("  Expected : \"%s\"\n", x);                                        \
+    printf("    Actual : \"%s\"\n", y);                                        \
+    *utest_result = 1;                                                         \
   }
 
-#define EXPECT_STRNE(x, y) \
-  if (0 == strcmp(x, y)) { \
+#define EXPECT_STRNE(x, y)                                                     \
+  if (0 == strcmp(x, y)) {                                                     \
     printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    *utest_result = 1; \
+    printf("  Expected : \"%s\"\n", x);                                        \
+    printf("    Actual : \"%s\"\n", y);                                        \
+    *utest_result = 1;                                                         \
   }
 
 #define TESTCASE(set, name)                                                    \
-  UTEST_EXTERN struct utest_state_s utest_state;                               \
   static void utest_run_##set##_##name(int *utest_result);                     \
   UTEST_INITIALIZER(utest_register_##set##_##name) {                           \
     const size_t index = utest_state.testcases_length++;                       \
@@ -239,53 +328,73 @@ struct utest_state_s {
   }                                                                            \
   void utest_run_##set##_##name(int *utest_result)
 
+// extern to the global state utest needs to execute
+UTEST_EXTERN struct utest_state_s utest_state;
+
+UTEST_WEAK int utest_main(int argc, const char* const argv[]);
+UTEST_WEAK int utest_main(int argc, const char* const argv[]) {
+  size_t failed = 0;
+  size_t index = 0;
+  size_t *failed_testcases = 0;
+  size_t failed_testcases_length = 0;
+
+  (void)argc; (void)argv;
+  printf("\033[32m[==========]\033[0m Running %" UTEST_PRIu64 " test cases.\n",
+         UTEST_CAST(uint64_t, utest_state.testcases_length));
+  for (index = 0; index < utest_state.testcases_length; index++) {
+    int result = 0;
+    int64_t ns = 0;
+    printf("\033[32m[ RUN      ]\033[0m %s\n",
+           utest_state.testcase_names[index]);
+    ns = utest_ns();
+    utest_state.testcases[index](&result);
+    ns = utest_ns() - ns;
+    if (0 != result) {
+      const size_t failed_testcase_index = failed_testcases_length++;
+      failed_testcases = UTEST_PTR_CAST(size_t*, realloc(UTEST_PTR_CAST(void *,
+        failed_testcases), sizeof(size_t) * failed_testcases_length));
+      failed_testcases[failed_testcase_index] = index;
+      failed++;
+      printf("\033[31m[  FAILED  ]\033[0m %s (%" UTEST_PRId64 "ns)\n",
+             utest_state.testcase_names[index], ns);
+    } else {
+      printf("\033[32m[       OK ]\033[0m %s (%" UTEST_PRId64 "ns)\n",
+             utest_state.testcase_names[index], ns);
+    }
+  }
+  printf("\033[32m[==========]\033[0m %" UTEST_PRIu64 " test cases ran.\n",
+         UTEST_CAST(uint64_t, utest_state.testcases_length));
+  printf("\033[32m[  PASSED  ]\033[0m %" UTEST_PRIu64 " tests.\n",
+         UTEST_CAST(uint64_t, utest_state.testcases_length - failed));
+  if (0 != failed) {
+    printf("\033[31m[  FAILED  ]\033[0m %" UTEST_PRIu64 " tests, listed below:\n",
+           UTEST_CAST(uint64_t, failed));
+    for (index = 0; index < failed_testcases_length; index++) {
+      printf("\033[31m[  FAILED  ]\033[0m %s\n",
+             utest_state.testcase_names[failed_testcases[index]]);
+    }
+  }
+  free(UTEST_PTR_CAST(void *, failed_testcases));
+  free(UTEST_PTR_CAST(void *, utest_state.testcases));
+  free(UTEST_PTR_CAST(void *, utest_state.testcase_names));
+  return UTEST_CAST(int, failed);
+}
+
+// we need, in exactly one source file, define the global struct that will hold
+// the data we need to run utest. This macro allows the user to declare the
+// data without having to use the UTEST_MAIN macro, thus allowing them to write
+// their own main() function.
+#define UTEST_STATE() struct utest_state_s utest_state
+
+// define a main() function to call into utest.h and start executing tests! A
+// user can optionally not use this macro, and instead define their own main()
+// function and manually call utest_main. The user must, in exactly one source
+// file, use the UTEST_STATE macro to declare a global struct variable that
+// utest requires.
 #define UTEST_MAIN()                                                           \
-  UTEST_EXTERN struct utest_state_s utest_state;                               \
-  struct utest_state_s utest_state;                                            \
-  int main(void) {                                                             \
-    size_t failed = 0;                                                         \
-    size_t index = 0;                                                          \
-    size_t *failed_testcases = 0;                                              \
-    size_t failed_testcases_length = 0;                                        \
-    printf("\033[32m[==========]\033[0m Running %u test cases.\n",             \
-           (unsigned)utest_state.testcases_length);                            \
-    for (index = 0; index < utest_state.testcases_length; index++) {           \
-      int result = 0;                                                          \
-      int64_t ns = 0;                                                          \
-      printf("\033[32m[ RUN      ]\033[0m %s\n",                               \
-             utest_state.testcase_names[index]);                               \
-      ns = utest_ns();                                                         \
-      utest_state.testcases[index](&result);                                   \
-      ns = utest_ns() - ns;                                                    \
-      if (0 != result) {                                                       \
-        const size_t failed_testcase_index = failed_testcases_length++;        \
-        failed_testcases = realloc(UTEST_PTR_CAST(void *, failed_testcases),   \
-                                   sizeof(size_t) * failed_testcases_length);  \
-        failed_testcases[failed_testcase_index] = index;                       \
-        failed++;                                                              \
-        printf("\033[31m[  FAILED  ]\033[0m %s (%" UTEST_PRId64 "ns)\n",       \
-               utest_state.testcase_names[index], ns);                         \
-      } else {                                                                 \
-        printf("\033[32m[       OK ]\033[0m %s (%" UTEST_PRId64 "ns)\n",       \
-               utest_state.testcase_names[index], ns);                         \
-      }                                                                        \
-    }                                                                          \
-    printf("\033[32m[==========]\033[0m %u test cases ran.\n",                 \
-           (unsigned)utest_state.testcases_length);                            \
-    printf("\033[32m[  PASSED  ]\033[0m %u tests.\n",                          \
-           (unsigned)(utest_state.testcases_length - failed));                 \
-    if (0 != failed) {                                                         \
-      printf("\033[31m[  FAILED  ]\033[0m %u tests, listed below:\n",          \
-             (unsigned)failed);                                                \
-      for (index = 0; index < failed_testcases_length; index++) {              \
-        printf("\033[31m[  FAILED  ]\033[0m %s\n",                             \
-               utest_state.testcase_names[failed_testcases[index]]);           \
-      }                                                                        \
-    }                                                                          \
-    free(UTEST_PTR_CAST(void *, failed_testcases));                            \
-    free(UTEST_PTR_CAST(void *, utest_state.testcases));                       \
-    free(UTEST_PTR_CAST(void *, utest_state.testcase_names));                  \
-    return (int)failed;                                                        \
+  UTEST_STATE();                                                               \
+  int main(int argc, const char* const argv[]) {                               \
+    return utest_main(argc, argv);                                             \
   }
 
 #endif // SHEREDOM_UTEST_H_INCLUDED
