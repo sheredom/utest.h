@@ -92,7 +92,9 @@
   __declspec(allocate(".CRT$XCU")) void(__cdecl * f##_)(void) = f;             \
   static void __cdecl f(void)
 #else
+#if defined(__linux__)
 #define __STDC_FORMAT_MACROS 1
+#endif
 #include <inttypes.h>
 
 #define UTEST_PRId64 PRId64
@@ -214,30 +216,66 @@ UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long unsigned int i) 
 #define utest_type_printer(...) printf("undef")
 #endif
 
+#define UTEST_EXPECT(x, y, cond)                                               \
+if (!((x)cond(y))) {                                                         \
+  printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+  *utest_result = 1;                                                         \
+}
+
+#define EXPECT_TRUE(x)                                                         \
+if (!(x)) {                                                                  \
+  printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+  printf("  Expected : true\n");                                             \
+  printf("    Actual : %s\n", (x) ? "true" : "false");                       \
+  *utest_result = 1;                                                         \
+}
+
+#define EXPECT_FALSE(x)                                                        \
+if (x) {                                                                     \
+  printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+  printf("  Expected : false\n");                                            \
+  printf("    Actual : %s\n", (x) ? "true" : "false");                       \
+  *utest_result = 1;                                                         \
+}
+
+#define EXPECT_EQ(x, y) UTEST_EXPECT(x, y, == )
+#define EXPECT_NE(x, y) UTEST_EXPECT(x, y, != )
+#define EXPECT_LT(x, y) UTEST_EXPECT(x, y, < )
+#define EXPECT_LE(x, y) UTEST_EXPECT(x, y, <= )
+#define EXPECT_GT(x, y) UTEST_EXPECT(x, y, > )
+#define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >= )
+
+#define EXPECT_STREQ(x, y)                                                     \
+if (0 != strcmp(x, y)) {                                                     \
+  printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+  printf("  Expected : \"%s\"\n", x);                                        \
+  printf("    Actual : \"%s\"\n", y);                                        \
+  *utest_result = 1;                                                         \
+}
+
+#define EXPECT_STRNE(x, y)                                                     \
+if (0 == strcmp(x, y)) {                                                     \
+  printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+  printf("  Expected : \"%s\"\n", x);                                        \
+  printf("    Actual : \"%s\"\n", y);                                        \
+  *utest_result = 1;                                                         \
+}
+
 #define UTEST_ASSERT(x, y, cond)                                               \
+  UTEST_EXPECT(x, y, cond);                                                    \
   if (!((x)cond(y))) {                                                         \
-    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    printf("  Expected : "); utest_type_printer(x); printf("\n");              \
-    printf("    Actual : "); utest_type_printer(y); printf("\n");              \
-    *utest_result = 1;                                                         \
     return;                                                                    \
   }
 
 #define ASSERT_TRUE(x)                                                         \
+  EXPECT_TRUE(x);                                                              \
   if (!(x)) {                                                                  \
-    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    printf("  Expected : true\n");                                             \
-    printf("    Actual : %s\n", (x) ? "true" : "false");                       \
-    *utest_result = 1;                                                         \
     return;                                                                    \
   }
 
 #define ASSERT_FALSE(x)                                                        \
+  EXPECT_FALSE(x);                                                             \
   if (x) {                                                                     \
-    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    printf("  Expected : false\n");                                            \
-    printf("    Actual : %s\n", (x) ? "true" : "false");                       \
-    *utest_result = 1;                                                         \
     return;                                                                    \
   }
 
@@ -249,66 +287,15 @@ UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long unsigned int i) 
 #define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >= )
 
 #define ASSERT_STREQ(x, y)                                                     \
+  EXPECT_STREQ(x, y);                                                          \
   if (0 != strcmp(x, y)) {                                                     \
-    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    printf("  Expected : \"%s\"\n", x);                                        \
-    printf("    Actual : \"%s\"\n", y);                                        \
-    *utest_result = 1;                                                         \
     return;                                                                    \
   }
 
 #define ASSERT_STRNE(x, y)                                                     \
+  EXPECT_STRNE(x, y);                                                          \
   if (0 == strcmp(x, y)) {                                                     \
-    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    printf("  Expected : \"%s\"\n", x);                                        \
-    printf("    Actual : \"%s\"\n", y);                                        \
-    *utest_result = 1;                                                         \
     return;                                                                    \
-  }
-
-#define UTEST_EXPECT(x, y, cond)                                               \
-  if (!((x)cond(y))) {                                                         \
-    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    *utest_result = 1;                                                         \
-  }
-
-#define EXPECT_TRUE(x)                                                         \
-  if (!(x)) {                                                                  \
-    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    printf("  Expected : true\n");                                             \
-    printf("    Actual : %s\n", (x) ? "true" : "false");                       \
-    *utest_result = 1;                                                         \
-  }
-
-#define EXPECT_FALSE(x)                                                        \
-  if (x) {                                                                     \
-    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    printf("  Expected : false\n");                                            \
-    printf("    Actual : %s\n", (x) ? "true" : "false");                       \
-    *utest_result = 1;                                                         \
-  }
-
-#define EXPECT_EQ(x, y) UTEST_EXPECT(x, y, == )
-#define EXPECT_NE(x, y) UTEST_EXPECT(x, y, != )
-#define EXPECT_LT(x, y) UTEST_EXPECT(x, y, < )
-#define EXPECT_LE(x, y) UTEST_EXPECT(x, y, <= )
-#define EXPECT_GT(x, y) UTEST_EXPECT(x, y, > )
-#define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >= )
-
-#define EXPECT_STREQ(x, y)                                                     \
-  if (0 != strcmp(x, y)) {                                                     \
-    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    printf("  Expected : \"%s\"\n", x);                                        \
-    printf("    Actual : \"%s\"\n", y);                                        \
-    *utest_result = 1;                                                         \
-  }
-
-#define EXPECT_STRNE(x, y)                                                     \
-  if (0 == strcmp(x, y)) {                                                     \
-    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    printf("  Expected : \"%s\"\n", x);                                        \
-    printf("    Actual : \"%s\"\n", y);                                        \
-    *utest_result = 1;                                                         \
   }
 
 #define TESTCASE(set, name)                                                    \
