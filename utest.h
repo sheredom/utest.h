@@ -360,12 +360,13 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
          UTEST_CAST(uint64_t, ran_tests));
 
   for (index = 0; index < utest_state.testcases_length; index++) {
+    int result = 0;
+    int64_t ns = 0;
+
     if (utest_should_filter_test(filter, utest_state.testcase_names[index])) {
       continue;
     }
 
-    int result = 0;
-    int64_t ns = 0;
     printf("\033[32m[ RUN      ]\033[0m %s\n",
            utest_state.testcase_names[index]);
     ns = utest_ns();
