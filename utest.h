@@ -206,7 +206,8 @@ UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i) {
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long unsigned int i);
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long unsigned int i) {
+UTEST_WEAK UTEST_OVERLOADABLE void
+utest_type_printer(long long unsigned int i) {
   printf("%llu", i);
 }
 #endif
@@ -217,26 +218,26 @@ UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long unsigned int i) 
 #endif
 
 #define UTEST_EXPECT(x, y, cond)                                               \
-if (!((x)cond(y))) {                                                         \
-  printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-  *utest_result = 1;                                                         \
-}
+  if (!((x)cond(y))) {                                                         \
+    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    *utest_result = 1;                                                         \
+  }
 
 #define EXPECT_TRUE(x)                                                         \
-if (!(x)) {                                                                  \
-  printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-  printf("  Expected : true\n");                                             \
-  printf("    Actual : %s\n", (x) ? "true" : "false");                       \
-  *utest_result = 1;                                                         \
-}
+  if (!(x)) {                                                                  \
+    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : true\n");                                             \
+    printf("    Actual : %s\n", (x) ? "true" : "false");                       \
+    *utest_result = 1;                                                         \
+  }
 
 #define EXPECT_FALSE(x)                                                        \
-if (x) {                                                                     \
-  printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-  printf("  Expected : false\n");                                            \
-  printf("    Actual : %s\n", (x) ? "true" : "false");                       \
-  *utest_result = 1;                                                         \
-}
+  if (x) {                                                                     \
+    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : false\n");                                            \
+    printf("    Actual : %s\n", (x) ? "true" : "false");                       \
+    *utest_result = 1;                                                         \
+  }
 
 #define EXPECT_EQ(x, y) UTEST_EXPECT(x, y, == )
 #define EXPECT_NE(x, y) UTEST_EXPECT(x, y, != )
@@ -246,20 +247,20 @@ if (x) {                                                                     \
 #define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >= )
 
 #define EXPECT_STREQ(x, y)                                                     \
-if (0 != strcmp(x, y)) {                                                     \
-  printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-  printf("  Expected : \"%s\"\n", x);                                        \
-  printf("    Actual : \"%s\"\n", y);                                        \
-  *utest_result = 1;                                                         \
-}
+  if (0 != strcmp(x, y)) {                                                     \
+    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : \"%s\"\n", x);                                        \
+    printf("    Actual : \"%s\"\n", y);                                        \
+    *utest_result = 1;                                                         \
+  }
 
 #define EXPECT_STRNE(x, y)                                                     \
-if (0 == strcmp(x, y)) {                                                     \
-  printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-  printf("  Expected : \"%s\"\n", x);                                        \
-  printf("    Actual : \"%s\"\n", y);                                        \
-  *utest_result = 1;                                                         \
-}
+  if (0 == strcmp(x, y)) {                                                     \
+    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    printf("  Expected : \"%s\"\n", x);                                        \
+    printf("    Actual : \"%s\"\n", y);                                        \
+    *utest_result = 1;                                                         \
+  }
 
 #define UTEST_ASSERT(x, y, cond)                                               \
   UTEST_EXPECT(x, y, cond);                                                    \
@@ -318,14 +319,15 @@ if (0 == strcmp(x, y)) {                                                     \
 // extern to the global state utest needs to execute
 UTEST_EXTERN struct utest_state_s utest_state;
 
-UTEST_WEAK int utest_main(int argc, const char* const argv[]);
-UTEST_WEAK int utest_main(int argc, const char* const argv[]) {
+UTEST_WEAK int utest_main(int argc, const char *const argv[]);
+UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
   size_t failed = 0;
   size_t index = 0;
   size_t *failed_testcases = 0;
   size_t failed_testcases_length = 0;
 
-  (void)argc; (void)argv;
+  (void)argc;
+  (void)argv;
   printf("\033[32m[==========]\033[0m Running %" UTEST_PRIu64 " test cases.\n",
          UTEST_CAST(uint64_t, utest_state.testcases_length));
   for (index = 0; index < utest_state.testcases_length; index++) {
@@ -338,8 +340,9 @@ UTEST_WEAK int utest_main(int argc, const char* const argv[]) {
     ns = utest_ns() - ns;
     if (0 != result) {
       const size_t failed_testcase_index = failed_testcases_length++;
-      failed_testcases = UTEST_PTR_CAST(size_t*, realloc(UTEST_PTR_CAST(void *,
-        failed_testcases), sizeof(size_t) * failed_testcases_length));
+      failed_testcases = UTEST_PTR_CAST(
+          size_t *, realloc(UTEST_PTR_CAST(void *, failed_testcases),
+                            sizeof(size_t) * failed_testcases_length));
       failed_testcases[failed_testcase_index] = index;
       failed++;
       printf("\033[31m[  FAILED  ]\033[0m %s (%" UTEST_PRId64 "ns)\n",
@@ -354,7 +357,8 @@ UTEST_WEAK int utest_main(int argc, const char* const argv[]) {
   printf("\033[32m[  PASSED  ]\033[0m %" UTEST_PRIu64 " tests.\n",
          UTEST_CAST(uint64_t, utest_state.testcases_length - failed));
   if (0 != failed) {
-    printf("\033[31m[  FAILED  ]\033[0m %" UTEST_PRIu64 " tests, listed below:\n",
+    printf("\033[31m[  FAILED  ]\033[0m %" UTEST_PRIu64
+           " tests, listed below:\n",
            UTEST_CAST(uint64_t, failed));
     for (index = 0; index < failed_testcases_length; index++) {
       printf("\033[31m[  FAILED  ]\033[0m %s\n",
@@ -380,7 +384,7 @@ UTEST_WEAK int utest_main(int argc, const char* const argv[]) {
 // utest requires.
 #define UTEST_MAIN()                                                           \
   UTEST_STATE();                                                               \
-  int main(int argc, const char* const argv[]) {                               \
+  int main(int argc, const char *const argv[]) {                               \
     return utest_main(argc, argv);                                             \
   }
 
