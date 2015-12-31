@@ -342,7 +342,8 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
   // loop through all arguments looking for our options
   for (index = 1; index < UTEST_CAST(size_t, argc); index++) {
     const char filter_str[] = "--filter=";
-    if (0 == strncmp(argv[index], filter_str, strlen(filter_str))) {
+    
+    if (0 < strcmp(argv[index], filter_str)) {
       // user wants to filter what test cases run!
       filter = argv[index] + strlen(filter_str);
     }
