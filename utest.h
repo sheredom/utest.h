@@ -319,8 +319,10 @@ utest_type_printer(long long unsigned int i) {
 // extern to the global state utest needs to execute
 UTEST_EXTERN struct utest_state_s utest_state;
 
-UTEST_WEAK int utest_should_filter_test(const char* filter, const char* testcase);
-UTEST_WEAK int utest_should_filter_test(const char* filter, const char* testcase) {
+UTEST_WEAK int utest_should_filter_test(const char *filter,
+                                        const char *testcase);
+UTEST_WEAK int utest_should_filter_test(const char *filter,
+                                        const char *testcase) {
   if (filter) {
     return strcmp(filter, testcase);
   } else {
@@ -334,15 +336,15 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
   size_t index = 0;
   size_t *failed_testcases = 0;
   size_t failed_testcases_length = 0;
-  const char* filter = 0;
+  const char *filter = 0;
   size_t ran_tests = 0;
 
   // loop through all arguments looking for our options
-  for (int i = 1; i < argc; i++) {
+  for (index = 1; index < UTEST_CAST(size_t, argc); index++) {
     const char filter_str[] = "--filter=";
-    if (0 == strncmp(argv[i], filter_str, strlen(filter_str))) {
+    if (0 == strncmp(argv[index], filter_str, strlen(filter_str))) {
       // user wants to filter what test cases run!
-      filter = argv[i] + strlen(filter_str);
+      filter = argv[index] + strlen(filter_str);
     }
   }
 
