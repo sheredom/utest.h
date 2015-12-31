@@ -319,18 +319,49 @@ utest_type_printer(long long unsigned int i) {
 // extern to the global state utest needs to execute
 UTEST_EXTERN struct utest_state_s utest_state;
 
+UTEST_WEAK int utest_should_filter_test(const char* filter, const char* testcase);
+UTEST_WEAK int utest_should_filter_test(const char* filter, const char* testcase) {
+  if (filter) {
+    return strcmp(filter, testcase);
+  } else {
+    return 0;
+  }
+}
+
 UTEST_WEAK int utest_main(int argc, const char *const argv[]);
 UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
   size_t failed = 0;
   size_t index = 0;
   size_t *failed_testcases = 0;
   size_t failed_testcases_length = 0;
+  const char* filter = 0;
+  size_t ran_tests = 0;
 
-  (void)argc;
-  (void)argv;
-  printf("\033[32m[==========]\033[0m Running %" UTEST_PRIu64 " test cases.\n",
-         UTEST_CAST(uint64_t, utest_state.testcases_length));
+  // loop through all arguments looking for our options
+  for (int i = 1; i < argc; i++) {
+    const char filter_str[] = "--filter=";
+    if (0 == strncmp(argv[i], filter_str, strlen(filter_str))) {
+      // user wants to filter what test cases run!
+      filter = argv[i] + strlen(filter_str);
+    }
+  }
+
   for (index = 0; index < utest_state.testcases_length; index++) {
+    if (utest_should_filter_test(filter, utest_state.testcase_names[index])) {
+      continue;
+    }
+
+    ran_tests++;
+  }
+
+  printf("\033[32m[==========]\033[0m Running %" UTEST_PRIu64 " test cases.\n",
+         UTEST_CAST(uint64_t, ran_tests));
+
+  for (index = 0; index < utest_state.testcases_length; index++) {
+    if (utest_should_filter_test(filter, utest_state.testcase_names[index])) {
+      continue;
+    }
+
     int result = 0;
     int64_t ns = 0;
     printf("\033[32m[ RUN      ]\033[0m %s\n",
@@ -353,9 +384,9 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
     }
   }
   printf("\033[32m[==========]\033[0m %" UTEST_PRIu64 " test cases ran.\n",
-         UTEST_CAST(uint64_t, utest_state.testcases_length));
+         UTEST_CAST(uint64_t, ran_tests));
   printf("\033[32m[  PASSED  ]\033[0m %" UTEST_PRIu64 " tests.\n",
-         UTEST_CAST(uint64_t, utest_state.testcases_length - failed));
+         UTEST_CAST(uint64_t, ran_tests - failed));
   if (0 != failed) {
     printf("\033[31m[  FAILED  ]\033[0m %" UTEST_PRIu64
            " tests, listed below:\n",
