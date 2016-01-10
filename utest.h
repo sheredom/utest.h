@@ -324,10 +324,72 @@ UTEST_WEAK int utest_should_filter_test(const char *filter,
 UTEST_WEAK int utest_should_filter_test(const char *filter,
                                         const char *testcase) {
   if (filter) {
-    return strcmp(filter, testcase);
-  } else {
-    return 0;
+    const char *filter_cur = filter;
+    const char *testcase_cur = testcase;
+    const char *filter_wildcard = 0;
+
+    while (('\0' != *filter_cur) && ('\0' != *testcase_cur)) {
+      if ('*' == *filter_cur) {
+        // store the position of the wildcard
+        filter_wildcard = filter_cur;
+
+        // skip the wildcard character
+        filter_cur++;
+
+        while (('\0' != *filter_cur) && ('\0' != *testcase_cur)) {
+          if ('*' == *filter_cur) {
+            // we found another wildcard (filter is something like *foo*) so we
+            // exit the current loop, and return to the parent loop to handle
+            // the wildcard case
+            break;
+          } else if (*filter_cur != *testcase_cur) {
+            // otherwise our filter didn't match, so reset it
+            filter_cur = filter_wildcard;
+          }
+
+          // move testcase along
+          testcase_cur++;
+
+          // move filter along
+          filter_cur++;
+        }
+
+        if (('\0' == *filter_cur) && ('\0' == *testcase_cur)) {
+          return 0;
+        }
+
+        // if the testcase has been exhausted, we don't have a match!
+        if ('\0' == *testcase_cur) {
+          return 1;
+        }
+      } else {
+        if (*testcase_cur != *filter_cur) {
+          // test case doesn't match filter
+          return 1;
+        } else {
+          // move our filter and testcase forward
+          testcase_cur++;
+          filter_cur++;
+        }
+      }
+    }
+
+    if (('\0' == *filter_cur) && ('\0' == *testcase_cur)) {
+      // if we got to the end of filter and testcase, we have a match
+      return 0;
+    } else if (('*' == filter_cur[-1]) && ('\0' == filter_cur[0])) {
+      // if our filter ended with a wildcard, and testcase ended, we have a
+      // match!
+      return 0;
+    } else if (('\0' != *filter_cur) || ('\0' != *testcase_cur)) {
+      // we got to the end of the testcase, but our filter actually still had
+      // characters within. Imagine we had two test cases, x.a and x.aa. If we
+      // didn't bail out here we'd accept both of them with a filter of "x.aa"
+      return 1;
+    }
   }
+
+  return 0;
 }
 
 UTEST_WEAK int utest_main(int argc, const char *const argv[]);
@@ -342,7 +404,7 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
   // loop through all arguments looking for our options
   for (index = 1; index < UTEST_CAST(size_t, argc); index++) {
     const char filter_str[] = "--filter=";
-    
+
     if (0 < strcmp(argv[index], filter_str)) {
       // user wants to filter what test cases run!
       filter = argv[index] + strlen(filter_str);
