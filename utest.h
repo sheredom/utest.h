@@ -374,17 +374,10 @@ UTEST_WEAK int utest_should_filter_test(const char *filter,
       }
     }
 
-    if (('\0' == *filter_cur) && ('\0' == *testcase_cur)) {
-      // if we got to the end of filter and testcase, we have a match
-      return 0;
-    } else if (('*' == filter_cur[-1]) && ('\0' == filter_cur[0])) {
-      // if our filter ended with a wildcard, and testcase ended, we have a
-      // match!
-      return 0;
-    } else if (('\0' != *filter_cur) || ('\0' != *testcase_cur)) {
-      // we got to the end of the testcase, but our filter actually still had
-      // characters within. Imagine we had two test cases, x.a and x.aa. If we
-      // didn't bail out here we'd accept both of them with a filter of "x.aa"
+    if (('\0' != *filter_cur) ||
+        (('\0' != *testcase_cur) &&
+         ((filter == filter_cur) || ('*' != filter_cur[-1])))) {
+      // we have a mismatch!
       return 1;
     }
   }
