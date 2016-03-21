@@ -101,3 +101,8 @@ UTEST_F(MyTest, cpp) {
   ASSERT_EQ(42, fixture->foo);
   fixture->foo = 13;
 }
+
+UTEST_F(MyTest, cpp2) {
+  ASSERT_EQ(42, fixture->foo);
+  fixture->foo = 13;
+}
