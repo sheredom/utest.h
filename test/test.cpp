@@ -32,54 +32,72 @@
 #pragma warning(disable : 4127)
 #endif
 
-TESTCASE(cpp, ASSERT_TRUE) { ASSERT_TRUE(1); }
+UTEST(cpp, ASSERT_TRUE) { ASSERT_TRUE(1); }
 
-TESTCASE(cpp, ASSERT_FALSE) { ASSERT_FALSE(0); }
+UTEST(cpp, ASSERT_FALSE) { ASSERT_FALSE(0); }
 
-TESTCASE(cpp, ASSERT_EQ) { ASSERT_EQ(1, 1); }
+UTEST(cpp, ASSERT_EQ) { ASSERT_EQ(1, 1); }
 
-TESTCASE(cpp, ASSERT_NE) { ASSERT_NE(1, 2); }
+UTEST(cpp, ASSERT_NE) { ASSERT_NE(1, 2); }
 
-TESTCASE(cpp, ASSERT_LT) { ASSERT_LT(1, 2); }
+UTEST(cpp, ASSERT_LT) { ASSERT_LT(1, 2); }
 
-TESTCASE(cpp, ASSERT_LE) {
+UTEST(cpp, ASSERT_LE) {
   ASSERT_LE(1, 1);
   ASSERT_LE(1, 2);
 }
 
-TESTCASE(cpp, ASSERT_GT) { ASSERT_GT(2, 1); }
+UTEST(cpp, ASSERT_GT) { ASSERT_GT(2, 1); }
 
-TESTCASE(cpp, ASSERT_GE) {
+UTEST(cpp, ASSERT_GE) {
   ASSERT_GE(1, 1);
   ASSERT_GE(2, 1);
 }
 
-TESTCASE(c, ASSERT_STREQ) { ASSERT_STREQ("foo", "foo"); }
+UTEST(c, ASSERT_STREQ) { ASSERT_STREQ("foo", "foo"); }
 
-TESTCASE(c, ASSERT_STRNE) { ASSERT_STRNE("foo", "bar"); }
+UTEST(c, ASSERT_STRNE) { ASSERT_STRNE("foo", "bar"); }
 
-TESTCASE(cpp, EXPECT_TRUE) { EXPECT_TRUE(1); }
+UTEST(cpp, EXPECT_TRUE) { EXPECT_TRUE(1); }
 
-TESTCASE(cpp, EXPECT_FALSE) { EXPECT_FALSE(0); }
+UTEST(cpp, EXPECT_FALSE) { EXPECT_FALSE(0); }
 
-TESTCASE(cpp, EXPECT_EQ) { EXPECT_EQ(1, 1); }
+UTEST(cpp, EXPECT_EQ) { EXPECT_EQ(1, 1); }
 
-TESTCASE(cpp, EXPECT_NE) { EXPECT_NE(1, 2); }
+UTEST(cpp, EXPECT_NE) { EXPECT_NE(1, 2); }
 
-TESTCASE(cpp, EXPECT_LT) { EXPECT_LT(1, 2); }
+UTEST(cpp, EXPECT_LT) { EXPECT_LT(1, 2); }
 
-TESTCASE(cpp, EXPECT_LE) {
+UTEST(cpp, EXPECT_LE) {
   EXPECT_LE(1, 1);
   EXPECT_LE(1, 2);
 }
 
-TESTCASE(cpp, EXPECT_GT) { EXPECT_GT(2, 1); }
+UTEST(cpp, EXPECT_GT) { EXPECT_GT(2, 1); }
 
-TESTCASE(cpp, EXPECT_GE) {
+UTEST(cpp, EXPECT_GE) {
   EXPECT_GE(1, 1);
   EXPECT_GE(2, 1);
 }
 
-TESTCASE(c, EXPECT_STREQ) { EXPECT_STREQ("foo", "foo"); }
+UTEST(c, EXPECT_STREQ) { EXPECT_STREQ("foo", "foo"); }
 
-TESTCASE(c, EXPECT_STRNE) { EXPECT_STRNE("foo", "bar"); }
+UTEST(c, EXPECT_STRNE) { EXPECT_STRNE("foo", "bar"); }
+
+struct MyTest {
+  int foo;
+};
+
+UTEST_F_SETUP(MyTest) {
+  ASSERT_EQ(0, fixture->foo);
+  fixture->foo = 42;
+}
+
+UTEST_F_TEARDOWN(MyTest) {
+  ASSERT_EQ(13, fixture->foo);
+}
+
+UTEST_F(MyTest, cpp) {
+  ASSERT_EQ(42, fixture->foo);
+  fixture->foo = 13;
+}
