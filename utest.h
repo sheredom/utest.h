@@ -92,6 +92,17 @@
   __declspec(allocate(".CRT$XCU")) void(__cdecl * f##_)(void) = f;             \
   static void __cdecl f(void)
 #else
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wreserved-id-macro"
+#endif
+
+#define __STDC_FORMAT_MACROS 1
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
 #include <inttypes.h>
 
 #define UTEST_PRId64 PRId64
