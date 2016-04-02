@@ -408,7 +408,8 @@ utest_type_printer(long long unsigned int i) {
     utest_i_teardown_##FIXTURE(utest_result, &fixture, index);                 \
   }                                                                            \
   UTEST_INITIALIZER(utest_register_##FIXTURE##_##NAME##_##INDEX) {             \
-    for (size_t i = 0; i < (INDEX); i++) {                                     \
+    size_t i;                                                                  \
+    for (i = 0; i < (INDEX); i++) {                                            \
       const size_t index = utest_state.tests_length++;                         \
       const char *name_part = #FIXTURE "." #NAME;                              \
       char *name = UTEST_PTR_CAST(char *, malloc(strlen(name_part) + 32));     \
@@ -537,8 +538,12 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
 
   if (utest_state.output) {
     fprintf(utest_state.output, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-    fprintf(utest_state.output, "<testsuites tests=\"%" UTEST_PRIu64 "\" name=\"All\">\n", UTEST_CAST(uint64_t, ran_tests));
-    fprintf(utest_state.output, "<testsuite name=\"Tests\" tests=\"%" UTEST_PRIu64 "\">\n", UTEST_CAST(uint64_t, ran_tests));
+    fprintf(utest_state.output,
+            "<testsuites tests=\"%" UTEST_PRIu64 "\" name=\"All\">\n",
+            UTEST_CAST(uint64_t, ran_tests));
+    fprintf(utest_state.output,
+            "<testsuite name=\"Tests\" tests=\"%" UTEST_PRIu64 "\">\n",
+            UTEST_CAST(uint64_t, ran_tests));
   }
 
   for (index = 0; index < utest_state.tests_length; index++) {
@@ -552,7 +557,8 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
     printf("\033[32m[ RUN      ]\033[0m %s\n", utest_state.tests[index].name);
 
     if (utest_state.output) {
-      fprintf(utest_state.output, "<testcase name=\"%s\">", utest_state.tests[index].name);
+      fprintf(utest_state.output, "<testcase name=\"%s\">",
+              utest_state.tests[index].name);
     }
 
     ns = utest_ns();
