@@ -84,25 +84,52 @@ UTEST(c, EXPECT_STREQ) { EXPECT_STREQ("foo", "foo"); }
 
 UTEST(c, EXPECT_STRNE) { EXPECT_STRNE("foo", "bar"); }
 
-struct MyTest {
+struct MyTestF {
   int foo;
 };
 
-UTEST_F_SETUP(MyTest) {
-  ASSERT_EQ(0, fixture->foo);
-  fixture->foo = 42;
+UTEST_F_SETUP(MyTestF) {
+  ASSERT_EQ(0, utest_fixture->foo);
+  utest_fixture->foo = 42;
 }
 
-UTEST_F_TEARDOWN(MyTest) {
-  ASSERT_EQ(13, fixture->foo);
+UTEST_F_TEARDOWN(MyTestF) {
+  ASSERT_EQ(13, utest_fixture->foo);
 }
 
-UTEST_F(MyTest, cpp) {
-  ASSERT_EQ(42, fixture->foo);
-  fixture->foo = 13;
+UTEST_F(MyTestF, cpp) {
+  ASSERT_EQ(42, utest_fixture->foo);
+  utest_fixture->foo = 13;
 }
 
-UTEST_F(MyTest, cpp2) {
-  ASSERT_EQ(42, fixture->foo);
-  fixture->foo = 13;
+UTEST_F(MyTestF, cpp2) {
+  ASSERT_EQ(42, utest_fixture->foo);
+  utest_fixture->foo = 13;
+}
+
+struct MyTestI {
+  size_t foo;
+  size_t bar;
+};
+
+UTEST_I_SETUP(MyTestI) {
+  ASSERT_EQ(0, utest_fixture->foo);
+  ASSERT_EQ(0, utest_fixture->bar);
+  utest_fixture->foo = 42;
+  utest_fixture->bar = utest_index;
+}
+
+UTEST_I_TEARDOWN(MyTestI) {
+  ASSERT_EQ(13, utest_fixture->foo);
+  ASSERT_EQ(utest_index, utest_fixture->bar);
+}
+
+UTEST_I(MyTestI, cpp, 2) {
+  ASSERT_GT(2, utest_fixture->bar);
+  utest_fixture->foo = 13;
+}
+
+UTEST_I(MyTestI, cpp2, 128) {
+  ASSERT_GT(128, utest_fixture->bar);
+  utest_fixture->foo = 13;
 }

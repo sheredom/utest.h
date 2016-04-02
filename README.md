@@ -12,7 +12,15 @@ Just include utest.h in your code!
 
 The current supported compilers are gcc, clang and msvc.
 
-The current tested compiler versions are gcc 4.8.2, clang 3.5 and MSVC 18.0.21005.1.
+The current supported platforms are Linux, Mac OSX and Windows.
+
+## Command Line Options ##
+
+utest.h supports some command line options:
+
+* --help to output the help message
+* --filter=<filter> will filter the test cases to run (useful for re-running one particular offending test case).
+* --output=<output> will output an xunit XML file with the test results (that Jenkins, travis-ci, and appveyor can parse for the test results).
 
 ## Design ##
 
@@ -24,25 +32,125 @@ UTest is a single header library to enable all the fun of unit testing in C and 
     [==========] 1 test cases ran.
     [  PASSED  ] 1 tests.
 
+## UTEST_MAIN ##
+
+In one C or C++ file, you must call the macro UTEST_MAIN:
+
+   UTEST_MAIN();
+
+This will call into utest.h, instantiate all the testcases and run the unit test framework.
+
+Alternatively, if you want to write your own main and call into utest.h, you can instead, in one C or C++ file call:
+
+   UTEST_STATE();
+
+And then when you are ready to call into the utest.h framework do:
+
+   int main(int argc, const char *const argv[]) {
+     // do your own thing
+     return utest_main(argc, argv);
+   }
+
+## Define a Testcase ##
+
 To define a test case to run, you can do the following;
 
     #include "utest.h"
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       ASSERT_TRUE(1);
     }
 
-The TESTCASE macro takes two parameters - the first being the set that the test case belongs to, the second being the name of the test. This allows tests to be grouped for conveience.
+The UTEST macro takes two parameters - the first being the set that the test case belongs to, the second being the name of the test. This allows tests to be grouped for conveience.
+
+## Define a Fixtured Testcase ##
+
+A fixtured testcase is one in which there is a struct that is instantiated that can be shared across multiple testcases.
+
+   struct MyTestFixture {
+     char c;
+     int i;
+     float f;
+   };
+
+   UTEST_F_SETUP(MyTestFixture) {
+     utest_fixture->c = 'a';
+     utest_fixture->i = 42;
+     utest_fixture->f = 3.14f;
+
+     // we can even assert and expect in setup!
+     ASSERT_EQ(42, utest_fixture->i);
+     EXPECT_TRUE(true);
+   }
+
+   UTEST_F_TEARDOWN(MyTestFixture) {
+     // and also assert and expect in teardown!
+     ASSERT_EQ(13, utest_fixture->i);
+   }
+
+   UTEST_F(MyTestFixture, a) {
+     utest_fixture->i = 13;
+     // teardown will succeed because i is 13...
+   }
+
+   UTEST_F(MyTestFixture, b) {
+     utest_fixture->i = 83;
+     // teardown will fail because i is not 13!
+   }
+
+Some things to note that were demonstrated above:
+* We have this new implicit variable within our macros - utest_fixture. This is a pointer to the struct you decidedw as your fixture (so MyTestFixture in the above code).
+* Instead of specifying a testcase set (like we do with the UTEST macro), we instead specify the name of the fixture struct we are use.
+* Every fixture has to have a UTEST_F_SETUP and UTEST_F_TEARDOWN macro - even if they do nothing in the body of them.
+* Multiple testcases (UTEST_F's) can use the same fixture.
+* You can use EXPECT_* and ASSERT_* macros within the body of both the fixture's setup and teardown macros.
+
+## Define an Indexed Testcase ##
+
+Sometimes you want to use the same fixture _and_ testcase repeatedly, but prehaps subtly change one variable within. This is where indexed testcases come in.
+
+   struct MyTestIndexedFixture{
+     bool x;
+     bool y;
+   };
+
+   UTEST_I_SETUP(MyTestIndexedFixture) {
+     if (utest_index < 30) {
+       utest_fixture->x = utest_index & 1;
+       utest_fixture->y = (utest_index + 1) & 1;
+     }
+   }
+
+   UTEST_I_TEARDOWN(MyTestIndexedFixture) {
+     EXPECT_LE(0, utest_index);
+   }
+
+   UTEST_I(MyTestIndexedFixture, a, 2) {
+     ASSERT_TRUE(utest_fixture->x | utest_fixture->y);
+   }
+
+   UTEST_I(MyTestIndexedFixture, b, 42) {
+     // this will fail when the index is >= 30
+     ASSERT_TRUE(utest_fixture->x | utest_fixture->y);
+   }
+
+Note:
+* We use UTEST_I_* as the prefix for the setup and teardown functions now.
+* We use UTEST_I to declare the testcases.
+* We have access to a new variable utest_index in our setup and teardown functions, that we can use to slightly vary our fixture.
+* We provide a number as the third parameter of the UTEST_I macro - this is the number of times we should run the test case for that index. It must be a literal.
+
+## Testing Macros ##
 
 Matching what googletest has, we provide two variants of each of the error checking conditions - ASSERT's and EXPECT's. If an ASSERT fails, the test case will cease execution, and utest.h will continue with the next test case to be run. If an EXPECT fails, the remainder of the test case will still be executed, allowing for further checks to be carried out.
 
-We currently provide the following macros to be used within TESTCASE's.
+We currently provide the following macros to be used within UTEST's.
 
 ### ASSERT_TRUE(x) ###
 
 Asserts that x evaluates to true (EG. non-zero).
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       int i = 1;
       ASSERT_TRUE(i);  // pass!
       ASSERT_TRUE(42); // pass!
@@ -53,7 +161,7 @@ Asserts that x evaluates to true (EG. non-zero).
 
 Asserts that x evaluates to false (EG. zero).
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       int i = 0;
       ASSERT_FALSE(i); // pass!
       ASSERT_FALSE(1); // fail!
@@ -63,7 +171,7 @@ Asserts that x evaluates to false (EG. zero).
 
 Asserts that x and y are equal.
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       int a = 42;
       int b = 42;
       ASSERT_EQ(a, b);     // pass!
@@ -77,7 +185,7 @@ Asserts that x and y are equal.
 
 Asserts that x and y are not equal.
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       int a = 42;
       int b = 13;
       ASSERT_NE(a, b);   // pass!
@@ -91,7 +199,7 @@ Asserts that x and y are not equal.
 
 Asserts that x is less than y.
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       int a = 13;
       int b = 42;
       ASSERT_LT(a, b);   // pass!
@@ -105,7 +213,7 @@ Asserts that x is less than y.
 
 Asserts that x is less than or equal to y.
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       int a = 13;
       int b = 42;
       ASSERT_LE(a, b);   // pass!
@@ -122,7 +230,7 @@ Asserts that x is less than or equal to y.
 
 Asserts that x is greater than y.
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       int a = 42;
       int b = 13;
       ASSERT_GT(a, b);   // pass!
@@ -136,7 +244,7 @@ Asserts that x is greater than y.
 
 Asserts that x is greater than or equal to y.
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       int a = 42;
       int b = 13;
       ASSERT_GE(a, b);   // pass!
@@ -153,7 +261,7 @@ Asserts that x is greater than or equal to y.
 
 Expects that x evaluates to true (EG. non-zero).
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       int i = 1;
       EXPECT_TRUE(i);  // pass!
       EXPECT_TRUE(42); // pass!
@@ -164,7 +272,7 @@ Expects that x evaluates to true (EG. non-zero).
 
 Expects that x evaluates to false (EG. zero).
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       int i = 0;
       EXPECT_FALSE(i); // pass!
       EXPECT_FALSE(1); // fail!
@@ -174,7 +282,7 @@ Expects that x evaluates to false (EG. zero).
 
 Expects that x and y are equal.
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       int a = 42;
       int b = 42;
       EXPECT_EQ(a, b);     // pass!
@@ -188,7 +296,7 @@ Expects that x and y are equal.
 
 Expects that x and y are not equal.
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       int a = 42;
       int b = 13;
       EXPECT_NE(a, b);   // pass!
@@ -202,7 +310,7 @@ Expects that x and y are not equal.
 
 Expects that x is less than y.
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       int a = 13;
       int b = 42;
       EXPECT_LT(a, b);   // pass!
@@ -216,7 +324,7 @@ Expects that x is less than y.
 
 Expects that x is less than or equal to y.
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       int a = 13;
       int b = 42;
       EXPECT_LE(a, b);   // pass!
@@ -233,7 +341,7 @@ Expects that x is less than or equal to y.
 
 Expects that x is greater than y.
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       int a = 42;
       int b = 13;
       EXPECT_GT(a, b);   // pass!
@@ -247,7 +355,7 @@ Expects that x is greater than y.
 
 Expects that x is greater than or equal to y.
 
-    TESTCASE(foo, bar) {
+    UTEST(foo, bar) {
       int a = 42;
       int b = 13;
       EXPECT_GE(a, b);   // pass!

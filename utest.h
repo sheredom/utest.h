@@ -135,23 +135,52 @@ static UTEST_INLINE int64_t utest_ns(void) {
 #endif
 }
 
-typedef void (*utest_testcase_t)(int *);
+typedef void (*utest_testcase_t)(int *, size_t);
 
 struct utest_test_state_s {
   utest_testcase_t func;
-  const char *name;
+  size_t index;
+  char *name;
 };
 
 struct utest_state_s {
   struct utest_test_state_s *tests;
   size_t tests_length;
+  FILE *output;
 };
+
+// extern to the global state utest needs to execute
+UTEST_EXTERN struct utest_state_s utest_state;
 
 #if defined(_MSC_VER)
 #define UTEST_WEAK __forceinline
 #else
 #define UTEST_WEAK __attribute__((weak))
 #endif
+
+#if defined(_MSC_VER)
+#define UTEST_UNUSED
+#else
+#define UTEST_UNUSED __attribute__((unused))
+#endif
+
+#define UTEST_PRINTF0(FORMAT)                                                  \
+  if (utest_state.output) {                                                    \
+    fprintf(utest_state.output, FORMAT);                                       \
+  }                                                                            \
+  printf(FORMAT)
+
+#define UTEST_PRINTF1(FORMAT, P0)                                              \
+  if (utest_state.output) {                                                    \
+    fprintf(utest_state.output, FORMAT, P0);                                   \
+  }                                                                            \
+  printf(FORMAT, P0)
+
+#define UTEST_PRINTF2(FORMAT, P0, P1)                                          \
+  if (utest_state.output) {                                                    \
+    fprintf(utest_state.output, FORMAT, P0, P1);                               \
+  }                                                                            \
+  printf(FORMAT, P0, P1)
 
 #if defined(__cplusplus)
 // if we are using c++ we can use overloaded methods (its in the language)
@@ -164,37 +193,37 @@ struct utest_state_s {
 #if defined(UTEST_OVERLOADABLE)
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(float f);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(float f) {
-  printf("%f", UTEST_CAST(double, f));
+  UTEST_PRINTF1("%f", UTEST_CAST(double, f));
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(double d);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(double d) {
-  printf("%f", d);
+  UTEST_PRINTF1("%f", d);
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long double d);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long double d) {
-  printf("%Lf", d);
+  UTEST_PRINTF1("%Lf", d);
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(int i);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(int i) {
-  printf("%d", i);
+  UTEST_PRINTF1("%d", i);
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned int i);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned int i) {
-  printf("%u", i);
+  UTEST_PRINTF1("%u", i);
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long int i);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long int i) {
-  printf("%ld", i);
+  UTEST_PRINTF1("%ld", i);
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long unsigned int i);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long unsigned int i) {
-  printf("%lu", i);
+  UTEST_PRINTF1("%lu", i);
 }
 
 // long long is a c++11 extension
@@ -202,40 +231,40 @@ UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long unsigned int i) {
 #if !defined(__cplusplus)
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i) {
-  printf("%lld", i);
+  UTEST_PRINTF1("%lld", i);
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long unsigned int i);
 UTEST_WEAK UTEST_OVERLOADABLE void
 utest_type_printer(long long unsigned int i) {
-  printf("%llu", i);
+  UTEST_PRINTF1("%llu", i);
 }
 #endif
 #else
 // we don't have the ability to print the values we got, so we create a macro to
 // tell our users we can't do anything fancy
-#define utest_type_printer(...) printf("undef")
+#define utest_type_printer(...) UTEST_PRINTF0("undef")
 #endif
 
 #define UTEST_EXPECT(x, y, cond)                                               \
   if (!((x)cond(y))) {                                                         \
-    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
+    UTEST_PRINTF2("%s:%u: Failure\n", __FILE__, __LINE__);                     \
     *utest_result = 1;                                                         \
   }
 
 #define EXPECT_TRUE(x)                                                         \
   if (!(x)) {                                                                  \
-    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    printf("  Expected : true\n");                                             \
-    printf("    Actual : %s\n", (x) ? "true" : "false");                       \
+    UTEST_PRINTF2("%s:%u: Failure\n", __FILE__, __LINE__);                     \
+    UTEST_PRINTF0("  Expected : true\n");                                      \
+    UTEST_PRINTF1("    Actual : %s\n", (x) ? "true" : "false");                \
     *utest_result = 1;                                                         \
   }
 
 #define EXPECT_FALSE(x)                                                        \
   if (x) {                                                                     \
-    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    printf("  Expected : false\n");                                            \
-    printf("    Actual : %s\n", (x) ? "true" : "false");                       \
+    UTEST_PRINTF2("%s:%u: Failure\n", __FILE__, __LINE__);                     \
+    UTEST_PRINTF0("  Expected : false\n");                                     \
+    UTEST_PRINTF1("    Actual : %s\n", (x) ? "true" : "false");                \
     *utest_result = 1;                                                         \
   }
 
@@ -248,17 +277,17 @@ utest_type_printer(long long unsigned int i) {
 
 #define EXPECT_STREQ(x, y)                                                     \
   if (0 != strcmp(x, y)) {                                                     \
-    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    printf("  Expected : \"%s\"\n", x);                                        \
-    printf("    Actual : \"%s\"\n", y);                                        \
+    UTEST_PRINTF2("%s:%u: Failure\n", __FILE__, __LINE__);                     \
+    UTEST_PRINTF1("  Expected : \"%s\"\n", x);                                 \
+    UTEST_PRINTF1("    Actual : \"%s\"\n", y);                                 \
     *utest_result = 1;                                                         \
   }
 
 #define EXPECT_STRNE(x, y)                                                     \
   if (0 == strcmp(x, y)) {                                                     \
-    printf("%s:%u: Failure\n", __FILE__, __LINE__);                            \
-    printf("  Expected : \"%s\"\n", x);                                        \
-    printf("    Actual : \"%s\"\n", y);                                        \
+    UTEST_PRINTF2("%s:%u: Failure\n", __FILE__, __LINE__);                     \
+    UTEST_PRINTF1("  Expected : \"%s\"\n", x);                                 \
+    UTEST_PRINTF1("    Actual : \"%s\"\n", y);                                 \
     *utest_result = 1;                                                         \
   }
 
@@ -301,55 +330,104 @@ utest_type_printer(long long unsigned int i) {
 
 #define UTEST(SET, NAME)                                                       \
   UTEST_EXTERN struct utest_state_s utest_state;                               \
-  static void utest_run_##SET##_##NAME(int *utest_result);                     \
+  static void utest_run_##SET##_##NAME(int *utest_result, size_t);             \
   UTEST_INITIALIZER(utest_register_##SET##_##NAME) {                           \
     const size_t index = utest_state.tests_length++;                           \
+    const char *name_part = #SET "." #NAME;                                    \
+    char *name = UTEST_PTR_CAST(char *, malloc(strlen(name_part)));            \
     utest_state.tests =                                                        \
         UTEST_PTR_CAST(struct utest_test_state_s *,                            \
                        realloc(UTEST_PTR_CAST(void *, utest_state.tests),      \
                                sizeof(struct utest_test_state_s) *             \
                                    utest_state.tests_length));                 \
     utest_state.tests[index].func = &utest_run_##SET##_##NAME;                 \
-    utest_state.tests[index].name = #SET "." #NAME;                            \
+    utest_state.tests[index].name = name;                                      \
+    sprintf(name, "%s", name_part);                                            \
   }                                                                            \
-  void utest_run_##SET##_##NAME(int *utest_result)
+  void utest_run_##SET##_##NAME(int *utest_result,                             \
+                                UTEST_UNUSED size_t utest_index)
 
 #define UTEST_F_SETUP(FIXTURE)                                                 \
-  static void utest_setup_##FIXTURE(int *utest_result, struct FIXTURE *fixture)
+  static void utest_f_setup_##FIXTURE(int *utest_result,                       \
+                                      struct FIXTURE *utest_fixture)
 
 #define UTEST_F_TEARDOWN(FIXTURE)                                              \
-  static void utest_teardown_##FIXTURE(int *utest_result,                      \
-                                       struct FIXTURE *fixture)
+  static void utest_f_teardown_##FIXTURE(int *utest_result,                    \
+                                         struct FIXTURE *utest_fixture)
 
 #define UTEST_F(FIXTURE, NAME)                                                 \
   UTEST_EXTERN struct utest_state_s utest_state;                               \
   static void utest_run_##FIXTURE##_##NAME(int *, struct FIXTURE *);           \
-  static void utest_fixture_##FIXTURE##_##NAME(int *utest_result) {            \
-    struct FIXTURE fixture = {0};                                              \
-    utest_setup_##FIXTURE(utest_result, &fixture);                             \
+  static void utest_f_##FIXTURE##_##NAME(int *utest_result,                    \
+                                         UTEST_UNUSED size_t utest_index) {    \
+    struct FIXTURE fixture;                                                    \
+    memset(&fixture, 0, sizeof(fixture));                                      \
+    utest_f_setup_##FIXTURE(utest_result, &fixture);                           \
     if (0 != *utest_result) {                                                  \
       return;                                                                  \
     }                                                                          \
     utest_run_##FIXTURE##_##NAME(utest_result, &fixture);                      \
-    utest_teardown_##FIXTURE(utest_result, &fixture);                          \
+    utest_f_teardown_##FIXTURE(utest_result, &fixture);                        \
   }                                                                            \
   UTEST_INITIALIZER(utest_register_##FIXTURE##_##NAME) {                       \
     const size_t index = utest_state.tests_length++;                           \
+    const char *name_part = #FIXTURE "." #NAME;                                \
+    char *name = UTEST_PTR_CAST(char *, malloc(strlen(name_part)));            \
     utest_state.tests =                                                        \
         UTEST_PTR_CAST(struct utest_test_state_s *,                            \
                        realloc(UTEST_PTR_CAST(void *, utest_state.tests),      \
                                sizeof(struct utest_test_state_s) *             \
                                    utest_state.tests_length));                 \
-    utest_state.tests[index].func = &utest_fixture_##FIXTURE##_##NAME;         \
-    utest_state.tests[index].name = #FIXTURE "." #NAME;                        \
+    utest_state.tests[index].func = &utest_f_##FIXTURE##_##NAME;               \
+    utest_state.tests[index].name = name;                                      \
+    sprintf(name, "%s", name_part);                                            \
   }                                                                            \
-  void utest_run_##FIXTURE##_##NAME(int *utest_result, struct FIXTURE *fixture)
+  void utest_run_##FIXTURE##_##NAME(int *utest_result,                         \
+                                    struct FIXTURE *utest_fixture)
 
-// extern to the global state utest needs to execute
-UTEST_EXTERN struct utest_state_s utest_state;
+#define UTEST_I_SETUP(FIXTURE)                                                 \
+  static void utest_i_setup_##FIXTURE(                                         \
+      int *utest_result, struct FIXTURE *utest_fixture, size_t utest_index)
 
-UTEST_WEAK int utest_should_filter_test(const char *filter,
-                                        const char *testcase);
+#define UTEST_I_TEARDOWN(FIXTURE)                                              \
+  static void utest_i_teardown_##FIXTURE(                                      \
+      int *utest_result, struct FIXTURE *utest_fixture, size_t utest_index)
+
+#define UTEST_I(FIXTURE, NAME, INDEX)                                          \
+  UTEST_EXTERN struct utest_state_s utest_state;                               \
+  static void utest_run_##FIXTURE##_##NAME##_##INDEX(int *, struct FIXTURE *); \
+  static void utest_i_##FIXTURE##_##NAME##_##INDEX(int *utest_result,          \
+                                                   size_t index) {             \
+    struct FIXTURE fixture;                                                    \
+    memset(&fixture, 0, sizeof(fixture));                                      \
+    utest_i_setup_##FIXTURE(utest_result, &fixture, index);                    \
+    if (0 != *utest_result) {                                                  \
+      return;                                                                  \
+    }                                                                          \
+    utest_run_##FIXTURE##_##NAME##_##INDEX(utest_result, &fixture);            \
+    utest_i_teardown_##FIXTURE(utest_result, &fixture, index);                 \
+  }                                                                            \
+  UTEST_INITIALIZER(utest_register_##FIXTURE##_##NAME##_##INDEX) {             \
+    for (size_t i = 0; i < (INDEX); i++) {                                     \
+      const size_t index = utest_state.tests_length++;                         \
+      const char *name_part = #FIXTURE "." #NAME;                              \
+      char *name = UTEST_PTR_CAST(char *, malloc(strlen(name_part) + 32));     \
+      utest_state.tests =                                                      \
+          UTEST_PTR_CAST(struct utest_test_state_s *,                          \
+                         realloc(UTEST_PTR_CAST(void *, utest_state.tests),    \
+                                 sizeof(struct utest_test_state_s) *           \
+                                     utest_state.tests_length));               \
+      utest_state.tests[index].func = &utest_i_##FIXTURE##_##NAME##_##INDEX;   \
+      utest_state.tests[index].index = i;                                      \
+      utest_state.tests[index].name = name;                                    \
+      sprintf(name, "%s/%" UTEST_PRIu64, name_part, UTEST_CAST(uint64_t, i));  \
+    }                                                                          \
+  }                                                                            \
+  void utest_run_##FIXTURE##_##NAME##_##INDEX(int *utest_result,               \
+                                              struct FIXTURE *utest_fixture)
+
+UTEST_WEAK
+int utest_should_filter_test(const char *filter, const char *testcase);
 UTEST_WEAK int utest_should_filter_test(const char *filter,
                                         const char *testcase) {
   if (filter) {
@@ -425,11 +503,24 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
 
   // loop through all arguments looking for our options
   for (index = 1; index < UTEST_CAST(size_t, argc); index++) {
+    const char help_str[] = "--help";
     const char filter_str[] = "--filter=";
+    const char output_str[] = "--output=";
 
-    if (0 < strcmp(argv[index], filter_str)) {
+    if (0 == strncmp(argv[index], help_str, strlen(help_str))) {
+      printf("utest.h - the single file unit testing solution for C/C++!\n"
+             "Command line Options:\n"
+             "  --help            Show this message and exit.\n"
+             "  --filter=<filter> Filter the test cases to run (EG. MyTest*.a "
+             "would run MyTestCase.a but not MyTestCase.b).\n"
+             "  --output=<output> Output an xunit XML file to the file "
+             "specified in <output>.\n");
+      goto cleanup;
+    } else if (0 == strncmp(argv[index], filter_str, strlen(filter_str))) {
       // user wants to filter what test cases run!
       filter = argv[index] + strlen(filter_str);
+    } else if (0 == strncmp(argv[index], output_str, strlen(output_str))) {
+      utest_state.output = fopen(argv[index] + strlen(output_str), "w+");
     }
   }
 
@@ -444,6 +535,12 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
   printf("\033[32m[==========]\033[0m Running %" UTEST_PRIu64 " test cases.\n",
          UTEST_CAST(uint64_t, ran_tests));
 
+  if (utest_state.output) {
+    fprintf(utest_state.output, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+    fprintf(utest_state.output, "<testsuites tests=\"%" UTEST_PRIu64 "\" name=\"All\">\n", UTEST_CAST(uint64_t, ran_tests));
+    fprintf(utest_state.output, "<testsuite name=\"Tests\" tests=\"%" UTEST_PRIu64 "\">\n", UTEST_CAST(uint64_t, ran_tests));
+  }
+
   for (index = 0; index < utest_state.tests_length; index++) {
     int result = 0;
     int64_t ns = 0;
@@ -453,9 +550,19 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
     }
 
     printf("\033[32m[ RUN      ]\033[0m %s\n", utest_state.tests[index].name);
+
+    if (utest_state.output) {
+      fprintf(utest_state.output, "<testcase name=\"%s\">", utest_state.tests[index].name);
+    }
+
     ns = utest_ns();
-    utest_state.tests[index].func(&result);
+    utest_state.tests[index].func(&result, utest_state.tests[index].index);
     ns = utest_ns() - ns;
+
+    if (utest_state.output) {
+      fprintf(utest_state.output, "</testcase>\n");
+    }
+
     if (0 != result) {
       const size_t failed_testcase_index = failed_testcases_length++;
       failed_testcases = UTEST_PTR_CAST(
@@ -483,8 +590,23 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
              utest_state.tests[failed_testcases[index]].name);
     }
   }
+
+  if (utest_state.output) {
+    fprintf(utest_state.output, "</testsuite>\n</testsuites>\n");
+  }
+
+cleanup:
+  for (index = 0; index < utest_state.tests_length; index++) {
+    free(UTEST_PTR_CAST(void *, utest_state.tests[index].name));
+  }
+
   free(UTEST_PTR_CAST(void *, failed_testcases));
   free(UTEST_PTR_CAST(void *, utest_state.tests));
+
+  if (utest_state.output) {
+    fclose(utest_state.output);
+  }
+
   return UTEST_CAST(int, failed);
 }
 
@@ -492,7 +614,7 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
 // the data we need to run utest. This macro allows the user to declare the
 // data without having to use the UTEST_MAIN macro, thus allowing them to write
 // their own main() function.
-#define UTEST_STATE() struct utest_state_s utest_state
+#define UTEST_STATE() struct utest_state_s utest_state = {0, 0, 0}
 
 // define a main() function to call into utest.h and start executing tests! A
 // user can optionally not use this macro, and instead define their own main()
