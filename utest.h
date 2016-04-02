@@ -334,7 +334,7 @@ utest_type_printer(long long unsigned int i) {
   UTEST_INITIALIZER(utest_register_##SET##_##NAME) {                           \
     const size_t index = utest_state.tests_length++;                           \
     const char *name_part = #SET "." #NAME;                                    \
-    char *name = UTEST_PTR_CAST(char *, malloc(strlen(name_part)));            \
+    char *name = UTEST_PTR_CAST(char *, malloc(strlen(name_part) + 1));        \
     utest_state.tests =                                                        \
         UTEST_PTR_CAST(struct utest_test_state_s *,                            \
                        realloc(UTEST_PTR_CAST(void *, utest_state.tests),      \
@@ -372,7 +372,7 @@ utest_type_printer(long long unsigned int i) {
   UTEST_INITIALIZER(utest_register_##FIXTURE##_##NAME) {                       \
     const size_t index = utest_state.tests_length++;                           \
     const char *name_part = #FIXTURE "." #NAME;                                \
-    char *name = UTEST_PTR_CAST(char *, malloc(strlen(name_part)));            \
+    char *name = UTEST_PTR_CAST(char *, malloc(strlen(name_part) + 1));        \
     utest_state.tests =                                                        \
         UTEST_PTR_CAST(struct utest_test_state_s *,                            \
                        realloc(UTEST_PTR_CAST(void *, utest_state.tests),      \
