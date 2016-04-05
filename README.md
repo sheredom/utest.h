@@ -24,7 +24,7 @@ utest.h supports some command line options:
 
 ## Design ##
 
-UTest is a single header library to enable all the fun of unit testing in C and C++. The library has been designed to provide an output similar to Google's googletest framework;
+UTest is a single header library to enable all the fun of unit testing in C and C++. The library has been designed to provide an output similar to Google's googletest framework:
 
     [==========] Running 1 test cases.
     [ RUN      ] foo.bar

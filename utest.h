@@ -521,7 +521,7 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
     const char filter_str[] = "--filter=";
     const char output_str[] = "--output=";
 
-    if (0 == strncmp(argv[index], help_str, strlen(help_str))) {
+    if (0 == strcmp(argv[index], help_str)) {
       printf("utest.h - the single file unit testing solution for C/C++!\n"
              "Command line Options:\n"
              "  --help            Show this message and exit.\n"
@@ -530,10 +530,10 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
              "  --output=<output> Output an xunit XML file to the file "
              "specified in <output>.\n");
       goto cleanup;
-    } else if (0 == strncmp(argv[index], filter_str, strlen(filter_str))) {
+    } else if (0 == strcmp(argv[index], filter_str)) {
       // user wants to filter what test cases run!
       filter = argv[index] + strlen(filter_str);
-    } else if (0 == strncmp(argv[index], output_str, strlen(output_str))) {
+    } else if (0 == strcmp(argv[index], output_str)) {
       utest_state.output = fopen(argv[index] + strlen(output_str), "w+");
     }
   }
