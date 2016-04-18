@@ -93,15 +93,19 @@
   static void __cdecl f(void)
 #else
 #if defined(__linux__)
-#if defined(__clang__) && __has_warning("-Wreserved-id-macro")
+#if defined(__clang__)
+#if __has_warning("-Wreserved-id-macro")
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wreserved-id-macro"
+#endif
 #endif
 
 #define __STDC_FORMAT_MACROS 1
 
-#if defined(__clang__) && __has_warning("-Wreserved-id-macro")
+#if defined(__clang__)
+#if __has_warning("-Wreserved-id-macro")
 #pragma clang diagnostic pop
+#endif
 #endif
 #endif
 
