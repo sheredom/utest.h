@@ -207,6 +207,12 @@ UTEST_EXTERN struct utest_state_s utest_state;
   }                                                                            \
   printf(FORMAT, P0, P1)
 
+#ifdef _MSC_VER
+#define UTEST_SNPRINTF(BUFFER, N, ...) _snprintf_s(BUFFER, N, N, __VA_ARGS__)
+#else
+#define UTEST_SNPRINTF(...) snprintf(__VA_ARGS__)
+#endif
+
 #if defined(__cplusplus)
 // if we are using c++ we can use overloaded methods (its in the language)
 #define UTEST_OVERLOADABLE
@@ -372,7 +378,7 @@ utest_type_printer(long long unsigned int i) {
                                    utest_state.tests_length));                 \
     utest_state.tests[index].func = &utest_##SET##_##NAME;                     \
     utest_state.tests[index].name = name;                                      \
-    snprintf(name, name_size, "%s", name_part);                                \
+    UTEST_SNPRINTF(name, name_size, "%s", name_part);                                \
   }                                                                            \
   void utest_run_##SET##_##NAME(int *utest_result)
 
@@ -411,7 +417,7 @@ utest_type_printer(long long unsigned int i) {
                                    utest_state.tests_length));                 \
     utest_state.tests[index].func = &utest_f_##FIXTURE##_##NAME;               \
     utest_state.tests[index].name = name;                                      \
-    snprintf(name, name_size, "%s", name_part);                                \
+    UTEST_SNPRINTF(name, name_size, "%s", name_part);                                \
   }                                                                            \
   void utest_run_##FIXTURE##_##NAME(int *utest_result,                         \
                                     struct FIXTURE *utest_fixture)
@@ -453,7 +459,7 @@ utest_type_printer(long long unsigned int i) {
       utest_state.tests[index].func = &utest_i_##FIXTURE##_##NAME##_##INDEX;   \
       utest_state.tests[index].index = i;                                      \
       utest_state.tests[index].name = name;                                    \
-      snprintf(name, name_size, "%s/%" UTEST_PRIu64, name_part,                \
+      UTEST_SNPRINTF(name, name_size, "%s/%" UTEST_PRIu64, name_part,                \
                UTEST_CAST(uint64_t, i));                                       \
     }                                                                          \
   }                                                                            \
