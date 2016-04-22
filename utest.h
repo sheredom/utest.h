@@ -30,6 +30,14 @@
 #define SHEREDOM_UTEST_H_INCLUDED
 
 #ifdef _MSC_VER
+// Disable warning about not inlining 'inline' functions.
+// TODO: We'll fix this later by not using fprintf within our macros, and
+// instead use snprintf to a realloc'ed buffer.
+#pragma warning(disable : 4710)
+
+// Disable warning about inlining functions that are not marked 'inline'.
+// TODO: add a UTEST_NOINLINE onto the macro generated functions to fix this.
+#pragma warning(disable : 4711)
 #pragma warning(push, 1)
 #endif
 
@@ -53,8 +61,8 @@
 #endif
 
 #pragma warning(push, 1)
-#include <winbase.h>
 #include <windef.h>
+#include <winbase.h>
 #pragma warning(pop)
 
 #elif defined(__linux__)
@@ -285,12 +293,12 @@ utest_type_printer(long long unsigned int i) {
     *utest_result = 1;                                                         \
   }
 
-#define EXPECT_EQ(x, y) UTEST_EXPECT(x, y, ==)
-#define EXPECT_NE(x, y) UTEST_EXPECT(x, y, !=)
-#define EXPECT_LT(x, y) UTEST_EXPECT(x, y, <)
-#define EXPECT_LE(x, y) UTEST_EXPECT(x, y, <=)
-#define EXPECT_GT(x, y) UTEST_EXPECT(x, y, >)
-#define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >=)
+#define EXPECT_EQ(x, y) UTEST_EXPECT(x, y, == )
+#define EXPECT_NE(x, y) UTEST_EXPECT(x, y, != )
+#define EXPECT_LT(x, y) UTEST_EXPECT(x, y, < )
+#define EXPECT_LE(x, y) UTEST_EXPECT(x, y, <= )
+#define EXPECT_GT(x, y) UTEST_EXPECT(x, y, > )
+#define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >= )
 
 #define EXPECT_STREQ(x, y)                                                     \
   if (0 != strcmp(x, y)) {                                                     \
@@ -326,12 +334,12 @@ utest_type_printer(long long unsigned int i) {
     return;                                                                    \
   }
 
-#define ASSERT_EQ(x, y) UTEST_ASSERT(x, y, ==)
-#define ASSERT_NE(x, y) UTEST_ASSERT(x, y, !=)
-#define ASSERT_LT(x, y) UTEST_ASSERT(x, y, <)
-#define ASSERT_LE(x, y) UTEST_ASSERT(x, y, <=)
-#define ASSERT_GT(x, y) UTEST_ASSERT(x, y, >)
-#define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >=)
+#define ASSERT_EQ(x, y) UTEST_ASSERT(x, y, == )
+#define ASSERT_NE(x, y) UTEST_ASSERT(x, y, != )
+#define ASSERT_LT(x, y) UTEST_ASSERT(x, y, < )
+#define ASSERT_LE(x, y) UTEST_ASSERT(x, y, <= )
+#define ASSERT_GT(x, y) UTEST_ASSERT(x, y, > )
+#define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >= )
 
 #define ASSERT_STREQ(x, y)                                                     \
   EXPECT_STREQ(x, y);                                                          \
@@ -347,22 +355,26 @@ utest_type_printer(long long unsigned int i) {
 
 #define UTEST(SET, NAME)                                                       \
   UTEST_EXTERN struct utest_state_s utest_state;                               \
-  static void utest_run_##SET##_##NAME(int *utest_result, size_t);             \
+  static void utest_run_##SET##_##NAME(int *utest_result);                     \
+  static void utest_##SET##_##NAME(int *utest_result, size_t utest_index) {    \
+    (void) utest_index;                                                        \
+    utest_run_##SET##_##NAME(utest_result);                                    \
+  }                                                                            \
   UTEST_INITIALIZER(utest_register_##SET##_##NAME) {                           \
     const size_t index = utest_state.tests_length++;                           \
     const char *name_part = #SET "." #NAME;                                    \
-    char *name = UTEST_PTR_CAST(char *, malloc(strlen(name_part) + 1));        \
+    const size_t name_size = strlen(name_part) + 1;                            \
+    char *name = UTEST_PTR_CAST(char *, malloc(name_size));                    \
     utest_state.tests =                                                        \
         UTEST_PTR_CAST(struct utest_test_state_s *,                            \
                        realloc(UTEST_PTR_CAST(void *, utest_state.tests),      \
                                sizeof(struct utest_test_state_s) *             \
                                    utest_state.tests_length));                 \
-    utest_state.tests[index].func = &utest_run_##SET##_##NAME;                 \
+    utest_state.tests[index].func = &utest_##SET##_##NAME;                     \
     utest_state.tests[index].name = name;                                      \
-    sprintf(name, "%s", name_part);                                            \
+    snprintf(name, name_size, "%s", name_part);                                \
   }                                                                            \
-  void utest_run_##SET##_##NAME(int *utest_result,                             \
-                                UTEST_UNUSED size_t utest_index)
+  void utest_run_##SET##_##NAME(int *utest_result)
 
 #define UTEST_F_SETUP(FIXTURE)                                                 \
   static void utest_f_setup_##FIXTURE(int *utest_result,                       \
@@ -376,7 +388,8 @@ utest_type_printer(long long unsigned int i) {
   UTEST_EXTERN struct utest_state_s utest_state;                               \
   static void utest_run_##FIXTURE##_##NAME(int *, struct FIXTURE *);           \
   static void utest_f_##FIXTURE##_##NAME(int *utest_result,                    \
-                                         UTEST_UNUSED size_t utest_index) {    \
+                                         size_t utest_index) {                 \
+    (void) utest_index;                                                        \
     struct FIXTURE fixture;                                                    \
     memset(&fixture, 0, sizeof(fixture));                                      \
     utest_f_setup_##FIXTURE(utest_result, &fixture);                           \
@@ -389,7 +402,8 @@ utest_type_printer(long long unsigned int i) {
   UTEST_INITIALIZER(utest_register_##FIXTURE##_##NAME) {                       \
     const size_t index = utest_state.tests_length++;                           \
     const char *name_part = #FIXTURE "." #NAME;                                \
-    char *name = UTEST_PTR_CAST(char *, malloc(strlen(name_part) + 1));        \
+    const size_t name_size = strlen(name_part) + 1;                            \
+    char *name = UTEST_PTR_CAST(char *, malloc(name_size));                    \
     utest_state.tests =                                                        \
         UTEST_PTR_CAST(struct utest_test_state_s *,                            \
                        realloc(UTEST_PTR_CAST(void *, utest_state.tests),      \
@@ -397,7 +411,7 @@ utest_type_printer(long long unsigned int i) {
                                    utest_state.tests_length));                 \
     utest_state.tests[index].func = &utest_f_##FIXTURE##_##NAME;               \
     utest_state.tests[index].name = name;                                      \
-    sprintf(name, "%s", name_part);                                            \
+    snprintf(name, name_size, "%s", name_part);                                \
   }                                                                            \
   void utest_run_##FIXTURE##_##NAME(int *utest_result,                         \
                                     struct FIXTURE *utest_fixture)
@@ -429,7 +443,8 @@ utest_type_printer(long long unsigned int i) {
     for (i = 0; i < (INDEX); i++) {                                            \
       const size_t index = utest_state.tests_length++;                         \
       const char *name_part = #FIXTURE "." #NAME;                              \
-      char *name = UTEST_PTR_CAST(char *, malloc(strlen(name_part) + 32));     \
+      const size_t name_size = strlen(name_part) + 32;                         \
+      char *name = UTEST_PTR_CAST(char *, malloc(name_size));                  \
       utest_state.tests =                                                      \
           UTEST_PTR_CAST(struct utest_test_state_s *,                          \
                          realloc(UTEST_PTR_CAST(void *, utest_state.tests),    \
@@ -438,7 +453,8 @@ utest_type_printer(long long unsigned int i) {
       utest_state.tests[index].func = &utest_i_##FIXTURE##_##NAME##_##INDEX;   \
       utest_state.tests[index].index = i;                                      \
       utest_state.tests[index].name = name;                                    \
-      sprintf(name, "%s/%" UTEST_PRIu64, name_part, UTEST_CAST(uint64_t, i));  \
+      snprintf(name, name_size, "%s/%" UTEST_PRIu64, name_part,                \
+               UTEST_CAST(uint64_t, i));                                       \
     }                                                                          \
   }                                                                            \
   void utest_run_##FIXTURE##_##NAME##_##INDEX(int *utest_result,               \
@@ -510,6 +526,34 @@ UTEST_WEAK int utest_should_filter_test(const char *filter,
   return 0;
 }
 
+static UTEST_INLINE int utest_strncmp(const char *a, const char *b, size_t n) {
+  // strncmp breaks on Wall / Werror on gcc/clang, so we avoid using it
+  unsigned i;
+
+  for (i = 0; i < n; i++) {
+    if (a[i] < b[i]) {
+      return -1;
+    } else if (a[i] > b[i]) {
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+static UTEST_INLINE FILE *utest_fopen(const char *filename, const char *mode) {
+#ifdef _MSC_VER
+  FILE *file;
+  if (0 == fopen_s(&file, filename, mode)) {
+    return file;
+  } else {
+    return 0;
+  }
+#else
+  return fopen(filename, mode);
+#endif
+}
+
 UTEST_WEAK int utest_main(int argc, const char *const argv[]);
 UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
   size_t failed = 0;
@@ -525,7 +569,7 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
     const char filter_str[] = "--filter=";
     const char output_str[] = "--output=";
 
-    if (0 == strcmp(argv[index], help_str)) {
+    if (0 == utest_strncmp(argv[index], help_str, strlen(help_str))) {
       printf("utest.h - the single file unit testing solution for C/C++!\n"
              "Command line Options:\n"
              "  --help            Show this message and exit.\n"
@@ -534,11 +578,13 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
              "  --output=<output> Output an xunit XML file to the file "
              "specified in <output>.\n");
       goto cleanup;
-    } else if (0 == strcmp(argv[index], filter_str)) {
+    } else if (0 ==
+               utest_strncmp(argv[index], filter_str, strlen(filter_str))) {
       // user wants to filter what test cases run!
       filter = argv[index] + strlen(filter_str);
-    } else if (0 == strcmp(argv[index], output_str)) {
-      utest_state.output = fopen(argv[index] + strlen(output_str), "w+");
+    } else if (0 ==
+               utest_strncmp(argv[index], output_str, strlen(output_str))) {
+      utest_state.output = utest_fopen(argv[index] + strlen(output_str), "w+");
     }
   }
 
