@@ -210,7 +210,14 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #ifdef _MSC_VER
 #define UTEST_SNPRINTF(BUFFER, N, ...) _snprintf_s(BUFFER, N, N, __VA_ARGS__)
 #else
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wvariadic-macros"
+#endif
 #define UTEST_SNPRINTF(...) snprintf(__VA_ARGS__)
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 #endif
 
 #if defined(__cplusplus)
