@@ -37,11 +37,11 @@ add_executable(utest_test
 
 if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
   set_source_files_properties(main.c test.c PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Werror"
+    COMPILE_FLAGS "-Wall -Wextra -Werror -std=gnu89"
   )
 elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
   set_source_files_properties(main.c test.c PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror"
+    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=gnu89"
   )
 elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
   set_source_files_properties(main.c test.c PROPERTIES
