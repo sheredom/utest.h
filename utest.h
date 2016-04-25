@@ -69,8 +69,8 @@
 #endif
 
 #pragma warning(push, 1)
-#include <winbase.h>
 #include <windef.h>
+#include <winbase.h>
 #pragma warning(pop)
 
 #elif defined(__linux__)
@@ -320,12 +320,12 @@ utest_type_printer(long long unsigned int i) {
     *utest_result = 1;                                                         \
   }
 
-#define EXPECT_EQ(x, y) UTEST_EXPECT(x, y, ==)
-#define EXPECT_NE(x, y) UTEST_EXPECT(x, y, !=)
-#define EXPECT_LT(x, y) UTEST_EXPECT(x, y, <)
-#define EXPECT_LE(x, y) UTEST_EXPECT(x, y, <=)
-#define EXPECT_GT(x, y) UTEST_EXPECT(x, y, >)
-#define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >=)
+#define EXPECT_EQ(x, y) UTEST_EXPECT(x, y, == )
+#define EXPECT_NE(x, y) UTEST_EXPECT(x, y, != )
+#define EXPECT_LT(x, y) UTEST_EXPECT(x, y, < )
+#define EXPECT_LE(x, y) UTEST_EXPECT(x, y, <= )
+#define EXPECT_GT(x, y) UTEST_EXPECT(x, y, > )
+#define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >= )
 
 #define EXPECT_STREQ(x, y)                                                     \
   if (0 != strcmp(x, y)) {                                                     \
@@ -361,12 +361,12 @@ utest_type_printer(long long unsigned int i) {
     return;                                                                    \
   }
 
-#define ASSERT_EQ(x, y) UTEST_ASSERT(x, y, ==)
-#define ASSERT_NE(x, y) UTEST_ASSERT(x, y, !=)
-#define ASSERT_LT(x, y) UTEST_ASSERT(x, y, <)
-#define ASSERT_LE(x, y) UTEST_ASSERT(x, y, <=)
-#define ASSERT_GT(x, y) UTEST_ASSERT(x, y, >)
-#define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >=)
+#define ASSERT_EQ(x, y) UTEST_ASSERT(x, y, == )
+#define ASSERT_NE(x, y) UTEST_ASSERT(x, y, != )
+#define ASSERT_LT(x, y) UTEST_ASSERT(x, y, < )
+#define ASSERT_LE(x, y) UTEST_ASSERT(x, y, <= )
+#define ASSERT_GT(x, y) UTEST_ASSERT(x, y, > )
+#define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >= )
 
 #define ASSERT_STREQ(x, y)                                                     \
   EXPECT_STREQ(x, y);                                                          \
@@ -384,7 +384,7 @@ utest_type_printer(long long unsigned int i) {
   UTEST_EXTERN struct utest_state_s utest_state;                               \
   static void utest_run_##SET##_##NAME(int *utest_result);                     \
   static void utest_##SET##_##NAME(int *utest_result, size_t utest_index) {    \
-    (void)utest_index;                                                         \
+    (void) utest_index;                                                        \
     utest_run_##SET##_##NAME(utest_result);                                    \
   }                                                                            \
   UTEST_INITIALIZER(utest_register_##SET##_##NAME) {                           \
@@ -419,7 +419,7 @@ utest_type_printer(long long unsigned int i) {
   static void utest_f_##FIXTURE##_##NAME(int *utest_result,                    \
                                          size_t utest_index) {                 \
     struct FIXTURE fixture;                                                    \
-    (void)utest_index;                                                         \
+    (void) utest_index;                                                        \
     memset(&fixture, 0, sizeof(fixture));                                      \
     utest_f_setup_##FIXTURE(utest_result, &fixture);                           \
     if (0 != *utest_result) {                                                  \
