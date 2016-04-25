@@ -326,12 +326,12 @@ utest_type_printer(long long unsigned int i) {
     *utest_result = 1;                                                         \
   }
 
-#define EXPECT_EQ(x, y) UTEST_EXPECT(x, y, == )
-#define EXPECT_NE(x, y) UTEST_EXPECT(x, y, != )
-#define EXPECT_LT(x, y) UTEST_EXPECT(x, y, < )
-#define EXPECT_LE(x, y) UTEST_EXPECT(x, y, <= )
-#define EXPECT_GT(x, y) UTEST_EXPECT(x, y, > )
-#define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >= )
+#define EXPECT_EQ(x, y) UTEST_EXPECT(x, y, ==)
+#define EXPECT_NE(x, y) UTEST_EXPECT(x, y, !=)
+#define EXPECT_LT(x, y) UTEST_EXPECT(x, y, <)
+#define EXPECT_LE(x, y) UTEST_EXPECT(x, y, <=)
+#define EXPECT_GT(x, y) UTEST_EXPECT(x, y, >)
+#define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >=)
 
 #define EXPECT_STREQ(x, y)                                                     \
   if (0 != strcmp(x, y)) {                                                     \
@@ -350,39 +350,54 @@ utest_type_printer(long long unsigned int i) {
   }
 
 #define UTEST_ASSERT(x, y, cond)                                               \
-  UTEST_EXPECT(x, y, cond);                                                    \
   if (!((x)cond(y))) {                                                         \
+    UTEST_PRINTF2("%s:%u: Failure\n", __FILE__, __LINE__);                     \
+    *utest_result = 1;                                                         \
     return;                                                                    \
   }
 
 #define ASSERT_TRUE(x)                                                         \
-  EXPECT_TRUE(x);                                                              \
   if (!(x)) {                                                                  \
+    UTEST_PRINTF2("%s:%u: Failure\n", __FILE__, __LINE__);                     \
+    UTEST_PRINTF0("  Expected : true\n");                                      \
+    UTEST_PRINTF1("    Actual : %s\n", (x) ? "true" : "false");                \
+    *utest_result = 1;                                                         \
     return;                                                                    \
   }
 
 #define ASSERT_FALSE(x)                                                        \
-  EXPECT_FALSE(x);                                                             \
   if (x) {                                                                     \
+    UTEST_PRINTF2("%s:%u: Failure\n", __FILE__, __LINE__);                     \
+    UTEST_PRINTF0("  Expected : false\n");                                     \
+    UTEST_PRINTF1("    Actual : %s\n", (x) ? "true" : "false");                \
+    *utest_result = 1;                                                         \
     return;                                                                    \
   }
 
-#define ASSERT_EQ(x, y) UTEST_ASSERT(x, y, == )
-#define ASSERT_NE(x, y) UTEST_ASSERT(x, y, != )
-#define ASSERT_LT(x, y) UTEST_ASSERT(x, y, < )
-#define ASSERT_LE(x, y) UTEST_ASSERT(x, y, <= )
-#define ASSERT_GT(x, y) UTEST_ASSERT(x, y, > )
-#define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >= )
+#define ASSERT_EQ(x, y) UTEST_ASSERT(x, y, ==)
+#define ASSERT_NE(x, y) UTEST_ASSERT(x, y, !=)
+#define ASSERT_LT(x, y) UTEST_ASSERT(x, y, <)
+#define ASSERT_LE(x, y) UTEST_ASSERT(x, y, <=)
+#define ASSERT_GT(x, y) UTEST_ASSERT(x, y, >)
+#define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >=)
 
 #define ASSERT_STREQ(x, y)                                                     \
   EXPECT_STREQ(x, y);                                                          \
   if (0 != strcmp(x, y)) {                                                     \
+    UTEST_PRINTF2("%s:%u: Failure\n", __FILE__, __LINE__);                     \
+    UTEST_PRINTF1("  Expected : \"%s\"\n", x);                                 \
+    UTEST_PRINTF1("    Actual : \"%s\"\n", y);                                 \
+    *utest_result = 1;                                                         \
     return;                                                                    \
   }
 
 #define ASSERT_STRNE(x, y)                                                     \
   EXPECT_STRNE(x, y);                                                          \
   if (0 == strcmp(x, y)) {                                                     \
+    UTEST_PRINTF2("%s:%u: Failure\n", __FILE__, __LINE__);                     \
+    UTEST_PRINTF1("  Expected : \"%s\"\n", x);                                 \
+    UTEST_PRINTF1("    Actual : \"%s\"\n", y);                                 \
+    *utest_result = 1;                                                         \
     return;                                                                    \
   }
 
@@ -390,7 +405,7 @@ utest_type_printer(long long unsigned int i) {
   UTEST_EXTERN struct utest_state_s utest_state;                               \
   static void utest_run_##SET##_##NAME(int *utest_result);                     \
   static void utest_##SET##_##NAME(int *utest_result, size_t utest_index) {    \
-    (void) utest_index;                                                        \
+    (void)utest_index;                                                         \
     utest_run_##SET##_##NAME(utest_result);                                    \
   }                                                                            \
   UTEST_INITIALIZER(utest_register_##SET##_##NAME) {                           \
@@ -425,7 +440,7 @@ utest_type_printer(long long unsigned int i) {
   static void utest_f_##FIXTURE##_##NAME(int *utest_result,                    \
                                          size_t utest_index) {                 \
     struct FIXTURE fixture;                                                    \
-    (void) utest_index;                                                        \
+    (void)utest_index;                                                         \
     memset(&fixture, 0, sizeof(fixture));                                      \
     utest_f_setup_##FIXTURE(utest_result, &fixture);                           \
     if (0 != *utest_result) {                                                  \
