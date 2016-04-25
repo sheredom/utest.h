@@ -49,8 +49,14 @@
 #pragma warning(push, 1)
 #endif
 
-#include <stddef.h>
+#if defined(_MSC_VER)
+#define int64_t __int64
+#define uint64_t unsigned __int64
+#else
 #include <stdint.h>
+#endif
+
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
