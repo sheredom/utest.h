@@ -326,12 +326,12 @@ utest_type_printer(long long unsigned int i) {
     *utest_result = 1;                                                         \
   }
 
-#define EXPECT_EQ(x, y) UTEST_EXPECT(x, y, ==)
-#define EXPECT_NE(x, y) UTEST_EXPECT(x, y, !=)
-#define EXPECT_LT(x, y) UTEST_EXPECT(x, y, <)
-#define EXPECT_LE(x, y) UTEST_EXPECT(x, y, <=)
-#define EXPECT_GT(x, y) UTEST_EXPECT(x, y, >)
-#define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >=)
+#define EXPECT_EQ(x, y) UTEST_EXPECT(x, y, == )
+#define EXPECT_NE(x, y) UTEST_EXPECT(x, y, != )
+#define EXPECT_LT(x, y) UTEST_EXPECT(x, y, < )
+#define EXPECT_LE(x, y) UTEST_EXPECT(x, y, <= )
+#define EXPECT_GT(x, y) UTEST_EXPECT(x, y, > )
+#define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >= )
 
 #define EXPECT_STREQ(x, y)                                                     \
   if (0 != strcmp(x, y)) {                                                     \
@@ -374,12 +374,12 @@ utest_type_printer(long long unsigned int i) {
     return;                                                                    \
   }
 
-#define ASSERT_EQ(x, y) UTEST_ASSERT(x, y, ==)
-#define ASSERT_NE(x, y) UTEST_ASSERT(x, y, !=)
-#define ASSERT_LT(x, y) UTEST_ASSERT(x, y, <)
-#define ASSERT_LE(x, y) UTEST_ASSERT(x, y, <=)
-#define ASSERT_GT(x, y) UTEST_ASSERT(x, y, >)
-#define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >=)
+#define ASSERT_EQ(x, y) UTEST_ASSERT(x, y, == )
+#define ASSERT_NE(x, y) UTEST_ASSERT(x, y, != )
+#define ASSERT_LT(x, y) UTEST_ASSERT(x, y, < )
+#define ASSERT_LE(x, y) UTEST_ASSERT(x, y, <= )
+#define ASSERT_GT(x, y) UTEST_ASSERT(x, y, > )
+#define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >= )
 
 #define ASSERT_STREQ(x, y)                                                     \
   EXPECT_STREQ(x, y);                                                          \
@@ -405,7 +405,7 @@ utest_type_printer(long long unsigned int i) {
   UTEST_EXTERN struct utest_state_s utest_state;                               \
   static void utest_run_##SET##_##NAME(int *utest_result);                     \
   static void utest_##SET##_##NAME(int *utest_result, size_t utest_index) {    \
-    (void)utest_index;                                                         \
+    (void) utest_index;                                                        \
     utest_run_##SET##_##NAME(utest_result);                                    \
   }                                                                            \
   UTEST_INITIALIZER(utest_register_##SET##_##NAME) {                           \
@@ -440,7 +440,7 @@ utest_type_printer(long long unsigned int i) {
   static void utest_f_##FIXTURE##_##NAME(int *utest_result,                    \
                                          size_t utest_index) {                 \
     struct FIXTURE fixture;                                                    \
-    (void)utest_index;                                                         \
+    (void) utest_index;                                                        \
     memset(&fixture, 0, sizeof(fixture));                                      \
     utest_f_setup_##FIXTURE(utest_result, &fixture);                           \
     if (0 != *utest_result) {                                                  \
@@ -489,11 +489,11 @@ utest_type_printer(long long unsigned int i) {
     utest_i_teardown_##FIXTURE(utest_result, &fixture, index);                 \
   }                                                                            \
   UTEST_INITIALIZER(utest_register_##FIXTURE##_##NAME##_##INDEX) {             \
-    size_t i;                                                                  \
+    uint64_t i;                                                                \
     for (i = 0; i < (INDEX); i++) {                                            \
-      const size_t index = utest_state.tests_length++;                         \
+      const uint64_t index = utest_state.tests_length++;                       \
       const char *name_part = #FIXTURE "." #NAME;                              \
-      const size_t name_size = strlen(name_part) + 32;                         \
+      const uint64_t name_size = strlen(name_part) + 32;                       \
       char *name = UTEST_PTR_CAST(char *, malloc(name_size));                  \
       utest_state.tests =                                                      \
           UTEST_PTR_CAST(struct utest_test_state_s *,                          \
@@ -503,8 +503,7 @@ utest_type_printer(long long unsigned int i) {
       utest_state.tests[index].func = &utest_i_##FIXTURE##_##NAME##_##INDEX;   \
       utest_state.tests[index].index = i;                                      \
       utest_state.tests[index].name = name;                                    \
-      UTEST_SNPRINTF(name, name_size, "%s/%" UTEST_PRIu64, name_part,          \
-                     UTEST_CAST(uint64_t, i));                                 \
+      UTEST_SNPRINTF(name, name_size, "%s/%" UTEST_PRIu64, name_part, i);      \
     }                                                                          \
   }                                                                            \
   void utest_run_##FIXTURE##_##NAME##_##INDEX(int *utest_result,               \
@@ -608,15 +607,15 @@ static UTEST_INLINE FILE *utest_fopen(const char *filename, const char *mode) {
 
 UTEST_WEAK int utest_main(int argc, const char *const argv[]);
 UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
-  size_t failed = 0;
-  size_t index = 0;
-  size_t *failed_testcases = 0;
-  size_t failed_testcases_length = 0;
+  uint64_t failed = 0;
+  uint64_t index = 0;
+  uint64_t *failed_testcases = 0;
+  uint64_t failed_testcases_length = 0;
   const char *filter = 0;
-  size_t ran_tests = 0;
+  uint64_t ran_tests = 0;
 
   /* loop through all arguments looking for our options */
-  for (index = 1; index < UTEST_CAST(size_t, argc); index++) {
+  for (index = 1; index < UTEST_CAST(uint64_t, argc); index++) {
     const char help_str[] = "--help";
     const char filter_str[] = "--filter=";
     const char output_str[] = "--output=";
@@ -649,16 +648,16 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
   }
 
   printf("\033[32m[==========]\033[0m Running %" UTEST_PRIu64 " test cases.\n",
-         UTEST_CAST(uint64_t, ran_tests));
+         ran_tests);
 
   if (utest_state.output) {
     fprintf(utest_state.output, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     fprintf(utest_state.output,
             "<testsuites tests=\"%" UTEST_PRIu64 "\" name=\"All\">\n",
-            UTEST_CAST(uint64_t, ran_tests));
+            ran_tests);
     fprintf(utest_state.output,
             "<testsuite name=\"Tests\" tests=\"%" UTEST_PRIu64 "\">\n",
-            UTEST_CAST(uint64_t, ran_tests));
+            ran_tests);
   }
 
   for (index = 0; index < utest_state.tests_length; index++) {
@@ -685,10 +684,10 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
     }
 
     if (0 != result) {
-      const size_t failed_testcase_index = failed_testcases_length++;
+      const uint64_t failed_testcase_index = failed_testcases_length++;
       failed_testcases = UTEST_PTR_CAST(
-          size_t *, realloc(UTEST_PTR_CAST(void *, failed_testcases),
-                            sizeof(size_t) * failed_testcases_length));
+          uint64_t *, realloc(UTEST_PTR_CAST(void *, failed_testcases),
+                              sizeof(uint64_t) * failed_testcases_length));
       failed_testcases[failed_testcase_index] = index;
       failed++;
       printf("\033[31m[  FAILED  ]\033[0m %s (%" UTEST_PRId64 "ns)\n",
@@ -699,13 +698,13 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
     }
   }
   printf("\033[32m[==========]\033[0m %" UTEST_PRIu64 " test cases ran.\n",
-         UTEST_CAST(uint64_t, ran_tests));
+         ran_tests);
   printf("\033[32m[  PASSED  ]\033[0m %" UTEST_PRIu64 " tests.\n",
          UTEST_CAST(uint64_t, ran_tests - failed));
   if (0 != failed) {
     printf("\033[31m[  FAILED  ]\033[0m %" UTEST_PRIu64
            " tests, listed below:\n",
-           UTEST_CAST(uint64_t, failed));
+           failed);
     for (index = 0; index < failed_testcases_length; index++) {
       printf("\033[31m[  FAILED  ]\033[0m %s\n",
              utest_state.tests[failed_testcases[index]].name);
