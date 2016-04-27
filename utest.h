@@ -75,8 +75,8 @@
 #endif
 
 #pragma warning(push, 1)
-#include <winbase.h>
 #include <windef.h>
+#include <winbase.h>
 #pragma warning(pop)
 
 #elif defined(__linux__)
