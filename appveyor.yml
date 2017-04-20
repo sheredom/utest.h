@@ -28,6 +28,7 @@ build_script:
   - if "%PLATFORM%"=="x64" cmake -G "%VSVERSION% Win64" ../test
   - if "%PLATFORM%"=="Win32" cmake -G "%VSVERSION%" ../test
   - msbuild /m /p:Configuration="%CONFIGURATION%" /p:Platform="%PLATFORM%" utest.sln
+  - copy %CONFIGURATION%\utest_test.exe utest_test.exe
 
 test_script:
-  - %CONFIGURATION%\utest_test.exe
+  - utest_test.exe
