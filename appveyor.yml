@@ -6,6 +6,7 @@ install: []
 
 environment:
   matrix:
+    - VSVERSION: Visual Studio 9 2008
     - VSVERSION: Visual Studio 10 2010
     - VSVERSION: Visual Studio 11 2012
     - VSVERSION: Visual Studio 12 2013
@@ -17,6 +18,8 @@ platform:
 
 configuration:
   - Debug
+  - RelWithDebInfo
+  - MinSizeRel
   - Release
 
 build_script:
@@ -25,5 +28,6 @@ build_script:
   - if "%PLATFORM%"=="x64" cmake -G "%VSVERSION% Win64" ../test
   - if "%PLATFORM%"=="Win32" cmake -G "%VSVERSION%" ../test
   - msbuild /m /p:Configuration="%CONFIGURATION%" /p:Platform="%PLATFORM%" utest.sln
-  - cd %CONFIGURATION%
-  - utest_test.exe
+
+test_script:
+  - %CONFIGURATION%\utest_test.exe

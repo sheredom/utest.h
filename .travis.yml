@@ -10,6 +10,8 @@ compiler:
 
 env:
   - CONFIGURATION=Debug
+  - CONFIGURATION=RelWithDebInfo
+  - CONFIGURATION=MinSizeRel
   - CONFIGURATION=Release
 
 script:
