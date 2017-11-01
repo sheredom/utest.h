@@ -36,20 +36,20 @@ UTest is a single header library to enable all the fun of unit testing in C and 
 
 In one C or C++ file, you must call the macro UTEST_MAIN:
 
-   UTEST_MAIN();
+    UTEST_MAIN();
 
 This will call into utest.h, instantiate all the testcases and run the unit test framework.
 
 Alternatively, if you want to write your own main and call into utest.h, you can instead, in one C or C++ file call:
 
-   UTEST_STATE();
+    UTEST_STATE();
 
 And then when you are ready to call into the utest.h framework do:
 
-   int main(int argc, const char *const argv[]) {
-     // do your own thing
-     return utest_main(argc, argv);
-   }
+    int main(int argc, const char *const argv[]) {
+      // do your own thing
+      return utest_main(argc, argv);
+    }
 
 ## Define a Testcase ##
 
@@ -67,36 +67,36 @@ The UTEST macro takes two parameters - the first being the set that the test cas
 
 A fixtured testcase is one in which there is a struct that is instantiated that can be shared across multiple testcases.
 
-   struct MyTestFixture {
-     char c;
-     int i;
-     float f;
-   };
+    struct MyTestFixture {
+      char c;
+      int i;
+      float f;
+    };
+    
+    UTEST_F_SETUP(MyTestFixture) {
+      utest_fixture->c = 'a';
+      utest_fixture->i = 42;
+      utest_fixture->f = 3.14f;
 
-   UTEST_F_SETUP(MyTestFixture) {
-     utest_fixture->c = 'a';
-     utest_fixture->i = 42;
-     utest_fixture->f = 3.14f;
+      // we can even assert and expect in setup!
+      ASSERT_EQ(42, utest_fixture->i);
+      EXPECT_TRUE(true);
+    }
 
-     // we can even assert and expect in setup!
-     ASSERT_EQ(42, utest_fixture->i);
-     EXPECT_TRUE(true);
-   }
+    UTEST_F_TEARDOWN(MyTestFixture) {
+      // and also assert and expect in teardown!
+      ASSERT_EQ(13, utest_fixture->i);
+    }
 
-   UTEST_F_TEARDOWN(MyTestFixture) {
-     // and also assert and expect in teardown!
-     ASSERT_EQ(13, utest_fixture->i);
-   }
+    UTEST_F(MyTestFixture, a) {
+      utest_fixture->i = 13;
+      // teardown will succeed because i is 13...
+    }
 
-   UTEST_F(MyTestFixture, a) {
-     utest_fixture->i = 13;
-     // teardown will succeed because i is 13...
-   }
-
-   UTEST_F(MyTestFixture, b) {
-     utest_fixture->i = 83;
-     // teardown will fail because i is not 13!
-   }
+    UTEST_F(MyTestFixture, b) {
+      utest_fixture->i = 83;
+      // teardown will fail because i is not 13!
+    }
 
 Some things to note that were demonstrated above:
 * We have this new implicit variable within our macros - utest_fixture. This is a pointer to the struct you decidedw as your fixture (so MyTestFixture in the above code).
@@ -109,30 +109,30 @@ Some things to note that were demonstrated above:
 
 Sometimes you want to use the same fixture _and_ testcase repeatedly, but prehaps subtly change one variable within. This is where indexed testcases come in.
 
-   struct MyTestIndexedFixture{
-     bool x;
-     bool y;
-   };
+    struct MyTestIndexedFixture{
+      bool x;
+      bool y;
+    };
 
-   UTEST_I_SETUP(MyTestIndexedFixture) {
-     if (utest_index < 30) {
-       utest_fixture->x = utest_index & 1;
-       utest_fixture->y = (utest_index + 1) & 1;
-     }
-   }
+    UTEST_I_SETUP(MyTestIndexedFixture) {
+      if (utest_index < 30) {
+        utest_fixture->x = utest_index & 1;
+        utest_fixture->y = (utest_index + 1) & 1;
+      }
+    }
 
-   UTEST_I_TEARDOWN(MyTestIndexedFixture) {
-     EXPECT_LE(0, utest_index);
-   }
+    UTEST_I_TEARDOWN(MyTestIndexedFixture) {
+      EXPECT_LE(0, utest_index);
+    }
 
-   UTEST_I(MyTestIndexedFixture, a, 2) {
-     ASSERT_TRUE(utest_fixture->x | utest_fixture->y);
-   }
+    UTEST_I(MyTestIndexedFixture, a, 2) {
+      ASSERT_TRUE(utest_fixture->x | utest_fixture->y);
+    }
 
-   UTEST_I(MyTestIndexedFixture, b, 42) {
-     // this will fail when the index is >= 30
-     ASSERT_TRUE(utest_fixture->x | utest_fixture->y);
-   }
+    UTEST_I(MyTestIndexedFixture, b, 42) {
+      // this will fail when the index is >= 30
+      ASSERT_TRUE(utest_fixture->x | utest_fixture->y);
+    }
 
 Note:
 * We use UTEST_I_* as the prefix for the setup and teardown functions now.
