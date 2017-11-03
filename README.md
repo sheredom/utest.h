@@ -18,10 +18,10 @@ The current supported platforms are Linux, Mac OSX and Windows.
 
 utest.h supports some command line options:
 
-* --help to output the help message
-* --filter=<filter> will filter the test cases to run (useful for re-running one
+* `--help` to output the help message
+* `--filter=<filter>` will filter the test cases to run (useful for re-running one
   particular offending test case).
-* --output=<output> will output an xunit XML file with the test results (that
+* `--output=<output>` will output an xunit XML file with the test results (that
   Jenkins, travis-ci, and appveyor can parse for the test results).
 
 ## Design ##
@@ -30,17 +30,21 @@ UTest is a single header library to enable all the fun of unit testing in C and
 C++. The library has been designed to provide an output similar to Google's
 googletest framework:
 
-    [==========] Running 1 test cases.
-    [ RUN      ] foo.bar
-    [       OK ] foo.bar (631ns)
-    [==========] 1 test cases ran.
-    [  PASSED  ] 1 tests.
+```
+[==========] Running 1 test cases.
+[ RUN      ] foo.bar
+[       OK ] foo.bar (631ns)
+[==========] 1 test cases ran.
+[  PASSED  ] 1 tests.
+```
 
 ## UTEST_MAIN ##
 
 In one C or C++ file, you must call the macro UTEST_MAIN:
 
-    UTEST_MAIN();
+```c
+UTEST_MAIN();
+```
 
 This will call into utest.h, instantiate all the testcases and run the unit test
 framework.
@@ -48,24 +52,30 @@ framework.
 Alternatively, if you want to write your own main and call into utest.h, you can
 instead, in one C or C++ file call:
 
-    UTEST_STATE();
+```c
+UTEST_STATE();
+```
 
 And then when you are ready to call into the utest.h framework do:
 
-    int main(int argc, const char *const argv[]) {
-      // do your own thing
-      return utest_main(argc, argv);
-    }
+```c
+int main(int argc, const char *const argv[]) {
+  // do your own thing
+  return utest_main(argc, argv);
+}
+```
 
 ## Define a Testcase ##
 
 To define a test case to run, you can do the following;
 
-    #include "utest.h"
+```c
+#include "utest.h"
 
-    UTEST(foo, bar) {
-      ASSERT_TRUE(1);
-    }
+UTEST(foo, bar) {
+  ASSERT_TRUE(1);
+}
+```
 
 The UTEST macro takes two parameters - the first being the set that the test
 case belongs to, the second being the name of the test. This allows tests to be
@@ -76,36 +86,38 @@ grouped for convenience.
 A fixtured testcase is one in which there is a struct that is instantiated that
 can be shared across multiple testcases.
 
-    struct MyTestFixture {
-      char c;
-      int i;
-      float f;
-    };
+```c
+struct MyTestFixture {
+  char c;
+  int i;
+  float f;
+};
 
-    UTEST_F_SETUP(MyTestFixture) {
-      utest_fixture->c = 'a';
-      utest_fixture->i = 42;
-      utest_fixture->f = 3.14f;
+UTEST_F_SETUP(MyTestFixture) {
+  utest_fixture->c = 'a';
+  utest_fixture->i = 42;
+  utest_fixture->f = 3.14f;
 
-      // we can even assert and expect in setup!
-      ASSERT_EQ(42, utest_fixture->i);
-      EXPECT_TRUE(true);
-    }
+  // we can even assert and expect in setup!
+  ASSERT_EQ(42, utest_fixture->i);
+  EXPECT_TRUE(true);
+}
 
-    UTEST_F_TEARDOWN(MyTestFixture) {
-      // and also assert and expect in teardown!
-      ASSERT_EQ(13, utest_fixture->i);
-    }
+UTEST_F_TEARDOWN(MyTestFixture) {
+  // and also assert and expect in teardown!
+  ASSERT_EQ(13, utest_fixture->i);
+}
 
-    UTEST_F(MyTestFixture, a) {
-      utest_fixture->i = 13;
-      // teardown will succeed because i is 13...
-    }
+UTEST_F(MyTestFixture, a) {
+  utest_fixture->i = 13;
+  // teardown will succeed because i is 13...
+}
 
-    UTEST_F(MyTestFixture, b) {
-      utest_fixture->i = 83;
-      // teardown will fail because i is not 13!
-    }
+UTEST_F(MyTestFixture, b) {
+  utest_fixture->i = 83;
+  // teardown will fail because i is not 13!
+}
+```
 
 Some things to note that were demonstrated above:
 * We have this new implicit variable within our macros - utest_fixture. This is
@@ -125,30 +137,32 @@ Sometimes you want to use the same fixture _and_ testcase repeatedly, but
 perhaps subtly change one variable within. This is where indexed testcases come
 in.
 
-    struct MyTestIndexedFixture{
-      bool x;
-      bool y;
-    };
+```c
+struct MyTestIndexedFixture{
+  bool x;
+  bool y;
+};
 
-    UTEST_I_SETUP(MyTestIndexedFixture) {
-      if (utest_index < 30) {
-        utest_fixture->x = utest_index & 1;
-        utest_fixture->y = (utest_index + 1) & 1;
-      }
-    }
+UTEST_I_SETUP(MyTestIndexedFixture) {
+  if (utest_index < 30) {
+    utest_fixture->x = utest_index & 1;
+    utest_fixture->y = (utest_index + 1) & 1;
+  }
+}
 
-    UTEST_I_TEARDOWN(MyTestIndexedFixture) {
-      EXPECT_LE(0, utest_index);
-    }
+UTEST_I_TEARDOWN(MyTestIndexedFixture) {
+  EXPECT_LE(0, utest_index);
+}
 
-    UTEST_I(MyTestIndexedFixture, a, 2) {
-      ASSERT_TRUE(utest_fixture->x | utest_fixture->y);
-    }
+UTEST_I(MyTestIndexedFixture, a, 2) {
+  ASSERT_TRUE(utest_fixture->x | utest_fixture->y);
+}
 
-    UTEST_I(MyTestIndexedFixture, b, 42) {
-      // this will fail when the index is >= 30
-      ASSERT_TRUE(utest_fixture->x | utest_fixture->y);
-    }
+UTEST_I(MyTestIndexedFixture, b, 42) {
+  // this will fail when the index is >= 30
+  ASSERT_TRUE(utest_fixture->x | utest_fixture->y);
+}
+```
 
 Note:
 * We use UTEST_I_* as the prefix for the setup and teardown functions now.
@@ -173,223 +187,255 @@ We currently provide the following macros to be used within UTESTs:
 
 Asserts that x evaluates to true (EG. non-zero).
 
-    UTEST(foo, bar) {
-      int i = 1;
-      ASSERT_TRUE(i);  // pass!
-      ASSERT_TRUE(42); // pass!
-      ASSERT_TRUE(0);  // fail!
-    }
+```c
+UTEST(foo, bar) {
+  int i = 1;
+  ASSERT_TRUE(i);  // pass!
+  ASSERT_TRUE(42); // pass!
+  ASSERT_TRUE(0);  // fail!
+}
+```
 
 ### ASSERT_FALSE(x) ###
 
 Asserts that x evaluates to false (EG. zero).
 
-    UTEST(foo, bar) {
-      int i = 0;
-      ASSERT_FALSE(i); // pass!
-      ASSERT_FALSE(1); // fail!
-    }
+```c
+UTEST(foo, bar) {
+  int i = 0;
+  ASSERT_FALSE(i); // pass!
+  ASSERT_FALSE(1); // fail!
+}
+```
 
 ### ASSERT_EQ(x, y) ###
 
 Asserts that x and y are equal.
 
-    UTEST(foo, bar) {
-      int a = 42;
-      int b = 42;
-      ASSERT_EQ(a, b);     // pass!
-      ASSERT_EQ(a, 42);    // pass!
-      ASSERT_EQ(42, b);    // pass!
-      ASSERT_EQ(42, 42);   // pass!
-      ASSERT_EQ(a, b + 1); // fail!
-    }
+```c
+UTEST(foo, bar) {
+  int a = 42;
+  int b = 42;
+  ASSERT_EQ(a, b);     // pass!
+  ASSERT_EQ(a, 42);    // pass!
+  ASSERT_EQ(42, b);    // pass!
+  ASSERT_EQ(42, 42);   // pass!
+  ASSERT_EQ(a, b + 1); // fail!
+}
+```
 
 ### ASSERT_NE(x, y) ###
 
 Asserts that x and y are not equal.
 
-    UTEST(foo, bar) {
-      int a = 42;
-      int b = 13;
-      ASSERT_NE(a, b);   // pass!
-      ASSERT_NE(a, 27);  // pass!
-      ASSERT_NE(69, b);  // pass!
-      ASSERT_NE(42, 13); // pass!
-      ASSERT_NE(a, 42);  // fail!
-    }
+```c
+UTEST(foo, bar) {
+  int a = 42;
+  int b = 13;
+  ASSERT_NE(a, b);   // pass!
+  ASSERT_NE(a, 27);  // pass!
+  ASSERT_NE(69, b);  // pass!
+  ASSERT_NE(42, 13); // pass!
+  ASSERT_NE(a, 42);  // fail!
+}
+```
 
 ### ASSERT_LT(x, y) ###
 
 Asserts that x is less than y.
 
-    UTEST(foo, bar) {
-      int a = 13;
-      int b = 42;
-      ASSERT_LT(a, b);   // pass!
-      ASSERT_LT(a, 27);  // pass!
-      ASSERT_LT(27, b);  // pass!
-      ASSERT_LT(13, 42); // pass!
-      ASSERT_LT(b, a);   // fail!
-    }
+```c
+UTEST(foo, bar) {
+  int a = 13;
+  int b = 42;
+  ASSERT_LT(a, b);   // pass!
+  ASSERT_LT(a, 27);  // pass!
+  ASSERT_LT(27, b);  // pass!
+  ASSERT_LT(13, 42); // pass!
+  ASSERT_LT(b, a);   // fail!
+}
+```
 
 ### ASSERT_LE(x, y) ###
 
 Asserts that x is less than or equal to y.
 
-    UTEST(foo, bar) {
-      int a = 13;
-      int b = 42;
-      ASSERT_LE(a, b);   // pass!
-      ASSERT_LE(a, 27);  // pass!
-      ASSERT_LE(a, 13);  // pass!
-      ASSERT_LE(27, b);  // pass!
-      ASSERT_LE(42, b);  // pass!
-      ASSERT_LE(13, 13); // pass!
-      ASSERT_LE(13, 42); // pass!
-      ASSERT_LE(b, a);   // fail!
-    }
+```c
+UTEST(foo, bar) {
+  int a = 13;
+  int b = 42;
+  ASSERT_LE(a, b);   // pass!
+  ASSERT_LE(a, 27);  // pass!
+  ASSERT_LE(a, 13);  // pass!
+  ASSERT_LE(27, b);  // pass!
+  ASSERT_LE(42, b);  // pass!
+  ASSERT_LE(13, 13); // pass!
+  ASSERT_LE(13, 42); // pass!
+  ASSERT_LE(b, a);   // fail!
+}
+```
 
 ### ASSERT_GT(x, y) ###
 
 Asserts that x is greater than y.
 
-    UTEST(foo, bar) {
-      int a = 42;
-      int b = 13;
-      ASSERT_GT(a, b);   // pass!
-      ASSERT_GT(a, 27);  // pass!
-      ASSERT_GT(27, b);  // pass!
-      ASSERT_GT(42, 13); // pass!
-      ASSERT_GT(b, a);   // fail!
-    }
+```c
+UTEST(foo, bar) {
+  int a = 42;
+  int b = 13;
+  ASSERT_GT(a, b);   // pass!
+  ASSERT_GT(a, 27);  // pass!
+  ASSERT_GT(27, b);  // pass!
+  ASSERT_GT(42, 13); // pass!
+  ASSERT_GT(b, a);   // fail!
+}
+```
 
 ### ASSERT_GE(x, y) ###
 
 Asserts that x is greater than or equal to y.
 
-    UTEST(foo, bar) {
-      int a = 42;
-      int b = 13;
-      ASSERT_GE(a, b);   // pass!
-      ASSERT_GE(a, 27);  // pass!
-      ASSERT_GE(a, 13);  // pass!
-      ASSERT_GE(27, b);  // pass!
-      ASSERT_GE(42, b);  // pass!
-      ASSERT_GE(13, 13); // pass!
-      ASSERT_GE(42, 13); // pass!
-      ASSERT_GE(b, a);   // fail!
-    }
+```c
+UTEST(foo, bar) {
+  int a = 42;
+  int b = 13;
+  ASSERT_GE(a, b);   // pass!
+  ASSERT_GE(a, 27);  // pass!
+  ASSERT_GE(a, 13);  // pass!
+  ASSERT_GE(27, b);  // pass!
+  ASSERT_GE(42, b);  // pass!
+  ASSERT_GE(13, 13); // pass!
+  ASSERT_GE(42, 13); // pass!
+  ASSERT_GE(b, a);   // fail!
+}
+```
 
 ### EXPECT_TRUE(x) ###
 
 Expects that x evaluates to true (i.e. non-zero).
 
-    UTEST(foo, bar) {
-      int i = 1;
-      EXPECT_TRUE(i);  // pass!
-      EXPECT_TRUE(42); // pass!
-      EXPECT_TRUE(0);  // fail!
-    }
+```c
+UTEST(foo, bar) {
+  int i = 1;
+  EXPECT_TRUE(i);  // pass!
+  EXPECT_TRUE(42); // pass!
+  EXPECT_TRUE(0);  // fail!
+}
+```
 
 ### EXPECT_FALSE(x) ###
 
 Expects that x evaluates to false (i.e. zero).
 
-    UTEST(foo, bar) {
-      int i = 0;
-      EXPECT_FALSE(i); // pass!
-      EXPECT_FALSE(1); // fail!
-    }
+```c
+UTEST(foo, bar) {
+  int i = 0;
+  EXPECT_FALSE(i); // pass!
+  EXPECT_FALSE(1); // fail!
+}
+```
 
 ### EXPECT_EQ(x, y) ###
 
 Expects that x and y are equal.
 
-    UTEST(foo, bar) {
-      int a = 42;
-      int b = 42;
-      EXPECT_EQ(a, b);     // pass!
-      EXPECT_EQ(a, 42);    // pass!
-      EXPECT_EQ(42, b);    // pass!
-      EXPECT_EQ(42, 42);   // pass!
-      EXPECT_EQ(a, b + 1); // fail!
-    }
+```c
+UTEST(foo, bar) {
+  int a = 42;
+  int b = 42;
+  EXPECT_EQ(a, b);     // pass!
+  EXPECT_EQ(a, 42);    // pass!
+  EXPECT_EQ(42, b);    // pass!
+  EXPECT_EQ(42, 42);   // pass!
+  EXPECT_EQ(a, b + 1); // fail!
+}
+```
 
 ### EXPECT_NE(x, y) ###
 
 Expects that x and y are not equal.
 
-    UTEST(foo, bar) {
-      int a = 42;
-      int b = 13;
-      EXPECT_NE(a, b);   // pass!
-      EXPECT_NE(a, 27);  // pass!
-      EXPECT_NE(69, b);  // pass!
-      EXPECT_NE(42, 13); // pass!
-      EXPECT_NE(a, 42);  // fail!
-    }
+```c
+UTEST(foo, bar) {
+  int a = 42;
+  int b = 13;
+  EXPECT_NE(a, b);   // pass!
+  EXPECT_NE(a, 27);  // pass!
+  EXPECT_NE(69, b);  // pass!
+  EXPECT_NE(42, 13); // pass!
+  EXPECT_NE(a, 42);  // fail!
+}
+```
 
 ### EXPECT_LT(x, y) ###
 
 Expects that x is less than y.
 
-    UTEST(foo, bar) {
-      int a = 13;
-      int b = 42;
-      EXPECT_LT(a, b);   // pass!
-      EXPECT_LT(a, 27);  // pass!
-      EXPECT_LT(27, b);  // pass!
-      EXPECT_LT(13, 42); // pass!
-      EXPECT_LT(b, a);   // fail!
-    }
+```c
+UTEST(foo, bar) {
+  int a = 13;
+  int b = 42;
+  EXPECT_LT(a, b);   // pass!
+  EXPECT_LT(a, 27);  // pass!
+  EXPECT_LT(27, b);  // pass!
+  EXPECT_LT(13, 42); // pass!
+  EXPECT_LT(b, a);   // fail!
+}
+```
 
 ### EXPECT_LE(x, y) ###
 
 Expects that x is less than or equal to y.
 
-    UTEST(foo, bar) {
-      int a = 13;
-      int b = 42;
-      EXPECT_LE(a, b);   // pass!
-      EXPECT_LE(a, 27);  // pass!
-      EXPECT_LE(a, 13);  // pass!
-      EXPECT_LE(27, b);  // pass!
-      EXPECT_LE(42, b);  // pass!
-      EXPECT_LE(13, 13); // pass!
-      EXPECT_LE(13, 42); // pass!
-      EXPECT_LE(b, a);   // fail!
-    }
+```c
+UTEST(foo, bar) {
+  int a = 13;
+  int b = 42;
+  EXPECT_LE(a, b);   // pass!
+  EXPECT_LE(a, 27);  // pass!
+  EXPECT_LE(a, 13);  // pass!
+  EXPECT_LE(27, b);  // pass!
+  EXPECT_LE(42, b);  // pass!
+  EXPECT_LE(13, 13); // pass!
+  EXPECT_LE(13, 42); // pass!
+  EXPECT_LE(b, a);   // fail!
+}
+```
 
 ### EXPECT_GT(x, y) ###
 
 Expects that x is greater than y.
 
-    UTEST(foo, bar) {
-      int a = 42;
-      int b = 13;
-      EXPECT_GT(a, b);   // pass!
-      EXPECT_GT(a, 27);  // pass!
-      EXPECT_GT(27, b);  // pass!
-      EXPECT_GT(42, 13); // pass!
-      EXPECT_GT(b, a);   // fail!
-    }
+```c
+UTEST(foo, bar) {
+  int a = 42;
+  int b = 13;
+  EXPECT_GT(a, b);   // pass!
+  EXPECT_GT(a, 27);  // pass!
+  EXPECT_GT(27, b);  // pass!
+  EXPECT_GT(42, 13); // pass!
+  EXPECT_GT(b, a);   // fail!
+}
+```
 
 ### EXPECT_GT(x, y) ###
 
 Expects that x is greater than or equal to y.
 
-    UTEST(foo, bar) {
-      int a = 42;
-      int b = 13;
-      EXPECT_GE(a, b);   // pass!
-      EXPECT_GE(a, 27);  // pass!
-      EXPECT_GE(a, 13);  // pass!
-      EXPECT_GE(27, b);  // pass!
-      EXPECT_GE(42, b);  // pass!
-      EXPECT_GE(13, 13); // pass!
-      EXPECT_GE(42, 13); // pass!
-      EXPECT_GE(b, a);   // fail!
-    }
+```c
+UTEST(foo, bar) {
+  int a = 42;
+  int b = 13;
+  EXPECT_GE(a, b);   // pass!
+  EXPECT_GE(a, 27);  // pass!
+  EXPECT_GE(a, 13);  // pass!
+  EXPECT_GE(27, b);  // pass!
+  EXPECT_GE(42, b);  // pass!
+  EXPECT_GE(13, 13); // pass!
+  EXPECT_GE(42, 13); // pass!
+  EXPECT_GE(b, a);   // fail!
+}
+```
 
 ## License ##
 
