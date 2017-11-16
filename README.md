@@ -8,7 +8,7 @@ A simple one header solution to unit testing for C/C++.
 
 ## Usage ##
 
-Just include utest.h in your code!
+Just `#include "utest.h"` in your code!
 
 The current supported compilers are gcc, clang and msvc.
 
@@ -19,12 +19,16 @@ The current supported platforms are Linux, Mac OSX and Windows.
 utest.h supports some command line options:
 
 * --help to output the help message
-* --filter=<filter> will filter the test cases to run (useful for re-running one particular offending test case).
-* --output=<output> will output an xunit XML file with the test results (that Jenkins, travis-ci, and appveyor can parse for the test results).
+* --filter=<filter> will filter the test cases to run (useful for re-running one
+  particular offending test case).
+* --output=<output> will output an xunit XML file with the test results (that
+  Jenkins, travis-ci, and appveyor can parse for the test results).
 
 ## Design ##
 
-UTest is a single header library to enable all the fun of unit testing in C and C++. The library has been designed to provide an output similar to Google's googletest framework:
+UTest is a single header library to enable all the fun of unit testing in C and
+C++. The library has been designed to provide an output similar to Google's
+googletest framework:
 
     [==========] Running 1 test cases.
     [ RUN      ] foo.bar
@@ -38,9 +42,11 @@ In one C or C++ file, you must call the macro UTEST_MAIN:
 
     UTEST_MAIN();
 
-This will call into utest.h, instantiate all the testcases and run the unit test framework.
+This will call into utest.h, instantiate all the testcases and run the unit test
+framework.
 
-Alternatively, if you want to write your own main and call into utest.h, you can instead, in one C or C++ file call:
+Alternatively, if you want to write your own main and call into utest.h, you can
+instead, in one C or C++ file call:
 
     UTEST_STATE();
 
@@ -61,18 +67,21 @@ To define a test case to run, you can do the following;
       ASSERT_TRUE(1);
     }
 
-The UTEST macro takes two parameters - the first being the set that the test case belongs to, the second being the name of the test. This allows tests to be grouped for conveience.
+The UTEST macro takes two parameters - the first being the set that the test
+case belongs to, the second being the name of the test. This allows tests to be
+grouped for convenience.
 
 ## Define a Fixtured Testcase ##
 
-A fixtured testcase is one in which there is a struct that is instantiated that can be shared across multiple testcases.
+A fixtured testcase is one in which there is a struct that is instantiated that
+can be shared across multiple testcases.
 
     struct MyTestFixture {
       char c;
       int i;
       float f;
     };
-    
+
     UTEST_F_SETUP(MyTestFixture) {
       utest_fixture->c = 'a';
       utest_fixture->i = 42;
@@ -99,15 +108,22 @@ A fixtured testcase is one in which there is a struct that is instantiated that 
     }
 
 Some things to note that were demonstrated above:
-* We have this new implicit variable within our macros - utest_fixture. This is a pointer to the struct you decidedw as your fixture (so MyTestFixture in the above code).
-* Instead of specifying a testcase set (like we do with the UTEST macro), we instead specify the name of the fixture struct we are use.
-* Every fixture has to have a UTEST_F_SETUP and UTEST_F_TEARDOWN macro - even if they do nothing in the body of them.
+* We have this new implicit variable within our macros - utest_fixture. This is
+  a pointer to the struct you decided as your fixture (so MyTestFixture in the
+  above code).
+* Instead of specifying a testcase set (like we do with the UTEST macro), we
+  instead specify the name of the fixture struct we are using.
+* Every fixture has to have a `UTEST_F_SETUP` and `UTEST_F_TEARDOWN` macro -
+  even if they do nothing in the body.
 * Multiple testcases (UTEST_F's) can use the same fixture.
-* You can use EXPECT_* and ASSERT_* macros within the body of both the fixture's setup and teardown macros.
+* You can use EXPECT_* and ASSERT_* macros within the body of both the fixture's
+  setup and teardown macros.
 
 ## Define an Indexed Testcase ##
 
-Sometimes you want to use the same fixture _and_ testcase repeatedly, but prehaps subtly change one variable within. This is where indexed testcases come in.
+Sometimes you want to use the same fixture _and_ testcase repeatedly, but
+perhaps subtly change one variable within. This is where indexed testcases come
+in.
 
     struct MyTestIndexedFixture{
       bool x;
@@ -137,14 +153,21 @@ Sometimes you want to use the same fixture _and_ testcase repeatedly, but prehap
 Note:
 * We use UTEST_I_* as the prefix for the setup and teardown functions now.
 * We use UTEST_I to declare the testcases.
-* We have access to a new variable utest_index in our setup and teardown functions, that we can use to slightly vary our fixture.
-* We provide a number as the third parameter of the UTEST_I macro - this is the number of times we should run the test case for that index. It must be a literal.
+* We have access to a new variable utest_index in our setup and teardown
+  functions, that we can use to slightly vary our fixture.
+* We provide a number as the third parameter of the UTEST_I macro - this is the
+  number of times we should run the test case for that index. It must be a
+  literal.
 
 ## Testing Macros ##
 
-Matching what googletest has, we provide two variants of each of the error checking conditions - ASSERT's and EXPECT's. If an ASSERT fails, the test case will cease execution, and utest.h will continue with the next test case to be run. If an EXPECT fails, the remainder of the test case will still be executed, allowing for further checks to be carried out.
+Matching what googletest has, we provide two variants of each of the error
+checking conditions - ASSERTs and EXPECTs. If an ASSERT fails, the test case
+will cease execution, and utest.h will continue with the next test case to be
+run. If an EXPECT fails, the remainder of the test case will still be executed,
+allowing for further checks to be carried out.
 
-We currently provide the following macros to be used within UTEST's.
+We currently provide the following macros to be used within UTESTs:
 
 ### ASSERT_TRUE(x) ###
 
@@ -240,7 +263,7 @@ Asserts that x is greater than y.
       ASSERT_GT(b, a);   // fail!
     }
 
-### ASSERT_GT(x, y) ###
+### ASSERT_GE(x, y) ###
 
 Asserts that x is greater than or equal to y.
 
@@ -259,7 +282,7 @@ Asserts that x is greater than or equal to y.
 
 ### EXPECT_TRUE(x) ###
 
-Expects that x evaluates to true (EG. non-zero).
+Expects that x evaluates to true (i.e. non-zero).
 
     UTEST(foo, bar) {
       int i = 1;
@@ -270,7 +293,7 @@ Expects that x evaluates to true (EG. non-zero).
 
 ### EXPECT_FALSE(x) ###
 
-Expects that x evaluates to false (EG. zero).
+Expects that x evaluates to false (i.e. zero).
 
     UTEST(foo, bar) {
       int i = 0;
