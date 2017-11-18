@@ -697,17 +697,15 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
   const char *filter = 0;
   uint64_t ran_tests = 0;
 
-  enum colours {
-    RESET,
-    GREEN,
-    RED,
-  };
+  enum colours { RESET, GREEN, RED };
 
   const int use_colours = UTEST_COLOUR_OUTPUT();
-  const char *colours[] = {use_colours ? "\033[0m" : "",
-                           use_colours ? "\033[32m" : "",
-                           use_colours ? "\033[31m" : ""};
-
+  const char *colours[] = {"\033[0m", "\033[32m", "\033[31m"};
+  if (!use_colours) {
+    for (index = 0; index < sizeof colours / sizeof colours[0]; index++) {
+      colours[index] = "";
+    }
+  }
   /* loop through all arguments looking for our options */
   for (index = 1; index < UTEST_CAST(size_t, argc); index++) {
     const char help_str[] = "--help";
