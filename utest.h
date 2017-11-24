@@ -154,7 +154,6 @@
 #define UTEST_EXTERN extern
 #endif
 
-#ifdef _WIN32
 #ifdef _MSC_VER
 /*
     io.h contains definitions for some structures with natural padding. This is
@@ -163,12 +162,8 @@
 */
 #pragma warning(disable : 4820)
 #pragma warning(push, 1)
-#endif
 #include <io.h>
-#ifdef _MSC_VER
 #pragma warning(pop)
-#endif
-
 #define UTEST_COLOUR_OUTPUT() (_isatty(_fileno(stdout)))
 #else
 #include <unistd.h>
