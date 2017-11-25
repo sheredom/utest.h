@@ -154,6 +154,22 @@
 #define UTEST_EXTERN extern
 #endif
 
+#ifdef _MSC_VER
+/*
+    io.h contains definitions for some structures with natural padding. This is
+    uninteresting, but for some reason MSVC's behaviour is to warn about
+    including this system header. That *is* interesting
+*/
+#pragma warning(disable : 4820)
+#pragma warning(push, 1)
+#include <io.h>
+#pragma warning(pop)
+#define UTEST_COLOUR_OUTPUT() (_isatty(_fileno(stdout)))
+#else
+#include <unistd.h>
+#define UTEST_COLOUR_OUTPUT() (isatty(STDOUT_FILENO))
+#endif
+
 static UTEST_INLINE int64_t utest_ns(void) {
 #ifdef _MSC_VER
   LARGE_INTEGER counter;
@@ -689,6 +705,15 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
   const char *filter = 0;
   uint64_t ran_tests = 0;
 
+  enum colours { RESET, GREEN, RED };
+
+  const int use_colours = UTEST_COLOUR_OUTPUT();
+  const char *colours[] = {"\033[0m", "\033[32m", "\033[31m"};
+  if (!use_colours) {
+    for (index = 0; index < sizeof colours / sizeof colours[0]; index++) {
+      colours[index] = "";
+    }
+  }
   /* loop through all arguments looking for our options */
   for (index = 1; index < UTEST_CAST(size_t, argc); index++) {
     const char help_str[] = "--help";
@@ -722,8 +747,8 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
     ran_tests++;
   }
 
-  printf("\033[32m[==========]\033[0m Running %" UTEST_PRIu64 " test cases.\n",
-         UTEST_CAST(uint64_t, ran_tests));
+  printf("%s[==========]%s Running %" UTEST_PRIu64 " test cases.\n",
+         colours[GREEN], colours[RESET], UTEST_CAST(uint64_t, ran_tests));
 
   if (utest_state.output) {
     fprintf(utest_state.output, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -743,7 +768,8 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
       continue;
     }
 
-    printf("\033[32m[ RUN      ]\033[0m %s\n", utest_state.tests[index].name);
+    printf("%s[ RUN      ]%s %s\n", colours[GREEN], colours[RESET],
+           utest_state.tests[index].name);
 
     if (utest_state.output) {
       fprintf(utest_state.output, "<testcase name=\"%s\">",
@@ -765,25 +791,24 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
                             sizeof(size_t) * failed_testcases_length));
       failed_testcases[failed_testcase_index] = index;
       failed++;
-      printf("\033[31m[  FAILED  ]\033[0m %s (%" UTEST_PRId64 "ns)\n",
-             utest_state.tests[index].name, ns);
+      printf("%s[  FAILED  ]%s %s (%" UTEST_PRId64 "ns)\n", colours[RED],
+             colours[RESET], utest_state.tests[index].name, ns);
     } else {
-      printf("\033[32m[       OK ]\033[0m %s (%" UTEST_PRId64 "ns)\n",
-             utest_state.tests[index].name, ns);
+      printf("%s[       OK ]%s %s (%" UTEST_PRId64 "ns)\n", colours[GREEN],
+             colours[RESET], utest_state.tests[index].name, ns);
     }
   }
 
-  printf("\033[32m[==========]\033[0m %" UTEST_PRIu64 " test cases ran.\n",
-         ran_tests);
-  printf("\033[32m[  PASSED  ]\033[0m %" UTEST_PRIu64 " tests.\n",
-         ran_tests - failed);
+  printf("%s[==========]%s %" UTEST_PRIu64 " test cases ran.\n", colours[GREEN],
+         colours[RESET], ran_tests);
+  printf("%s[  PASSED  ]%s %" UTEST_PRIu64 " tests.\n", colours[GREEN],
+         colours[RESET], ran_tests - failed);
 
   if (0 != failed) {
-    printf("\033[31m[  FAILED  ]\033[0m %" UTEST_PRIu64
-           " tests, listed below:\n",
-           failed);
+    printf("%s[  FAILED  ]%s %" UTEST_PRIu64 " tests, listed below:\n",
+           colours[RED], colours[RESET], failed);
     for (index = 0; index < failed_testcases_length; index++) {
-      printf("\033[31m[  FAILED  ]\033[0m %s\n",
+      printf("%s[  FAILED  ]%s %s\n", colours[RED], colours[RESET],
              utest_state.tests[failed_testcases[index]].name);
     }
   }
