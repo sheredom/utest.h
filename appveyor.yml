@@ -18,6 +18,11 @@ platform:
   - Win32
   - x64
 
+matrix:
+  exclude:
+    - platform: x64
+      VSVERSION: Visual Studio 9 2008
+
 configuration:
   - Debug
   - RelWithDebInfo
