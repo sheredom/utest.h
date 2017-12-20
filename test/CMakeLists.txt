@@ -33,6 +33,7 @@ add_executable(utest_test
   main.c
   test.c
   test.cpp
+  stdint_include.c
 )
 
 if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
