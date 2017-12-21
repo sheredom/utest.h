@@ -50,8 +50,8 @@
 #endif
 
 #if defined(_MSC_VER)
-#define int64_t __int64
-#define uint64_t unsigned __int64
+typedef __int64 int64_t;
+typedef unsigned __int64 uint64_t;
 #else
 #include <stdint.h>
 #endif
