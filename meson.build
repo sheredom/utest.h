@@ -94,5 +94,4 @@ endif
 utest_h_dir = include_directories('.')
 
 utest_h_dep = declare_dependency(
-    link_with: utest_h_lib,
     include_directories: utest_h_dir)
