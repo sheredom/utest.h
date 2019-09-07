@@ -716,7 +716,10 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
   }
   /* loop through all arguments looking for our options */
   for (index = 1; index < UTEST_CAST(size_t, argc); index++) {
+    /* Informational switches */
     const char help_str[] = "--help";
+    const char list_str[] = "--list-tests";
+    /* Test config switches */
     const char filter_str[] = "--filter=";
     const char output_str[] = "--output=";
 
@@ -726,6 +729,8 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
              "  --help            Show this message and exit.\n"
              "  --filter=<filter> Filter the test cases to run (EG. MyTest*.a "
              "would run MyTestCase.a but not MyTestCase.b).\n"
+             "  --list-tests      List testnames, one per line. Output names "
+             "can be passed to --filter.\n"
              "  --output=<output> Output an xunit XML file to the file "
              "specified in <output>.\n");
       goto cleanup;
@@ -736,6 +741,12 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
     } else if (0 ==
                utest_strncmp(argv[index], output_str, strlen(output_str))) {
       utest_state.output = utest_fopen(argv[index] + strlen(output_str), "w+");
+    } else if (0 == utest_strncmp(argv[index], list_str, strlen(list_str))) {
+      for (index = 0; index < utest_state.tests_length; index++) {
+        UTEST_PRINTF("%s\n", utest_state.tests[index].name);
+      }
+      /* When printing the test list, don't actually run the tests */
+      return 0;
     }
   }
 
