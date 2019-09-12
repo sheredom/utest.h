@@ -148,10 +148,12 @@ typedef unsigned __int64 uint64_t;
 #define UTEST_CAST(type, x) static_cast<type>(x)
 #define UTEST_PTR_CAST(type, x) reinterpret_cast<type>(x)
 #define UTEST_EXTERN extern "C"
+#define UTEST_NULL NULL
 #else
 #define UTEST_CAST(type, x) ((type)x)
 #define UTEST_PTR_CAST(type, x) ((type)x)
 #define UTEST_EXTERN extern
+#define UTEST_NULL 0
 #endif
 
 #ifdef _MSC_VER
@@ -224,6 +226,7 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wvariadic-macros"
+#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
 #endif
 #define UTEST_PRINTF(...)                                                      \
   if (utest_state.output) {                                                    \
@@ -240,6 +243,7 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wvariadic-macros"
+#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
 #endif
 #define UTEST_SNPRINTF(...) snprintf(__VA_ARGS__)
 #ifdef __clang__
@@ -607,7 +611,7 @@ UTEST_WEAK int utest_should_filter_test(const char *filter,
   if (filter) {
     const char *filter_cur = filter;
     const char *testcase_cur = testcase;
-    const char *filter_wildcard = 0;
+    const char *filter_wildcard = UTEST_NULL;
 
     while (('\0' != *filter_cur) && ('\0' != *testcase_cur)) {
       if ('*' == *filter_cur) {
@@ -700,9 +704,9 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]);
 UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
   uint64_t failed = 0;
   size_t index = 0;
-  size_t *failed_testcases = 0;
+  size_t *failed_testcases = UTEST_NULL;
   size_t failed_testcases_length = 0;
-  const char *filter = 0;
+  const char *filter = UTEST_NULL;
   uint64_t ran_tests = 0;
 
   enum colours { RESET, GREEN, RED };
