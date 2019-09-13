@@ -322,10 +322,10 @@ utest_type_printer(long long unsigned int i) {
 #if defined(__clang__)
 #define UTEST_EXPECT(x, y, cond)                                               \
   {                                                                            \
-    _Pragma("clang diagnostic push") _Pragma(                                  \
-        "clang diagnostic ignored \"-Wlanguage-extension-token\"") typeof(y)   \
-        xEval = (x);                                                           \
-    typeof(y) yEval = (y);                                                     \
+    _Pragma("clang diagnostic push")                                           \
+        _Pragma("clang diagnostic ignored "                                    \
+                "\"-Wlanguage-extension-token\"") __typeof__(y) xEval = (x);   \
+    __typeof__(y) yEval = (y);                                                 \
     _Pragma("clang diagnostic pop") if (!((xEval)cond(yEval))) {               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : ");                                           \
@@ -340,8 +340,8 @@ utest_type_printer(long long unsigned int i) {
 #elif defined(__GNUC__)
 #define UTEST_EXPECT(x, y, cond)                                               \
   {                                                                            \
-    typeof(y) xEval = (x);                                                     \
-    typeof(y) yEval = (y);                                                     \
+    __typeof__(y) xEval = (x);                                                 \
+    __typeof__(y) yEval = (y);                                                 \
     if (!((xEval)cond(yEval))) {                                               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : ");                                           \
@@ -405,10 +405,10 @@ utest_type_printer(long long unsigned int i) {
 #if defined(__clang__)
 #define UTEST_ASSERT(x, y, cond)                                               \
   {                                                                            \
-    _Pragma("clang diagnostic push") _Pragma(                                  \
-        "clang diagnostic ignored \"-Wlanguage-extension-token\"") typeof(y)   \
-        xEval = (x);                                                           \
-    typeof(y) yEval = (y);                                                     \
+    _Pragma("clang diagnostic push")                                           \
+        _Pragma("clang diagnostic ignored "                                    \
+                "\"-Wlanguage-extension-token\"") __typeof__(y) xEval = (x);   \
+    __typeof__(y) yEval = (y);                                                 \
     _Pragma("clang diagnostic pop") if (!((xEval)cond(yEval))) {               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : ");                                           \
@@ -424,8 +424,8 @@ utest_type_printer(long long unsigned int i) {
 #elif defined(__GNUC__)
 #define UTEST_ASSERT(x, y, cond)                                               \
   {                                                                            \
-    typeof(y) xEval = (x);                                                     \
-    typeof(y) yEval = (y);                                                     \
+    __typeof__(y) xEval = (x);                                                 \
+    __typeof__(y) yEval = (y);                                                 \
     if (!((xEval)cond(yEval))) {                                               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : ");                                           \
