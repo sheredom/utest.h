@@ -82,6 +82,12 @@ UTEST(c, EXPECT_STREQ) { EXPECT_STREQ("foo", "foo"); }
 
 UTEST(c, EXPECT_STRNE) { EXPECT_STRNE("foo", "bar"); }
 
+UTEST(cpp, no_double_eval) {
+  int i = 0;
+  ASSERT_EQ(i++, 0);
+  ASSERT_EQ(i, 1);
+}
+
 struct MyTestF {
   int foo;
 };
