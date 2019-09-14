@@ -24,7 +24,7 @@
 # For more information, please refer to <http://unlicense.org/>
 
 project(utest)
-cmake_minimum_required(VERSION 2.8.7)
+cmake_minimum_required(VERSION 3.1.3)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 
@@ -34,9 +34,16 @@ add_executable(utest_test
   test.c
   test.cpp
   stdint_include.c
+  type_printers.c
+  type_printers.cpp
 )
 
 if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+  list(FIND CMAKE_C_COMPILE_FEATURES c_std_11 IDX)
+  if (${IDX} GREATER -1)
+    set_source_files_properties(type_printers.c PROPERTIES
+      COMPILE_FLAGS "-std=gnu11")
+  endif()
   set_source_files_properties(main.c test.c PROPERTIES
     COMPILE_FLAGS "-Wall -Wextra -Werror -std=gnu89"
   )
