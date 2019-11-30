@@ -297,9 +297,15 @@ UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long unsigned int i) {
 
 /*
    long long is a c++11 extension
-   TODO: grok for c++11 version here
 */
-#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) ||              \
+    defined(__cplusplus) && (__cplusplus >= 201103L)
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
+#endif
+
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i) {
   UTEST_PRINTF("%lld", i);
@@ -310,7 +316,28 @@ UTEST_WEAK UTEST_OVERLOADABLE void
 utest_type_printer(long long unsigned int i) {
   UTEST_PRINTF("%llu", i);
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
 #endif
+
+#endif
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
+#define utest_type_printer(val)                                                \
+  UTEST_PRINTF(_Generic((val), int                                             \
+                        : "%d", long                                           \
+                        : "%ld", long long                                     \
+                        : "%lld", unsigned                                     \
+                        : "%u", unsigned long                                  \
+                        : "%lu", unsigned long long                            \
+                        : "%llu", float                                        \
+                        : "%f", double                                         \
+                        : "%f", long double                                    \
+                        : "%Lf", default                                       \
+                        : _Generic((val - val), ptrdiff_t                      \
+                                   : "%p", default                             \
+                                   : "undef")),                                \
+               (val))
 #else
 /*
    we don't have the ability to print the values we got, so we create a macro
@@ -319,13 +346,20 @@ utest_type_printer(long long unsigned int i) {
 #define utest_type_printer(...) UTEST_PRINTF("undef")
 #endif
 
+#if defined(__cplusplus) && (__cplusplus >= 201103L)
+#define UTEST_TYPEOF(x) decltype(x)
+#else
+#define UTEST_TYPEOF(x) typeof(x)
+#endif
+
 #if defined(__clang__)
 #define UTEST_EXPECT(x, y, cond)                                               \
   {                                                                            \
-    _Pragma("clang diagnostic push") _Pragma(                                  \
-        "clang diagnostic ignored \"-Wlanguage-extension-token\"") typeof(y)   \
-        xEval = (x);                                                           \
-    typeof(y) yEval = (y);                                                     \
+    _Pragma("clang diagnostic push")                                           \
+        _Pragma("clang diagnostic ignored \"-Wlanguage-extension-token\"")     \
+            _Pragma("clang diagnostic ignored \"-Wc++98-compat-pedantic\"")    \
+                UTEST_TYPEOF(y) xEval = (x);                                   \
+    UTEST_TYPEOF(y) yEval = (y);                                               \
     _Pragma("clang diagnostic pop") if (!((xEval)cond(yEval))) {               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : ");                                           \
@@ -340,8 +374,8 @@ utest_type_printer(long long unsigned int i) {
 #elif defined(__GNUC__)
 #define UTEST_EXPECT(x, y, cond)                                               \
   {                                                                            \
-    typeof(y) xEval = (x);                                                     \
-    typeof(y) yEval = (y);                                                     \
+    UTEST_TYPEOF(y) xEval = (x);                                               \
+    UTEST_TYPEOF(y) yEval = (y);                                               \
     if (!((xEval)cond(yEval))) {                                               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : ");                                           \
@@ -405,10 +439,11 @@ utest_type_printer(long long unsigned int i) {
 #if defined(__clang__)
 #define UTEST_ASSERT(x, y, cond)                                               \
   {                                                                            \
-    _Pragma("clang diagnostic push") _Pragma(                                  \
-        "clang diagnostic ignored \"-Wlanguage-extension-token\"") typeof(y)   \
-        xEval = (x);                                                           \
-    typeof(y) yEval = (y);                                                     \
+    _Pragma("clang diagnostic push")                                           \
+        _Pragma("clang diagnostic ignored \"-Wlanguage-extension-token\"")     \
+            _Pragma("clang diagnostic ignored \"-Wc++98-compat-pedantic\"")    \
+                UTEST_TYPEOF(y) xEval = (x);                                   \
+    UTEST_TYPEOF(y) yEval = (y);                                               \
     _Pragma("clang diagnostic pop") if (!((xEval)cond(yEval))) {               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : ");                                           \
@@ -424,8 +459,8 @@ utest_type_printer(long long unsigned int i) {
 #elif defined(__GNUC__)
 #define UTEST_ASSERT(x, y, cond)                                               \
   {                                                                            \
-    typeof(y) xEval = (x);                                                     \
-    typeof(y) yEval = (y);                                                     \
+    UTEST_TYPEOF(y) xEval = (x);                                               \
+    UTEST_TYPEOF(y) yEval = (y);                                               \
     if (!((xEval)cond(yEval))) {                                               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : ");                                           \

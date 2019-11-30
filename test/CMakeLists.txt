@@ -24,7 +24,7 @@
 # For more information, please refer to <http://unlicense.org/>
 
 project(utest)
-cmake_minimum_required(VERSION 2.8.7)
+cmake_minimum_required(VERSION 3.1.3)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 
@@ -33,10 +33,18 @@ add_executable(utest_test
   main.c
   test.c
   test.cpp
+  test11.cpp
   stdint_include.c
+  type_printers.c
+  type_printers.cpp
 )
 
 if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+  list(FIND CMAKE_C_COMPILE_FEATURES c_std_11 IDX)
+  if (${IDX} GREATER -1)
+    set_source_files_properties(type_printers.c PROPERTIES
+      COMPILE_FLAGS "-std=gnu11")
+  endif()
   set_source_files_properties(main.c test.c PROPERTIES
     COMPILE_FLAGS "-Wall -Wextra -Werror -std=gnu89"
   )
@@ -54,14 +62,30 @@ endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set_source_files_properties(test.cpp PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Werror"
+    COMPILE_FLAGS "-Wall -Wextra -Werror -std=gnu++98"
   )
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set_source_files_properties(test.cpp PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror"
+    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=gnu++98"
   )
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   set_source_files_properties(test.cpp PROPERTIES
+    COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045"
+  )
+else()
+  message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
+endif()
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  set_source_files_properties(test11.cpp PROPERTIES
+    COMPILE_FLAGS "-Wall -Wextra -Werror -std=c++11"
+  )
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  set_source_files_properties(test11.cpp PROPERTIES
+    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=c++11"
+  )
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  set_source_files_properties(test11.cpp PROPERTIES
     COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045"
   )
 else()
