@@ -297,9 +297,9 @@ UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long unsigned int i) {
 
 /*
    long long is a c++11 extension
-   TODO: grok for c++11 version here
 */
-#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) ||              \
+    defined(__cplusplus) && (__cplusplus >= 201103L)
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i) {
   UTEST_PRINTF("%lld", i);
@@ -311,6 +311,22 @@ utest_type_printer(long long unsigned int i) {
   UTEST_PRINTF("%llu", i);
 }
 #endif
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
+#define utest_type_printer(val)                                                \
+  UTEST_PRINTF(_Generic((val), int                                             \
+                        : "%d", long                                           \
+                        : "%ld", long long                                     \
+                        : "%lld", unsigned                                     \
+                        : "%u", unsigned long                                  \
+                        : "%lu", unsigned long long                            \
+                        : "%llu", float                                        \
+                        : "%f", double                                         \
+                        : "%f", long double                                    \
+                        : "%Lf", default                                       \
+                        : _Generic((val - val), ptrdiff_t                      \
+                                   : "%p", default                             \
+                                   : "undef")),                                \
+               (val))
 #else
 /*
    we don't have the ability to print the values we got, so we create a macro
