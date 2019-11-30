@@ -33,6 +33,7 @@ add_executable(utest_test
   main.c
   test.c
   test.cpp
+  test11.cpp
   stdint_include.c
   type_printers.c
   type_printers.cpp
@@ -61,14 +62,30 @@ endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set_source_files_properties(test.cpp PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Werror"
+    COMPILE_FLAGS "-Wall -Wextra -Werror -std=gnu++98"
   )
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set_source_files_properties(test.cpp PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror"
+    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=gnu++98"
   )
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   set_source_files_properties(test.cpp PROPERTIES
+    COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045"
+  )
+else()
+  message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
+endif()
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  set_source_files_properties(test11.cpp PROPERTIES
+    COMPILE_FLAGS "-Wall -Wextra -Werror -std=c++11"
+  )
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  set_source_files_properties(test11.cpp PROPERTIES
+    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=c++11"
+  )
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  set_source_files_properties(test11.cpp PROPERTIES
     COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045"
   )
 else()
