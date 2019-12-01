@@ -13,6 +13,8 @@ environment:
     - VSVERSION: Visual Studio 14 2015
     - VSVERSION: Visual Studio 15 2017
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    - VSVERSION: Visual Studio 16 2019
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
 
 platform:
   - Win32
@@ -32,9 +34,13 @@ configuration:
 build_script:
   - md build
   - cd build
-  - if "%PLATFORM%"=="x64" cmake -G "%VSVERSION% Win64" ../test
-  - if "%PLATFORM%"=="Win32" cmake -G "%VSVERSION%" ../test
-  - msbuild /m /p:Configuration="%CONFIGURATION%" /p:Platform="%PLATFORM%" utest.sln
+  - if "%PLATFORM%"=="x64" set GENERATOR="%VSVERSION% Win64"
+  - if "%PLATFORM%"=="Win32" set GENERATOR="%VSVERSION%"
+  - if "%PLATFORM%"=="x64" set ARCHITECTURE="%VSVERSION% Win64"
+  - if "%PLATFORM%"=="Win32" set ARCHITECTURE="%VSVERSION%"
+  - if "%VSVERSION%"=="Visual Studio 16 2019" cmake -G "%GENERATOR%" -A "%ARCHITECTURE%" ../test
+  - if NOT "%VSVERSION%"=="Visual Studio 16 2019" cmake -G "%GENERATOR%" ../test
+  - cmake --build . --config %CONFIGURATION%
   - copy %CONFIGURATION%\utest_test.exe utest_test.exe
 
 test_script:
