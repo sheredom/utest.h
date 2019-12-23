@@ -5,25 +5,26 @@
 
 A simple one header solution to unit testing for C/C++.
 
-## Usage ##
+## Usage
 
 Just `#include "utest.h"` in your code!
 
 The current supported compilers are gcc, clang and msvc.
 
-The current supported platforms are Linux, Mac OSX and Windows.
+The current supported platforms are Linux, macOS and Windows.
 
-## Command Line Options ##
+## Command Line Options
 
 utest.h supports some command line options:
 
 * `--help` to output the help message
 * `--filter=<filter>` will filter the test cases to run (useful for re-running one
   particular offending test case).
+* `--list-tests` will list testnames, one per line. Output names can be passed to `--filter`.
 * `--output=<output>` will output an xunit XML file with the test results (that
   Jenkins, travis-ci, and appveyor can parse for the test results).
 
-## Design ##
+## Design
 
 UTest is a single header library to enable all the fun of unit testing in C and
 C++. The library has been designed to provide an output similar to Google's
@@ -37,7 +38,7 @@ googletest framework:
 [  PASSED  ] 1 tests.
 ```
 
-## UTEST_MAIN ##
+## UTEST_MAIN
 
 In one C or C++ file, you must call the macro UTEST_MAIN:
 
@@ -64,7 +65,7 @@ int main(int argc, const char *const argv[]) {
 }
 ```
 
-## Define a Testcase ##
+## Define a Testcase
 
 To define a test case to run, you can do the following;
 
@@ -80,7 +81,7 @@ The UTEST macro takes two parameters - the first being the set that the test
 case belongs to, the second being the name of the test. This allows tests to be
 grouped for convenience.
 
-## Define a Fixtured Testcase ##
+## Define a Fixtured Testcase
 
 A fixtured testcase is one in which there is a struct that is instantiated that
 can be shared across multiple testcases.
@@ -130,7 +131,7 @@ Some things to note that were demonstrated above:
 * You can use EXPECT_* and ASSERT_* macros within the body of both the fixture's
   setup and teardown macros.
 
-## Define an Indexed Testcase ##
+## Define an Indexed Testcase
 
 Sometimes you want to use the same fixture _and_ testcase repeatedly, but
 perhaps subtly change one variable within. This is where indexed testcases come
@@ -172,7 +173,7 @@ Note:
   number of times we should run the test case for that index. It must be a
   literal.
 
-## Testing Macros ##
+## Testing Macros
 
 Matching what googletest has, we provide two variants of each of the error
 checking conditions - ASSERTs and EXPECTs. If an ASSERT fails, the test case
@@ -182,7 +183,7 @@ allowing for further checks to be carried out.
 
 We currently provide the following macros to be used within UTESTs:
 
-### ASSERT_TRUE(x) ###
+### ASSERT_TRUE(x)
 
 Asserts that x evaluates to true (EG. non-zero).
 
@@ -195,7 +196,7 @@ UTEST(foo, bar) {
 }
 ```
 
-### ASSERT_FALSE(x) ###
+### ASSERT_FALSE(x)
 
 Asserts that x evaluates to false (EG. zero).
 
@@ -207,7 +208,7 @@ UTEST(foo, bar) {
 }
 ```
 
-### ASSERT_EQ(x, y) ###
+### ASSERT_EQ(x, y)
 
 Asserts that x and y are equal.
 
@@ -223,7 +224,7 @@ UTEST(foo, bar) {
 }
 ```
 
-### ASSERT_NE(x, y) ###
+### ASSERT_NE(x, y)
 
 Asserts that x and y are not equal.
 
@@ -239,7 +240,7 @@ UTEST(foo, bar) {
 }
 ```
 
-### ASSERT_LT(x, y) ###
+### ASSERT_LT(x, y)
 
 Asserts that x is less than y.
 
@@ -255,7 +256,7 @@ UTEST(foo, bar) {
 }
 ```
 
-### ASSERT_LE(x, y) ###
+### ASSERT_LE(x, y)
 
 Asserts that x is less than or equal to y.
 
@@ -274,7 +275,7 @@ UTEST(foo, bar) {
 }
 ```
 
-### ASSERT_GT(x, y) ###
+### ASSERT_GT(x, y)
 
 Asserts that x is greater than y.
 
@@ -290,7 +291,7 @@ UTEST(foo, bar) {
 }
 ```
 
-### ASSERT_GE(x, y) ###
+### ASSERT_GE(x, y)
 
 Asserts that x is greater than or equal to y.
 
@@ -309,7 +310,7 @@ UTEST(foo, bar) {
 }
 ```
 
-### EXPECT_TRUE(x) ###
+### EXPECT_TRUE(x)
 
 Expects that x evaluates to true (i.e. non-zero).
 
@@ -322,7 +323,7 @@ UTEST(foo, bar) {
 }
 ```
 
-### EXPECT_FALSE(x) ###
+### EXPECT_FALSE(x)
 
 Expects that x evaluates to false (i.e. zero).
 
@@ -334,7 +335,7 @@ UTEST(foo, bar) {
 }
 ```
 
-### EXPECT_EQ(x, y) ###
+### EXPECT_EQ(x, y)
 
 Expects that x and y are equal.
 
@@ -350,7 +351,7 @@ UTEST(foo, bar) {
 }
 ```
 
-### EXPECT_NE(x, y) ###
+### EXPECT_NE(x, y)
 
 Expects that x and y are not equal.
 
@@ -366,7 +367,7 @@ UTEST(foo, bar) {
 }
 ```
 
-### EXPECT_LT(x, y) ###
+### EXPECT_LT(x, y)
 
 Expects that x is less than y.
 
@@ -382,7 +383,7 @@ UTEST(foo, bar) {
 }
 ```
 
-### EXPECT_LE(x, y) ###
+### EXPECT_LE(x, y)
 
 Expects that x is less than or equal to y.
 
@@ -401,7 +402,7 @@ UTEST(foo, bar) {
 }
 ```
 
-### EXPECT_GT(x, y) ###
+### EXPECT_GT(x, y)
 
 Expects that x is greater than y.
 
@@ -417,7 +418,7 @@ UTEST(foo, bar) {
 }
 ```
 
-### EXPECT_GT(x, y) ###
+### EXPECT_GT(x, y)
 
 Expects that x is greater than or equal to y.
 
@@ -436,7 +437,12 @@ UTEST(foo, bar) {
 }
 ```
 
-## License ##
+## Types Supported for Checks
+
+The library supports asserting on any builtin integer, floating-point, or
+pointer type.
+
+## License
 
 This is free and unencumbered software released into the public domain.
 
