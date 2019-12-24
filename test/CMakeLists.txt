@@ -82,7 +82,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   )
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set_source_files_properties(test11.cpp PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=c++11"
+    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=c++11 -Wno-c++98-compat"
   )
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   set_source_files_properties(test11.cpp PROPERTIES

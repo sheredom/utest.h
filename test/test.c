@@ -120,27 +120,117 @@ struct MyTestI {
 };
 
 UTEST_I_SETUP(MyTestI) {
-  ASSERT_EQ(0, utest_fixture->foo);
-  ASSERT_EQ(0, utest_fixture->bar);
+  ASSERT_EQ(0u, utest_fixture->foo);
+  ASSERT_EQ(0u, utest_fixture->bar);
   utest_fixture->foo = 42;
   utest_fixture->bar = utest_index;
 }
 
 UTEST_I_TEARDOWN(MyTestI) {
-  ASSERT_EQ(13, utest_fixture->foo);
+  ASSERT_EQ(13u, utest_fixture->foo);
   ASSERT_EQ(utest_index, utest_fixture->bar);
 }
 
 UTEST_I(MyTestI, c, 2) {
-  ASSERT_GT(2, utest_fixture->bar);
+  ASSERT_GT(2u, utest_fixture->bar);
   utest_fixture->foo = 13;
 }
 
 UTEST_I(MyTestI, c2, 128) {
-  ASSERT_GT(128, utest_fixture->bar);
+  ASSERT_GT(128u, utest_fixture->bar);
   utest_fixture->foo = 13;
 }
 
+UTEST(c, Float) {
+  float a = 1;
+  float b = 2;
+  EXPECT_NE(a, b);
+  ASSERT_NE(a, b);
+}
+
+UTEST(c, Double) {
+  double a = 1;
+  double b = 2;
+  EXPECT_NE(a, b);
+  ASSERT_NE(a, b);
+}
+
+UTEST(c, LongDouble) {
+  long double a = 1;
+  long double b = 2;
+  EXPECT_NE(a, b);
+  ASSERT_NE(a, b);
+}
+
+UTEST(c, Char) {
+  signed char a = 1;
+  signed char b = 2;
+  EXPECT_NE(a, b);
+  ASSERT_NE(a, b);
+}
+
+UTEST(c, UChar) {
+  unsigned char a = 1;
+  unsigned char b = 2;
+  EXPECT_NE(a, b);
+  ASSERT_NE(a, b);
+}
+
+UTEST(c, Short) {
+  short a = 1;
+  short b = 2;
+  EXPECT_NE(a, b);
+  ASSERT_NE(a, b);
+}
+
+UTEST(c, UShort) {
+  unsigned short a = 1;
+  unsigned short b = 2;
+  EXPECT_NE(a, b);
+  ASSERT_NE(a, b);
+}
+
+UTEST(c, Int) {
+  int a = 1;
+  int b = 2;
+  EXPECT_NE(a, b);
+  ASSERT_NE(a, b);
+}
+
+UTEST(c, UInt) {
+  unsigned int a = 1;
+  unsigned int b = 2;
+  EXPECT_NE(a, b);
+  ASSERT_NE(a, b);
+}
+
+UTEST(c, Long) {
+  long a = 1;
+  long b = 2;
+  EXPECT_NE(a, b);
+  ASSERT_NE(a, b);
+}
+
+UTEST(c, ULong) {
+  unsigned long a = 1;
+  unsigned long b = 2;
+  EXPECT_NE(a, b);
+  ASSERT_NE(a, b);
+}
+
+UTEST(c, Ptr) {
+  char foo = 42;
+  EXPECT_NE(&foo, &foo + 1);
+}
+
+UTEST(c, VoidPtr) {
+  void *foo = 0;
+  EXPECT_NE(foo, (char *)foo + 1);
+}
+
+static const int data[4] = {42, 13, 6, -53};
+
+UTEST(c, Array) { EXPECT_NE(data, data + 1); }
 
 #ifdef __linux__
 #include <errno.h>
