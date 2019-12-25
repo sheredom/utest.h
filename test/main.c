@@ -24,5 +24,50 @@
 // For more information, please refer to <http://unlicense.org/>
 
 #include "utest.h"
+#include "process.h"
+
+UTEST(utest_cmdline, filter_with_list) {
+  struct process_s process;
+  const char *command[3] = {"utest_test", "--list-tests", 0};
+  int return_code;
+  FILE *stdout_file;
+  size_t index;
+
+// 64k should be enough for anyone
+#define MAX_CHARS (64 * 1024)
+  char buffer[MAX_CHARS] = {0};
+
+  ASSERT_EQ(0, process_create(command, process_option_combined_stdout_stderr,
+                              &process));
+
+  stdout_file = process_stdout(&process);
+
+  for (index = 0; index < utest_state.tests_length; index++) {
+    if (buffer != fgets(buffer, MAX_CHARS, stdout_file)) {
+      break;
+    }
+
+#if defined(__clang__)
+#if __has_warning("-Wdisabled-macro-expansion")
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdisabled-macro-expansion"
+#endif
+#endif
+
+    ASSERT_EQ(0, strncmp(buffer, utest_state.tests[index].name,
+                         strlen(utest_state.tests[index].name)));
+
+#if defined(__clang__)
+#if __has_warning("-Wdisabled-macro-expansion")
+#pragma clang diagnostic pop
+#endif
+#endif
+  }
+
+  ASSERT_EQ(0, process_join(&process, &return_code));
+  ASSERT_EQ(0, return_code);
+
+  ASSERT_EQ(0, process_destroy(&process));
+}
 
 UTEST_MAIN()
