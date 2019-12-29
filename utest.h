@@ -809,7 +809,7 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
       for (index = 0; index < utest_state.tests_length; index++) {
         UTEST_PRINTF("%s\n", utest_state.tests[index].name);
       }
-      /* When printing the test list, don't actually run the tests */
+      /* when printing the test list, don't actually run the tests */
       return 0;
     }
   }
