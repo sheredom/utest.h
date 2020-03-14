@@ -40,12 +40,13 @@ UTEST(utest_cmdline, filter_with_list) {
   ASSERT_EQ(0, process_create(command, process_option_combined_stdout_stderr,
                               &process));
 
+  ASSERT_EQ(0, process_join(&process, &return_code));
+  ASSERT_EQ(0, return_code);
+
   stdout_file = process_stdout(&process);
 
   for (index = 0; index < utest_state.tests_length; index++) {
-    if (buffer != fgets(buffer, MAX_CHARS, stdout_file)) {
-      break;
-    }
+    ASSERT_EQ(buffer, fgets(buffer, MAX_CHARS, stdout_file));
 
 #if defined(__clang__)
 #if __has_warning("-Wdisabled-macro-expansion")
@@ -63,9 +64,6 @@ UTEST(utest_cmdline, filter_with_list) {
 #endif
 #endif
   }
-
-  ASSERT_EQ(0, process_join(&process, &return_code));
-  ASSERT_EQ(0, return_code);
 
   ASSERT_EQ(0, process_destroy(&process));
 }

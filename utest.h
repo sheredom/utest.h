@@ -380,7 +380,7 @@ utest_type_printer(long long unsigned int i) {
         _Pragma("clang diagnostic ignored \"-Wlanguage-extension-token\"")     \
             _Pragma("clang diagnostic ignored \"-Wc++98-compat-pedantic\"")    \
                 _Pragma("clang diagnostic ignored \"-Wfloat-equal\"")          \
-                        UTEST_AUTO(x) xEval = (x);                             \
+                    UTEST_AUTO(x) xEval = (x);                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
     if (!((xEval)cond(yEval))) {                                               \
       _Pragma("clang diagnostic pop")                                          \
@@ -466,7 +466,7 @@ utest_type_printer(long long unsigned int i) {
         _Pragma("clang diagnostic ignored \"-Wlanguage-extension-token\"")     \
             _Pragma("clang diagnostic ignored \"-Wc++98-compat-pedantic\"")    \
                 _Pragma("clang diagnostic ignored \"-Wfloat-equal\"")          \
-                        UTEST_AUTO(x) xEval = (x);                             \
+                    UTEST_AUTO(x) xEval = (x);                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
     if (!((xEval)cond(yEval))) {                                               \
       _Pragma("clang diagnostic pop")                                          \
@@ -913,7 +913,8 @@ cleanup:
    data without having to use the UTEST_MAIN macro, thus allowing them to write
    their own main() function.
 */
-#define UTEST_STATE() struct utest_state_s utest_state = {0, 0, 0}
+#define UTEST_STATE()                                                          \
+  struct utest_state_s utest_state = {UTEST_NULL, 0, UTEST_NULL}
 
 /*
    define a main() function to call into utest.h and start executing tests! A
