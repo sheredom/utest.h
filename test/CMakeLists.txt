@@ -103,8 +103,15 @@ add_executable(utest_test_wpo
   type_printers.cpp
 )
 
-
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+  target_compile_options(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:-flto>")
+  target_link_libraries(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:-flto>")
+elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+  target_compile_options(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:-flto>")
+  target_link_libraries(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:-flto>")
+elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
   target_compile_options(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:/GL>")
   target_link_options(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:/LTCG>")
+else()
+  message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
 endif()
