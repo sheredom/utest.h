@@ -31,11 +31,15 @@ UTEST(utest_cmdline, filter_with_list) {
   const char *command[3] = {"utest_test", "--list-tests", 0};
   int return_code;
   FILE *stdout_file;
-  size_t index;
+  size_t index, kndex;
+  char *hits;
 
 // 64k should be enough for anyone
 #define MAX_CHARS (64 * 1024)
   char buffer[MAX_CHARS] = {0};
+
+  hits = (char *)malloc(utest_state.tests_length);
+  memset(hits, 0, utest_state.tests_length);
 
   ASSERT_EQ(0, process_create(command, process_option_combined_stdout_stderr,
                               &process));
@@ -54,8 +58,22 @@ UTEST(utest_cmdline, filter_with_list) {
 #endif
 #endif
 
-    ASSERT_EQ(0, strncmp(buffer, utest_state.tests[index].name,
-                         strlen(utest_state.tests[index].name)));
+    // First wipe out the newlines from the fgets.
+    for (kndex = 0;; kndex++) {
+      if ((buffer[kndex] == '\r') || (buffer[kndex] == '\n')) {
+        buffer[kndex] = '\0';
+        break;
+      }
+    }
+
+    // Record the hit for listed test.
+    for (kndex = 0; kndex < utest_state.tests_length; kndex++) {
+      if (0 == strcmp(buffer, utest_state.tests[kndex].name)) {
+        ASSERT_EQ(hits[kndex], 0);
+        hits[kndex] = 1;
+        break;
+      }
+    }
 
 #if defined(__clang__)
 #if __has_warning("-Wdisabled-macro-expansion")
@@ -68,6 +86,13 @@ UTEST(utest_cmdline, filter_with_list) {
   ASSERT_EQ(0, return_code);
 
   ASSERT_EQ(0, process_destroy(&process));
+
+  // Run through all the hits and make sure we got exactly one for each.
+  for (kndex = 0; kndex < utest_state.tests_length; kndex++) {
+    ASSERT_EQ(hits[kndex], 1);
+  }
+
+  free(hits);
 }
 
 UTEST_MAIN()

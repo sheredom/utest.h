@@ -112,10 +112,24 @@ typedef uint64_t utest_uint64_t;
 #define UTEST_PRIu64 "I64u"
 #define UTEST_INLINE __forceinline
 
+#if defined(__cplusplus)
+#define UTEST_C_FUNC extern "C"
+#else
+#define UTEST_C_FUNC
+#endif
+
+#if defined(_WIN64)
+#define UTEST_SYMBOL_PREFIX
+#else
+#define UTEST_SYMBOL_PREFIX "_"
+#endif
+
 #pragma section(".CRT$XCU", read)
 #define UTEST_INITIALIZER(f)                                                   \
   static void __cdecl f(void);                                                 \
-  __declspec(allocate(".CRT$XCU")) void(__cdecl * f##_)(void) = f;             \
+  __pragma(comment(linker, "/include:" UTEST_SYMBOL_PREFIX #f "_"));           \
+  UTEST_C_FUNC __declspec(allocate(".CRT$XCU")) void(__cdecl * f##_)(void) =   \
+      f;                                                                       \
   static void __cdecl f(void)
 #else
 #if defined(__linux__)

@@ -28,17 +28,6 @@ cmake_minimum_required(VERSION 3.1.3)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 
-add_executable(utest_test
-  ../utest.h
-  main.c
-  test.c
-  test.cpp
-  test11.cpp
-  stdint_include.c
-  type_printers.c
-  type_printers.cpp
-)
-
 if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
   list(FIND CMAKE_C_COMPILE_FEATURES c_std_11 IDX)
   if (${IDX} GREATER -1)
@@ -90,4 +79,31 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   )
 else()
   message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
+endif()
+
+add_executable(utest_test
+  ../utest.h
+  main.c
+  test.c
+  test.cpp
+  test11.cpp
+  stdint_include.c
+  type_printers.c
+  type_printers.cpp
+)
+
+add_executable(utest_test_wpo
+  ../utest.h
+  main.c
+  test.c
+  test.cpp
+  test11.cpp
+  stdint_include.c
+  type_printers.c
+  type_printers.cpp
+)
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  target_compile_options(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:/GL>")
+  target_link_options(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:/LTCG>")
 endif()

@@ -20,3 +20,4 @@ script:
   - cmake -DCMAKE_BUILD_TYPE=$CONFIGURATION ../test
   - make
   - ./utest_test
+  - ./utest_test_wpo
