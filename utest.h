@@ -388,13 +388,22 @@ utest_type_printer(long long unsigned int i) {
 #endif
 
 #if defined(__clang__)
+#define UTEST_STRNCMP(x, y, size)                                              \
+  _Pragma("clang diagnostic push")                                             \
+      _Pragma("clang diagnostic ignored \"-Wdisabled-macro-expansion\"")       \
+          strncmp(x, y, size) _Pragma("clang diagnostic pop")
+#else
+#define UTEST_STRNCMP(x, y, size) strncmp(x, y, size)
+#endif
+
+#if defined(__clang__)
 #define UTEST_EXPECT(x, y, cond)                                               \
   {                                                                            \
     _Pragma("clang diagnostic push")                                           \
         _Pragma("clang diagnostic ignored \"-Wlanguage-extension-token\"")     \
             _Pragma("clang diagnostic ignored \"-Wc++98-compat-pedantic\"")    \
                 _Pragma("clang diagnostic ignored \"-Wfloat-equal\"")          \
-                        UTEST_AUTO(x) xEval = (x);                             \
+                    UTEST_AUTO(x) xEval = (x);                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
     if (!((xEval)cond(yEval))) {                                               \
       _Pragma("clang diagnostic pop")                                          \
@@ -473,6 +482,22 @@ utest_type_printer(long long unsigned int i) {
     *utest_result = 1;                                                         \
   }
 
+#define EXPECT_STRNEQ(x, y)                                                    \
+  if (0 != UTEST_STRNCMP(x, y, strlen(x))) {                                   \
+    UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                      \
+    UTEST_PRINTF("  Expected : \"%s\"\n", x);                                  \
+    UTEST_PRINTF("    Actual : \"%s\"\n", y);                                  \
+    *utest_result = 1;                                                         \
+  }
+
+#define EXPECT_STRNNE(x, y)                                                    \
+  if (0 == UTEST_STRNCMP(x, y, strlen(x))) {                                   \
+    UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                      \
+    UTEST_PRINTF("  Expected : \"%s\"\n", x);                                  \
+    UTEST_PRINTF("    Actual : \"%s\"\n", y);                                  \
+    *utest_result = 1;                                                         \
+  }
+
 #if defined(__clang__)
 #define UTEST_ASSERT(x, y, cond)                                               \
   {                                                                            \
@@ -480,7 +505,7 @@ utest_type_printer(long long unsigned int i) {
         _Pragma("clang diagnostic ignored \"-Wlanguage-extension-token\"")     \
             _Pragma("clang diagnostic ignored \"-Wc++98-compat-pedantic\"")    \
                 _Pragma("clang diagnostic ignored \"-Wfloat-equal\"")          \
-                        UTEST_AUTO(x) xEval = (x);                             \
+                    UTEST_AUTO(x) xEval = (x);                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
     if (!((xEval)cond(yEval))) {                                               \
       _Pragma("clang diagnostic pop")                                          \
@@ -549,7 +574,6 @@ utest_type_printer(long long unsigned int i) {
 #define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >=)
 
 #define ASSERT_STREQ(x, y)                                                     \
-  EXPECT_STREQ(x, y);                                                          \
   if (0 != strcmp(x, y)) {                                                     \
     UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                      \
     UTEST_PRINTF("  Expected : \"%s\"\n", x);                                  \
@@ -559,8 +583,25 @@ utest_type_printer(long long unsigned int i) {
   }
 
 #define ASSERT_STRNE(x, y)                                                     \
-  EXPECT_STRNE(x, y);                                                          \
   if (0 == strcmp(x, y)) {                                                     \
+    UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                      \
+    UTEST_PRINTF("  Expected : \"%s\"\n", x);                                  \
+    UTEST_PRINTF("    Actual : \"%s\"\n", y);                                  \
+    *utest_result = 1;                                                         \
+    return;                                                                    \
+  }
+
+#define ASSERT_STRNEQ(x, y)                                                    \
+  if (0 != UTEST_STRNCMP(x, y, strlen(x))) {                                   \
+    UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                      \
+    UTEST_PRINTF("  Expected : \"%s\"\n", x);                                  \
+    UTEST_PRINTF("    Actual : \"%s\"\n", y);                                  \
+    *utest_result = 1;                                                         \
+    return;                                                                    \
+  }
+
+#define ASSERT_STRNNE(x, y)                                                    \
+  if (0 == UTEST_STRNCMP(x, y, strlen(x))) {                                   \
     UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                      \
     UTEST_PRINTF("  Expected : \"%s\"\n", x);                                  \
     UTEST_PRINTF("    Actual : \"%s\"\n", y);                                  \

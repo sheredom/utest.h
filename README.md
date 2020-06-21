@@ -310,6 +310,60 @@ UTEST(foo, bar) {
 }
 ```
 
+### ASSERT_STREQ(x, y)
+
+Asserts that the strings x and y are equal.
+
+```c
+UTEST(foo, bar) {
+  char* a = "foo";
+  char* b = "bar";
+  ASSERT_STREQ(a, a); // pass!
+  ASSERT_STREQ(b, b); // pass!
+  ASSERT_STREQ(a, b); // fail!
+}
+```
+
+### ASSERT_STRNE(x, y)
+
+Asserts that the strings x and y are not equal.
+
+```c
+UTEST(foo, bar) {
+  char* a = "foo";
+  char* b = "bar";
+  ASSERT_STREQ(a, b); // pass!
+  ASSERT_STREQ(a, a); // fail!
+}
+```
+
+### ASSERT_STRNEQ(x, y)
+
+Asserts that the strings x and y are equal up to the length of the string x.
+
+```c
+UTEST(foo, bar) {
+  char* a = "foobar";
+  char* b = "foo";
+  ASSERT_STRNEQ(a, a); // pass!
+  ASSERT_STRNEQ(b, b); // pass!
+  ASSERT_STRNEQ(a, b); // pass!
+}
+```
+
+### ASSERT_STRNNE(x, y)
+
+Asserts that the strings x and y are not equal up to the length of the string x.
+
+```c
+UTEST(foo, bar) {
+  char* a = "foobar";
+  char* b = "bar";
+  ASSERT_STRNNE(a, b); // pass!
+  ASSERT_STRNNE(a, a); // fail!
+}
+```
+
 ### EXPECT_TRUE(x)
 
 Expects that x evaluates to true (i.e. non-zero).
@@ -434,6 +488,60 @@ UTEST(foo, bar) {
   EXPECT_GE(13, 13); // pass!
   EXPECT_GE(42, 13); // pass!
   EXPECT_GE(b, a);   // fail!
+}
+```
+
+### EXPECT_STREQ(x, y)
+
+Expects that the strings x and y are equal.
+
+```c
+UTEST(foo, bar) {
+  char* a = "foo";
+  char* b = "bar";
+  EXPECT_STREQ(a, a); // pass!
+  EXPECT_STREQ(b, b); // pass!
+  EXPECT_STREQ(a, b); // fail!
+}
+```
+
+### EXPECT_STRNE(x, y)
+
+Expects that the strings x and y are not equal.
+
+```c
+UTEST(foo, bar) {
+  char* a = "foo";
+  char* b = "bar";
+  EXPECT_STRNE(a, b); // pass!
+  EXPECT_STRNE(a, a); // fail!
+}
+```
+
+### EXPECT_STRNEQ(x, y)
+
+Expects that the strings x and y are equal up to the length of the string x.
+
+```c
+UTEST(foo, bar) {
+  char* a = "foobar";
+  char* b = "foo";
+  EXPECT_STRNEQ(a, a); // pass!
+  EXPECT_STRNEQ(b, b); // pass!
+  EXPECT_STRNEQ(a, b); // pass!
+}
+```
+
+### EXPECT_STRNNE(x, y)
+
+Expects that the strings x and y are not equal up to the length of the string x.
+
+```c
+UTEST(foo, bar) {
+  char* a = "foobar";
+  char* b = "bar";
+  EXPECT_STRNNE(a, b); // pass!
+  EXPECT_STRNNE(a, a); // fail!
 }
 ```
 
