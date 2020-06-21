@@ -59,6 +59,10 @@ UTEST(c, ASSERT_STREQ) { ASSERT_STREQ("foo", "foo"); }
 
 UTEST(c, ASSERT_STRNE) { ASSERT_STRNE("foo", "bar"); }
 
+UTEST(c, ASSERT_STRNEQ) { ASSERT_STRNEQ("foo", "foobar"); }
+
+UTEST(c, ASSERT_STRNNE) { ASSERT_STRNNE("foobar", "bar"); }
+
 UTEST(c, EXPECT_TRUE) { EXPECT_TRUE(1); }
 
 UTEST(c, EXPECT_FALSE) { EXPECT_FALSE(0); }
@@ -84,6 +88,10 @@ UTEST(c, EXPECT_GE) {
 UTEST(c, EXPECT_STREQ) { EXPECT_STREQ("foo", "foo"); }
 
 UTEST(c, EXPECT_STRNE) { EXPECT_STRNE("foo", "bar"); }
+
+UTEST(c, EXPECT_STRNEQ) { EXPECT_STRNEQ("foo", "foobar"); }
+
+UTEST(c, EXPECT_STRNNE) { EXPECT_STRNNE("foobar", "bar"); }
 
 UTEST(c, no_double_eval) {
   int i = 0;
