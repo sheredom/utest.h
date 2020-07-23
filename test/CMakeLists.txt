@@ -29,11 +29,6 @@ cmake_minimum_required(VERSION 3.1.3)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 
 if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-  list(FIND CMAKE_C_COMPILE_FEATURES c_std_11 IDX)
-  if (${IDX} GREATER -1)
-    set_source_files_properties(type_printers.c PROPERTIES
-      COMPILE_FLAGS "-std=gnu11")
-  endif()
   set_source_files_properties(main.c test.c PROPERTIES
     COMPILE_FLAGS "-Wall -Wextra -Werror -std=gnu89"
   )
@@ -47,6 +42,28 @@ elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
   )
 else()
   message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
+endif()
+
+list(FIND CMAKE_C_COMPILE_FEATURES c_std_11 IDX)
+if (${IDX} GREATER -1)
+  if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+      set_source_files_properties(type_printers.c PROPERTIES
+        COMPILE_FLAGS "-std=gnu11")
+
+      set_source_files_properties(test11.c PROPERTIES
+        COMPILE_FLAGS "-Wall -Wextra -Werror -std=c11"
+      )
+  elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+      set_source_files_properties(test11.c PROPERTIES
+        COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=c11"
+      )
+  elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
+    set_source_files_properties(test11.c PROPERTIES
+      COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045"
+    )
+  else()
+    message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
+  endif()
 endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
