@@ -34,59 +34,59 @@
 #pragma
 #endif
 
-UTEST(c11, ASSERT_TRUE) { ASSERT_TRUE(1); }
+UTEST(c99, ASSERT_TRUE) { ASSERT_TRUE(1); }
 
-UTEST(c11, ASSERT_FALSE) { ASSERT_FALSE(0); }
+UTEST(c99, ASSERT_FALSE) { ASSERT_FALSE(0); }
 
-UTEST(c11, ASSERT_EQ) { ASSERT_EQ(1, 1); }
+UTEST(c99, ASSERT_EQ) { ASSERT_EQ(1, 1); }
 
-UTEST(c11, ASSERT_NE) { ASSERT_NE(1, 2); }
+UTEST(c99, ASSERT_NE) { ASSERT_NE(1, 2); }
 
-UTEST(c11, ASSERT_LT) { ASSERT_LT(1, 2); }
+UTEST(c99, ASSERT_LT) { ASSERT_LT(1, 2); }
 
-UTEST(c11, ASSERT_LE) {
+UTEST(c99, ASSERT_LE) {
   ASSERT_LE(1, 1);
   ASSERT_LE(1, 2);
 }
 
-UTEST(c11, ASSERT_GT) { ASSERT_GT(2, 1); }
+UTEST(c99, ASSERT_GT) { ASSERT_GT(2, 1); }
 
-UTEST(c11, ASSERT_GE) {
+UTEST(c99, ASSERT_GE) {
   ASSERT_GE(1, 1);
   ASSERT_GE(2, 1);
 }
 
-UTEST(c11, ASSERT_STREQ) { ASSERT_STREQ("foo", "foo"); }
+UTEST(c99, ASSERT_STREQ) { ASSERT_STREQ("foo", "foo"); }
 
-UTEST(c11, ASSERT_STRNE) { ASSERT_STRNE("foo", "bar"); }
+UTEST(c99, ASSERT_STRNE) { ASSERT_STRNE("foo", "bar"); }
 
-UTEST(c11, EXPECT_TRUE) { EXPECT_TRUE(1); }
+UTEST(c99, EXPECT_TRUE) { EXPECT_TRUE(1); }
 
-UTEST(c11, EXPECT_FALSE) { EXPECT_FALSE(0); }
+UTEST(c99, EXPECT_FALSE) { EXPECT_FALSE(0); }
 
-UTEST(c11, EXPECT_EQ) { EXPECT_EQ(1, 1); }
+UTEST(c99, EXPECT_EQ) { EXPECT_EQ(1, 1); }
 
-UTEST(c11, EXPECT_NE) { EXPECT_NE(1, 2); }
+UTEST(c99, EXPECT_NE) { EXPECT_NE(1, 2); }
 
-UTEST(c11, EXPECT_LT) { EXPECT_LT(1, 2); }
+UTEST(c99, EXPECT_LT) { EXPECT_LT(1, 2); }
 
-UTEST(c11, EXPECT_LE) {
+UTEST(c99, EXPECT_LE) {
   EXPECT_LE(1, 1);
   EXPECT_LE(1, 2);
 }
 
-UTEST(c11, EXPECT_GT) { EXPECT_GT(2, 1); }
+UTEST(c99, EXPECT_GT) { EXPECT_GT(2, 1); }
 
-UTEST(c11, EXPECT_GE) {
+UTEST(c99, EXPECT_GE) {
   EXPECT_GE(1, 1);
   EXPECT_GE(2, 1);
 }
 
-UTEST(c11, EXPECT_STREQ) { EXPECT_STREQ("foo", "foo"); }
+UTEST(c99, EXPECT_STREQ) { EXPECT_STREQ("foo", "foo"); }
 
-UTEST(c11, EXPECT_STRNE) { EXPECT_STRNE("foo", "bar"); }
+UTEST(c99, EXPECT_STRNE) { EXPECT_STRNE("foo", "bar"); }
 
-UTEST(c11, no_double_eval) {
+UTEST(c99, no_double_eval) {
   int i = 0;
   ASSERT_EQ(i++, 0);
   ASSERT_EQ(i, 1);
@@ -103,12 +103,12 @@ UTEST_F_SETUP(MyTestF) {
 
 UTEST_F_TEARDOWN(MyTestF) { ASSERT_EQ(13, utest_fixture->foo); }
 
-UTEST_F(MyTestF, c11) {
+UTEST_F(MyTestF, c99) {
   ASSERT_EQ(42, utest_fixture->foo);
   utest_fixture->foo = 13;
 }
 
-UTEST_F(MyTestF, c11_2) {
+UTEST_F(MyTestF, c99_2) {
   ASSERT_EQ(42, utest_fixture->foo);
   utest_fixture->foo = 13;
 }
@@ -130,103 +130,103 @@ UTEST_I_TEARDOWN(MyTestI) {
   ASSERT_EQ(utest_index, utest_fixture->bar);
 }
 
-UTEST_I(MyTestI, c11, 2) {
+UTEST_I(MyTestI, c99, 2) {
   ASSERT_GT(2u, utest_fixture->bar);
   utest_fixture->foo = 13;
 }
 
-UTEST_I(MyTestI, c11_2, 128) {
+UTEST_I(MyTestI, c99_2, 128) {
   ASSERT_GT(128u, utest_fixture->bar);
   utest_fixture->foo = 13;
 }
 
-UTEST(c11, Float) {
+UTEST(c99, Float) {
   float a = 1;
   float b = 2;
   EXPECT_NE(a, b);
   ASSERT_NE(a, b);
 }
 
-UTEST(c11, Double) {
+UTEST(c99, Double) {
   double a = 1;
   double b = 2;
   EXPECT_NE(a, b);
   ASSERT_NE(a, b);
 }
 
-UTEST(c11, LongDouble) {
+UTEST(c99, LongDouble) {
   long double a = 1;
   long double b = 2;
   EXPECT_NE(a, b);
   ASSERT_NE(a, b);
 }
 
-UTEST(c11, Char) {
+UTEST(c99, Char) {
   signed char a = 1;
   signed char b = 2;
   EXPECT_NE(a, b);
   ASSERT_NE(a, b);
 }
 
-UTEST(c11, UChar) {
+UTEST(c99, UChar) {
   unsigned char a = 1;
   unsigned char b = 2;
   EXPECT_NE(a, b);
   ASSERT_NE(a, b);
 }
 
-UTEST(c11, Short) {
+UTEST(c99, Short) {
   short a = 1;
   short b = 2;
   EXPECT_NE(a, b);
   ASSERT_NE(a, b);
 }
 
-UTEST(c11, UShort) {
+UTEST(c99, UShort) {
   unsigned short a = 1;
   unsigned short b = 2;
   EXPECT_NE(a, b);
   ASSERT_NE(a, b);
 }
 
-UTEST(c11, Int) {
+UTEST(c99, Int) {
   int a = 1;
   int b = 2;
   EXPECT_NE(a, b);
   ASSERT_NE(a, b);
 }
 
-UTEST(c11, UInt) {
+UTEST(c99, UInt) {
   unsigned int a = 1;
   unsigned int b = 2;
   EXPECT_NE(a, b);
   ASSERT_NE(a, b);
 }
 
-UTEST(c11, Long) {
+UTEST(c99, Long) {
   long a = 1;
   long b = 2;
   EXPECT_NE(a, b);
   ASSERT_NE(a, b);
 }
 
-UTEST(c11, ULong) {
+UTEST(c99, ULong) {
   unsigned long a = 1;
   unsigned long b = 2;
   EXPECT_NE(a, b);
   ASSERT_NE(a, b);
 }
 
-UTEST(c11, Ptr) {
+UTEST(c99, Ptr) {
   char foo = 42;
   EXPECT_NE(&foo, &foo + 1);
 }
 
-UTEST(c11, VoidPtr) {
+UTEST(c99, VoidPtr) {
   void *foo = 0;
   EXPECT_NE(foo, (char *)foo + 1);
 }
 
 static const int data[4] = {42, 13, 6, -53};
 
-UTEST(c11, Array) { EXPECT_NE(data, data + 1); }
+UTEST(c99, Array) { EXPECT_NE(data, data + 1); }

@@ -44,6 +44,22 @@ else()
   message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
 endif()
 
+if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+  set_source_files_properties(test99.c PROPERTIES
+    COMPILE_FLAGS "-Wall -Wextra -Werror -std=c99"
+  )
+elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+  set_source_files_properties(test99.c PROPERTIES
+    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=c99"
+  )
+elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
+  set_source_files_properties(test99.c PROPERTIES
+    COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045"
+  )
+else()
+  message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
+endif()
+
 list(FIND CMAKE_C_COMPILE_FEATURES c_std_11 IDX)
 if (${IDX} GREATER -1)
   if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
@@ -102,6 +118,8 @@ add_executable(utest_test
   ../utest.h
   main.c
   test.c
+  test11.c
+  test99.c
   test.cpp
   test11.cpp
   stdint_include.c
@@ -113,6 +131,8 @@ add_executable(utest_test_wpo
   ../utest.h
   main.c
   test.c
+  test11.c
+  test99.c
   test.cpp
   test11.cpp
   stdint_include.c
