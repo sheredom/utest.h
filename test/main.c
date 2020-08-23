@@ -24,10 +24,10 @@
 // For more information, please refer to <http://unlicense.org/>
 
 #include "utest.h"
-#include "process.h"
+#include "subprocess.h"
 
 UTEST(utest_cmdline, filter_with_list) {
-  struct process_s process;
+  struct subprocess_s process;
   const char *command[3] = {"utest_test", "--list-tests", 0};
   int return_code;
   FILE *stdout_file;
@@ -41,10 +41,10 @@ UTEST(utest_cmdline, filter_with_list) {
   hits = (char *)malloc(utest_state.tests_length);
   memset(hits, 0, utest_state.tests_length);
 
-  ASSERT_EQ(0, process_create(command, process_option_combined_stdout_stderr,
+  ASSERT_EQ(0, subprocess_create(command, subprocess_option_combined_stdout_stderr,
                               &process));
 
-  stdout_file = process_stdout(&process);
+  stdout_file = subprocess_stdout(&process);
 
   for (index = 0; index < utest_state.tests_length; index++) {
     if (buffer != fgets(buffer, MAX_CHARS, stdout_file)) {
@@ -82,10 +82,10 @@ UTEST(utest_cmdline, filter_with_list) {
 #endif
   }
 
-  ASSERT_EQ(0, process_join(&process, &return_code));
+  ASSERT_EQ(0, subprocess_join(&process, &return_code));
   ASSERT_EQ(0, return_code);
 
-  ASSERT_EQ(0, process_destroy(&process));
+  ASSERT_EQ(0, subprocess_destroy(&process));
 
   // Run through all the hits and make sure we got exactly one for each.
   for (kndex = 0; kndex < utest_state.tests_length; kndex++) {
