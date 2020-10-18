@@ -186,8 +186,13 @@ typedef uint64_t utest_uint64_t;
 #pragma warning(push, 1)
 #include <io.h>
 #pragma warning(pop)
-
+//  must also care for: '_WIN32_WINNT_WIN10' : undeclared identifier
+#ifdef _WIN32_WINNT_WIN10
 #define UTEST_COLOUR_OUTPUT() ((_isatty(_fileno(stdout))) && (_WIN32_WINNT >= _WIN32_WINNT_WIN10))
+#else
+// there is no colour cmd.exe on win before win 10
+UTEST_COLOUR_OUTPUT() ( false )
+#endif
 // #endif
 
 #else // ! _MSC_VER
