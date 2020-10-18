@@ -191,7 +191,7 @@ typedef uint64_t utest_uint64_t;
 #define UTEST_COLOUR_OUTPUT() ((_isatty(_fileno(stdout))) && (_WIN32_WINNT >= _WIN32_WINNT_WIN10))
 #else
 // there is no colour cmd.exe on win before win 10
-UTEST_COLOUR_OUTPUT() ( false )
+#define UTEST_COLOUR_OUTPUT() ( false )
 #endif
 // #endif
 
@@ -212,10 +212,8 @@ static const char ** utest_make_colours()
   static const char *colours_on[] = {"\033[0m", "\033[32m", "\033[31m"};
   static const char *colours_off[] = {"", "", ""};
 
-  static const char **colours_ = NULL;
+  static const char **colours_ ;
 
-  if (NULL == colours_)
-  {
     if (!UTEST_COLOUR_OUTPUT())
     {
       colours_ = colours_off;
@@ -230,7 +228,6 @@ static const char ** utest_make_colours()
   system(" ");
 #endif // _MSC_VER      
     }
-  }
 
   return colours_;
 }
