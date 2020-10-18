@@ -218,6 +218,12 @@ static const char ** utest_make_colours()
     else
     {
       colours_ = colours_on;
+#ifdef _MSC_VER
+  // DBJ: switch on VT100
+  // horrible but works on WIN10
+  // on other versions has no visible effect
+  system(" ");
+#endif // _MSC_VER      
     }
   }
 
@@ -942,13 +948,6 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[])
   size_t failed_testcases_length = 0;
   const char *filter = UTEST_NULL;
   utest_uint64_t ran_tests = 0;
-
-#ifdef _MSC_VER
-  // DBJ: switch on VT100
-  // horrible but works on WIN10
-  // on other versions has no visible effect
-  system(" ");
-#endif // _MSC_VER
 
   const char **colours = utest_make_colours();
 
