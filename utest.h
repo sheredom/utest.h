@@ -393,7 +393,7 @@ utest_type_printer(long long unsigned int i) {
           _Pragma("clang diagnostic pop")
 /* clang-format on */
 #else
-#define UTEST_AUTO(x) __typeof__(x)
+#define UTEST_AUTO(x) __typeof__(x + 0)
 #endif
 
 #else
