@@ -56,9 +56,9 @@ UTEST(cpp, ASSERT_STREQ) { ASSERT_STREQ("foo", "foo"); }
 
 UTEST(cpp, ASSERT_STRNE) { ASSERT_STRNE("foo", "bar"); }
 
-UTEST(cpp, ASSERT_STRNEQ) { ASSERT_STRNEQ("foo", "foobar"); }
+UTEST(cpp, ASSERT_STRNEQ) { ASSERT_STRNEQ("foo", "foobar", strlen("foo")); }
 
-UTEST(cpp, ASSERT_STRNNE) { ASSERT_STRNNE("foobar", "bar"); }
+UTEST(cpp, ASSERT_STRNNE) { ASSERT_STRNNE("foo", "barfoo", strlen("foo")); }
 
 UTEST(cpp, EXPECT_TRUE) { EXPECT_TRUE(1); }
 
@@ -86,9 +86,9 @@ UTEST(cpp, EXPECT_STREQ) { EXPECT_STREQ("foo", "foo"); }
 
 UTEST(cpp, EXPECT_STRNE) { EXPECT_STRNE("foo", "bar"); }
 
-UTEST(cpp, EXPECT_STRNEQ) { EXPECT_STRNEQ("foo", "foobar"); }
+UTEST(cpp, EXPECT_STRNEQ) { EXPECT_STRNEQ("foo", "foobar", strlen("foo")); }
 
-UTEST(cpp, EXPECT_STRNNE) { EXPECT_STRNNE("foobar", "bar"); }
+UTEST(cpp, EXPECT_STRNNE) { EXPECT_STRNNE("foo", "barfoo", strlen("foo")); }
 
 UTEST(cpp, no_double_eval) {
   int i = 0;
