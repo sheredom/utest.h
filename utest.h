@@ -498,16 +498,16 @@ utest_type_printer(long long unsigned int i) {
 #define EXPECT_STRNEQ(x, y, n)                                                 \
   if (0 != UTEST_STRNCMP(x, y, n)) {                                           \
     UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                      \
-    UTEST_PRINTF("  Expected : \"%.*s\"\n", (int)n, x);                        \
-    UTEST_PRINTF("    Actual : \"%.*s\"\n", (int)n, y);                        \
+    UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);            \
+    UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);            \
     *utest_result = 1;                                                         \
   }
 
 #define EXPECT_STRNNE(x, y, n)                                                 \
   if (0 == UTEST_STRNCMP(x, y, n)) {                                           \
     UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                      \
-    UTEST_PRINTF("  Expected : \"%.*s\"\n", (int)n, x);                        \
-    UTEST_PRINTF("    Actual : \"%.*s\"\n", (int)n, y);                        \
+    UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);            \
+    UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);            \
     *utest_result = 1;                                                         \
   }
 
@@ -607,8 +607,8 @@ utest_type_printer(long long unsigned int i) {
 #define ASSERT_STRNEQ(x, y, n)                                                 \
   if (0 != UTEST_STRNCMP(x, y, n)) {                                           \
     UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                      \
-    UTEST_PRINTF("  Expected : \"%.*s\"\n", (int)n, x);                        \
-    UTEST_PRINTF("    Actual : \"%.*s\"\n", (int)n, y);                        \
+    UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);            \
+    UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);            \
     *utest_result = 1;                                                         \
     return;                                                                    \
   }
@@ -616,8 +616,8 @@ utest_type_printer(long long unsigned int i) {
 #define ASSERT_STRNNE(x, y, n)                                                 \
   if (0 == UTEST_STRNCMP(x, y, n)) {                                           \
     UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                      \
-    UTEST_PRINTF("  Expected : \"%.*s\"\n", (int)n, x);                        \
-    UTEST_PRINTF("    Actual : \"%.*s\"\n", (int)n, y);                        \
+    UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);            \
+    UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);            \
     *utest_result = 1;                                                         \
     return;                                                                    \
   }
