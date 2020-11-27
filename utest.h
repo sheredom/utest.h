@@ -50,6 +50,7 @@
 #endif
 
 #if defined(_MSC_VER)
+#include <windows.h>
 typedef __int64 utest_int64_t;
 typedef unsigned __int64 utest_uint64_t;
 #else
@@ -101,6 +102,9 @@ typedef uint64_t utest_uint64_t;
 #include <sys/syscall.h>
 #include <unistd.h>
 #endif
+#else // Other libc implementations
+#include <time.h>
+#define UTEST_USE_CLOCKGETTIME
 #endif
 
 #elif defined(__APPLE__)
@@ -196,6 +200,8 @@ static UTEST_INLINE utest_int64_t utest_ns(void) {
   QueryPerformanceFrequency(&frequency);
   return UTEST_CAST(utest_int64_t,
                     (counter.QuadPart * 1000000000) / frequency.QuadPart);
+#elif defined(__linux) && defined(__STRICT_ANSI__)
+  return UTEST_CAST(utest_int64_t, clock()) * 1000000000 / CLOCKS_PER_SEC;
 #elif defined(__linux)
   struct timespec ts;
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
@@ -349,7 +355,11 @@ utest_type_printer(long long unsigned int i) {
 #endif
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
 #define utest_type_printer(val)                                                \
-  UTEST_PRINTF(_Generic((val), int                                             \
+  UTEST_PRINTF(_Generic((val), signed char                                     \
+                        : "%d", unsigned char                                  \
+                        : "%u", short                                          \
+                        : "%d", unsigned short                                 \
+                        : "%u", int                                            \
                         : "%d", long                                           \
                         : "%ld", long long                                     \
                         : "%lld", unsigned                                     \
@@ -384,7 +394,7 @@ utest_type_printer(long long unsigned int i) {
           _Pragma("clang diagnostic pop")
 /* clang-format on */
 #else
-#define UTEST_AUTO(x) __typeof__(x)
+#define UTEST_AUTO(x) __typeof__(x + 0)
 #endif
 
 #else
@@ -880,9 +890,16 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
 
     ran_tests++;
   }
-
+#if (defined _MSC_VER) && (_MSC_VER < 1920)
+  SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN);
+  printf("[==========] ");
+  SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0x0f);
+  printf("Running %" UTEST_PRIu64 " test cases.\n",
+      UTEST_CAST(utest_uint64_t, ran_tests));
+#else
   printf("%s[==========]%s Running %" UTEST_PRIu64 " test cases.\n",
          colours[GREEN], colours[RESET], UTEST_CAST(utest_uint64_t, ran_tests));
+#endif
 
   if (utest_state.output) {
     fprintf(utest_state.output, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -901,9 +918,15 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
     if (utest_should_filter_test(filter, utest_state.tests[index].name)) {
       continue;
     }
-
+#if (defined _MSC_VER) && (_MSC_VER < 1920)
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN);
+    printf("[ RUN      ] ");
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0x0f);
+    printf("%s\n", utest_state.tests[index].name);
+#else
     printf("%s[ RUN      ]%s %s\n", colours[GREEN], colours[RESET],
            utest_state.tests[index].name);
+#endif
 
     if (utest_state.output) {
       fprintf(utest_state.output, "<testcase name=\"%s\">",
@@ -925,25 +948,69 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
                             sizeof(size_t) * failed_testcases_length));
       failed_testcases[failed_testcase_index] = index;
       failed++;
+#if (defined _MSC_VER) && (_MSC_VER < 1920)
+      SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED);
+      printf("[  FAILED  ] ");
+      SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0x0f);
+      printf(" %s (%" UTEST_PRId64 "ns)\n", utest_state.tests[index].name, ns);
+#else
       printf("%s[  FAILED  ]%s %s (%" UTEST_PRId64 "ns)\n", colours[RED],
              colours[RESET], utest_state.tests[index].name, ns);
+#endif
     } else {
-      printf("%s[       OK ]%s %s (%" UTEST_PRId64 "ns)\n", colours[GREEN],
-             colours[RESET], utest_state.tests[index].name, ns);
+#if (defined _MSC_VER) && (_MSC_VER < 1920)
+        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN);
+        printf("[       OK ] ");
+        printf(" %s (%" UTEST_PRId64 "ns)\n", utest_state.tests[index].name, ns);
+        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0x0f);
+#else
+        printf("%s[       OK ]%s %s (%" UTEST_PRId64 "ns)\n", colours[GREEN],
+            colours[RESET], utest_state.tests[index].name, ns);
+#endif
     }
   }
-
+#if (defined _MSC_VER) && (_MSC_VER < 1920)
+  SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN);
+  printf("[==========] ");
+  SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0x0f);
+  printf("%" UTEST_PRIu64 " test cases ran.\n",  ran_tests);
+#else
   printf("%s[==========]%s %" UTEST_PRIu64 " test cases ran.\n", colours[GREEN],
-         colours[RESET], ran_tests);
+      colours[RESET], ran_tests);
+#endif
+#if (defined _MSC_VER) && (_MSC_VER < 1920)
+  SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN);
+  printf("[  PASSED  ] ");
+  SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0x0f);
+  printf("%" UTEST_PRIu64 " tests.\n", ran_tests - failed);
+#else
   printf("%s[  PASSED  ]%s %" UTEST_PRIu64 " tests.\n", colours[GREEN],
-         colours[RESET], ran_tests - failed);
+      colours[RESET], ran_tests - failed);
+#endif
 
   if (0 != failed) {
-    printf("%s[  FAILED  ]%s %" UTEST_PRIu64 " tests, listed below:\n",
-           colours[RED], colours[RESET], failed);
+#if (defined _MSC_VER) && (_MSC_VER < 1920)
+      SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED);
+      printf("[  FAILED  ] ");
+      printf("%" UTEST_PRIu64 " tests, listed below : \n", failed);
+      SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0x0f);
+
+#else
+      printf("%s[  FAILED  ]%s %" UTEST_PRIu64 " tests, listed below:\n",
+          colours[RED], colours[RESET], failed);
+#endif
     for (index = 0; index < failed_testcases_length; index++) {
-      printf("%s[  FAILED  ]%s %s\n", colours[RED], colours[RESET],
-             utest_state.tests[failed_testcases[index]].name);
+
+#if (defined _MSC_VER ) && ( _MSC_VER < 1920)
+        SetConsoleTextAttribute(
+            GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED);
+        printf("[  FAILED  ] ");
+        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0x0f);
+        printf("%s\n",utest_state.tests[failed_testcases[index]].name);
+#else
+        printf("%s[  FAILED  ]%s %s\n", colours[RED], colours[RESET],
+            utest_state.tests[failed_testcases[index]].name);
+#endif
     }
   }
 
