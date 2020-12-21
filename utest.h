@@ -62,6 +62,7 @@ typedef uint64_t utest_uint64_t;
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #if defined(_MSC_VER)
 #pragma warning(pop)
@@ -920,6 +921,7 @@ UTEST_WEAK int utest_main(int argc, const char *const argv[]) {
     }
 
     ns = utest_ns();
+    errno = 0;
     utest_state.tests[index].func(&result, utest_state.tests[index].index);
     ns = utest_ns() - ns;
 
