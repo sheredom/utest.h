@@ -105,9 +105,7 @@ UTEST_F_SETUP(MyTestF) {
   utest_fixture->foo = 42;
 }
 
-UTEST_F_TEARDOWN(MyTestF) {
-  ASSERT_EQ(13, utest_fixture->foo);
-}
+UTEST_F_TEARDOWN(MyTestF) { ASSERT_EQ(13, utest_fixture->foo); }
 
 UTEST_F(MyTestF, cpp_1) {
   ASSERT_EQ(42, utest_fixture->foo);
