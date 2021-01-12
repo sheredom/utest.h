@@ -41,7 +41,8 @@ UTEST(utest_cmdline, filter_with_list) {
   hits = (char *)malloc(utest_state.tests_length);
   memset(hits, 0, utest_state.tests_length);
 
-  ASSERT_EQ(0, subprocess_create(command, subprocess_option_combined_stdout_stderr,
+  ASSERT_EQ(0,
+            subprocess_create(command, subprocess_option_combined_stdout_stderr,
                               &process));
 
   stdout_file = subprocess_stdout(&process);
