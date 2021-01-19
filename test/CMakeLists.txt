@@ -34,7 +34,7 @@ if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
   )
 elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
   set_source_files_properties(main.c test.c PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=gnu89"
+    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -Wextra-semi-stmt -std=gnu89"
   )
 elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
   set_source_files_properties(main.c test.c PROPERTIES
@@ -50,7 +50,7 @@ if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
   )
 elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
   set_source_files_properties(test99.c PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=c99"
+    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -Wextra-semi-stmt -std=c99"
   )
 elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
   set_source_files_properties(test99.c PROPERTIES
@@ -71,7 +71,7 @@ if (${IDX} GREATER -1)
       )
   elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
       set_source_files_properties(test11.c PROPERTIES
-        COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=c11"
+        COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -Wextra-semi-stmt -std=c11"
       )
   elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
     set_source_files_properties(test11.c PROPERTIES
@@ -88,7 +88,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   )
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set_source_files_properties(test.cpp PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=gnu++98"
+    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -Wextra-semi-stmt -std=gnu++98"
   )
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   set_source_files_properties(test.cpp PROPERTIES
@@ -104,7 +104,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   )
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set_source_files_properties(test11.cpp PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=c++11 -Wno-c++98-compat"
+    COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -Wextra-semi-stmt -std=c++11 -Wno-c++98-compat"
   )
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   set_source_files_properties(test11.cpp PROPERTIES
