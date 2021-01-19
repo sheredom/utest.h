@@ -23,10 +23,21 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-project(utest)
-cmake_minimum_required(VERSION 3.1.3)
+cmake_minimum_required(VERSION 3.14)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
+project(utest)
+
+set(
+    utest_INCLUDE_WITHOUT_SYSTEM
+    YES
+    CACHE
+    INTERNAL
+    "Turn the warning guard off to have errors appear in test builds"
+)
+
+include(FetchContent)
+FetchContent_Declare(utest SOURCE_DIR "${PROJECT_SOURCE_DIR}/..")
+FetchContent_MakeAvailable(utest)
 
 if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
   set_source_files_properties(main.c test.c PROPERTIES
@@ -115,7 +126,6 @@ else()
 endif()
 
 add_executable(utest_test
-  ../utest.h
   main.c
   test.c
   test11.c
@@ -128,7 +138,6 @@ add_executable(utest_test
 )
 
 add_executable(utest_test_wpo
-  ../utest.h
   main.c
   test.c
   test11.c
@@ -139,6 +148,9 @@ add_executable(utest_test_wpo
   type_printers.c
   type_printers.cpp
 )
+
+target_link_libraries(utest_test PRIVATE utest::utest)
+target_link_libraries(utest_test_wpo PRIVATE utest::utest)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   target_compile_options(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:/GL>")
