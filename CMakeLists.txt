@@ -53,6 +53,8 @@ target_include_directories(
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
 )
 
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
+
 # ---- Install ----
 
 include(CMakePackageConfigHelpers)
@@ -80,6 +82,12 @@ write_basic_package_version_file(
 )
 
 set(utest_install_cmakedir "${CMAKE_INSTALL_LIBDIR}/cmake/${utest_directory}")
+
+install(
+    DIRECTORY "${PROJECT_SOURCE_DIR}/cmake/modules"
+    DESTINATION "${utest_install_cmakedir}"
+    COMPONENT utest_Development
+)
 
 install(
     FILES
