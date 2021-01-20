@@ -33,5 +33,4 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build
       shell: bash
-      if [ "${{ matrix.os }}" == "windows-latest" ]; then cd ${{ matrix.type }}; fi
-      run: ./utest_test 
+      run: if [ "${{ matrix.os }}" == "windows-latest" ]; then cd ${{ matrix.type }}; fi; ./utest_test 
