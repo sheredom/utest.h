@@ -1,5 +1,6 @@
 # 🧪 utest.h
 
+[![Actions Status](https://github.com/sheredom/utest.h/workflows/CMake/badge.svg)](https://github.com/sheredom/utest.h/actions)
 [![Build status](https://ci.appveyor.com/api/projects/status/i2u3a0pw4pxprrcv?svg=true)](https://ci.appveyor.com/project/sheredom/utest-h)
 [![Build Status](https://travis-ci.org/sheredom/utest.h.svg)](https://travis-ci.org/sheredom/utest.h)
 
