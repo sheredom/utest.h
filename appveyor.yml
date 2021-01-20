@@ -15,7 +15,7 @@ environment:
     - VSVERSION: Visual Studio 15 2017
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     - VSVERSION: Visual Studio 16 2019
-     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
 
 platform:
   - Win32
