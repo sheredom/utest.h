@@ -38,7 +38,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: cmake $GITHUB_WORKSPACE/test -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_C_COMPILER=gcc-10 -DCMAKE_CXX_COMPILER=g++-10
 
-      name: Configure CMake with Clang
+    - name: Configure CMake with Clang
       shell: bash
       if: startsWith(matrix.os, 'ubuntu') && compiler == 'clang'
       working-directory: ${{github.workspace}}/build
