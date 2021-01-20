@@ -46,7 +46,7 @@ jobs:
 
     - name: Configure CMake
       shell: bash
-      if: !startsWith(matrix.os, 'ubuntu')
+      if: startsWith(matrix.os, 'ubuntu') != true
       working-directory: ${{github.workspace}}/build
       run: cmake $GITHUB_WORKSPACE/test -DCMAKE_BUILD_TYPE=${{ matrix.type }}
 
