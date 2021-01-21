@@ -12,8 +12,6 @@ UTEST(type_printers, stdc) {
 #error
 #endif
 
-#define TO_S_X(val) #val
-#define S(val) TO_S_X(val)
   FILE *old = utest_state.output;
   FILE *out = tmpfile();
   ASSERT_TRUE(!!out);
@@ -45,7 +43,7 @@ UTEST(type_printers, stdc) {
   fflush(out);
   rewind(out);
   char buf[1024] = {'\0'};
-  size_t n = fread(buf, 1, sizeof buf, out);
+  const size_t n = fread(buf, 1, sizeof buf, out);
   fclose(out);
   utest_state.output = old;
   ASSERT_EQ(n, expected_len);
