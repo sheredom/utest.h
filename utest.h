@@ -381,6 +381,15 @@ utest_type_printer(long long unsigned int i) {
 #define utest_type_printer(...) UTEST_PRINTF("undef")
 #endif
 
+#ifdef _MSC_VER
+#define UTEST_SURPRESS_WARNING_BEGIN                                           \
+  __pragma(warning(push)) __pragma(warning(disable : 4127))
+#define UTEST_SURPRESS_WARNING_END __pragma(warning(pop))
+#else
+#define UTEST_SURPRESS_WARNING_BEGIN
+#define UTEST_SURPRESS_WARNING_END
+#endif
+
 #if defined(__cplusplus) && (__cplusplus >= 201103L)
 #define UTEST_AUTO(x) auto
 #elif !defined(__cplusplus)
@@ -412,7 +421,7 @@ utest_type_printer(long long unsigned int i) {
 
 #if defined(__clang__)
 #define UTEST_EXPECT(x, y, cond)                                               \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     _Pragma("clang diagnostic push")                                           \
         _Pragma("clang diagnostic ignored \"-Wlanguage-extension-token\"")     \
             _Pragma("clang diagnostic ignored \"-Wc++98-compat-pedantic\"")    \
@@ -430,10 +439,12 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("\n");                                                      \
       *utest_result = 1;                                                       \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 #elif defined(__GNUC__)
 #define UTEST_EXPECT(x, y, cond)                                               \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     UTEST_AUTO(x) xEval = (x);                                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
     if (!((xEval)cond(yEval))) {                                               \
@@ -446,36 +457,44 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("\n");                                                      \
       *utest_result = 1;                                                       \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 #else
 #define UTEST_EXPECT(x, y, cond)                                               \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (!((x)cond(y))) {                                                       \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       *utest_result = 1;                                                       \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 #endif
 
 #define EXPECT_TRUE(x)                                                         \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (!(x)) {                                                                \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : true\n");                                     \
       UTEST_PRINTF("    Actual : %s\n", (x) ? "true" : "false");               \
       *utest_result = 1;                                                       \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 
 #define EXPECT_FALSE(x)                                                        \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (x) {                                                                   \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : false\n");                                    \
       UTEST_PRINTF("    Actual : %s\n", (x) ? "true" : "false");               \
       *utest_result = 1;                                                       \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 
 #define EXPECT_EQ(x, y) UTEST_EXPECT(x, y, ==)
 #define EXPECT_NE(x, y) UTEST_EXPECT(x, y, !=)
@@ -485,48 +504,56 @@ utest_type_printer(long long unsigned int i) {
 #define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >=)
 
 #define EXPECT_STREQ(x, y)                                                     \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (0 != strcmp(x, y)) {                                                   \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%s\"\n", x);                                \
       UTEST_PRINTF("    Actual : \"%s\"\n", y);                                \
       *utest_result = 1;                                                       \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 
 #define EXPECT_STRNE(x, y)                                                     \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (0 == strcmp(x, y)) {                                                   \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%s\"\n", x);                                \
       UTEST_PRINTF("    Actual : \"%s\"\n", y);                                \
       *utest_result = 1;                                                       \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 
 #define EXPECT_STRNEQ(x, y, n)                                                 \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (0 != UTEST_STRNCMP(x, y, n)) {                                         \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);          \
       UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);          \
       *utest_result = 1;                                                       \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 
 #define EXPECT_STRNNE(x, y, n)                                                 \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (0 == UTEST_STRNCMP(x, y, n)) {                                         \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);          \
       UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);          \
       *utest_result = 1;                                                       \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 
 #if defined(__clang__)
 #define UTEST_ASSERT(x, y, cond)                                               \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     _Pragma("clang diagnostic push")                                           \
         _Pragma("clang diagnostic ignored \"-Wlanguage-extension-token\"")     \
             _Pragma("clang diagnostic ignored \"-Wc++98-compat-pedantic\"")    \
@@ -545,10 +572,12 @@ utest_type_printer(long long unsigned int i) {
       *utest_result = 1;                                                       \
       return;                                                                  \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 #elif defined(__GNUC__)
 #define UTEST_ASSERT(x, y, cond)                                               \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     UTEST_AUTO(x) xEval = (x);                                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
     if (!((xEval)cond(yEval))) {                                               \
@@ -562,20 +591,24 @@ utest_type_printer(long long unsigned int i) {
       *utest_result = 1;                                                       \
       return;                                                                  \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 #else
 #define UTEST_ASSERT(x, y, cond)                                               \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (!((x)cond(y))) {                                                       \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       *utest_result = 1;                                                       \
       return;                                                                  \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 #endif
 
 #define ASSERT_TRUE(x)                                                         \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (!(x)) {                                                                \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : true\n");                                     \
@@ -583,10 +616,12 @@ utest_type_printer(long long unsigned int i) {
       *utest_result = 1;                                                       \
       return;                                                                  \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 
 #define ASSERT_FALSE(x)                                                        \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (x) {                                                                   \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : false\n");                                    \
@@ -594,7 +629,9 @@ utest_type_printer(long long unsigned int i) {
       *utest_result = 1;                                                       \
       return;                                                                  \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 
 #define ASSERT_EQ(x, y) UTEST_ASSERT(x, y, ==)
 #define ASSERT_NE(x, y) UTEST_ASSERT(x, y, !=)
@@ -604,7 +641,7 @@ utest_type_printer(long long unsigned int i) {
 #define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >=)
 
 #define ASSERT_STREQ(x, y)                                                     \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (0 != strcmp(x, y)) {                                                   \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%s\"\n", x);                                \
@@ -612,10 +649,12 @@ utest_type_printer(long long unsigned int i) {
       *utest_result = 1;                                                       \
       return;                                                                  \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 
 #define ASSERT_STRNE(x, y)                                                     \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (0 == strcmp(x, y)) {                                                   \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%s\"\n", x);                                \
@@ -623,10 +662,12 @@ utest_type_printer(long long unsigned int i) {
       *utest_result = 1;                                                       \
       return;                                                                  \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 
 #define ASSERT_STRNEQ(x, y, n)                                                 \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (0 != UTEST_STRNCMP(x, y, n)) {                                         \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);          \
@@ -634,10 +675,12 @@ utest_type_printer(long long unsigned int i) {
       *utest_result = 1;                                                       \
       return;                                                                  \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 
 #define ASSERT_STRNNE(x, y, n)                                                 \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (0 == UTEST_STRNCMP(x, y, n)) {                                         \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);          \
@@ -645,7 +688,9 @@ utest_type_printer(long long unsigned int i) {
       *utest_result = 1;                                                       \
       return;                                                                  \
     }                                                                          \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 
 #define UTEST(SET, NAME)                                                       \
   UTEST_EXTERN struct utest_state_s utest_state;                               \
