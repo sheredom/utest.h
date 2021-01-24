@@ -141,6 +141,7 @@ add_executable(utest_test_wpo
 )
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  target_compile_definitions(utest_test_wpo PRIVATE "$<$<CONFIG:RELWITHDEBINFO>:/MT>")
   target_compile_options(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:/GL>")
   target_link_options(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:/LTCG>")
 endif()
