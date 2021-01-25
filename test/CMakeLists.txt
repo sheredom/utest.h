@@ -144,3 +144,20 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   target_compile_options(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:/GL>")
   target_link_options(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:/LTCG>")
 endif()
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  add_executable(utest_test_mt
+    ../utest.h
+    main.c
+    test.c
+    test11.c
+    test99.c
+    test.cpp
+    test11.cpp
+    stdint_include.c
+    type_printers.c
+    type_printers.cpp
+  )
+
+  target_compile_definitions(utest_test_mt PUBLIC "/MT")
+endif()
