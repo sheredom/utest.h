@@ -69,19 +69,20 @@ typedef uint64_t utest_uint64_t;
 #endif
 
 #if defined(_MSC_VER)
-#if defined(_M_IX86)
-#define _X86_
-#endif
+typedef union {
+  struct {
+    unsigned long LowPart;
+    long  HighPart;
+  } DUMMYSTRUCTNAME;
+  struct {
+    unsigned long LowPart;
+    long  HighPart;
+  } u;
+  utest_int64_t QuadPart;
+} utest_large_integer;
 
-#if defined(_M_AMD64)
-#define _AMD64_
-#endif
-
-#pragma warning(push, 1)
-#include <windef.h>
-#include <winbase.h>
-#pragma warning(pop)
-
+__declspec(dllimport) int __stdcall QueryPerformanceCounter(utest_large_integer *);
+__declspec(dllimport) int __stdcall QueryPerformanceFrequency(utest_large_integer *);
 #elif defined(__linux__)
 
 /*
@@ -194,8 +195,8 @@ typedef uint64_t utest_uint64_t;
 
 static UTEST_INLINE utest_int64_t utest_ns(void) {
 #ifdef _MSC_VER
-  LARGE_INTEGER counter;
-  LARGE_INTEGER frequency;
+  utest_large_integer counter;
+  utest_large_integer frequency;
   QueryPerformanceCounter(&counter);
   QueryPerformanceFrequency(&frequency);
   return UTEST_CAST(utest_int64_t,
