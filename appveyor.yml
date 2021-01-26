@@ -45,7 +45,9 @@ build_script:
   - msbuild /m /p:Configuration="%CONFIGURATION%" /p:Platform="%PLATFORM%" utest.sln
   - copy %CONFIGURATION%\utest_test.exe utest_test.exe
   - copy %CONFIGURATION%\utest_test_wpo.exe utest_test_wpo.exe
+  - copy %CONFIGURATION%\utest_test_wpo.exe utest_test_mt.exe
 
 test_script:
   - utest_test.exe
   - utest_test_wpo.exe
+  - utest_test_mt.exe
