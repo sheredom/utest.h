@@ -68,21 +68,29 @@ typedef uint64_t utest_uint64_t;
 #pragma warning(pop)
 #endif
 
+#if defined(__cplusplus)
+#define UTEST_C_FUNC extern "C"
+#else
+#define UTEST_C_FUNC
+#endif
+
 #if defined(_MSC_VER)
 typedef union {
   struct {
     unsigned long LowPart;
-    long  HighPart;
+    long HighPart;
   } DUMMYSTRUCTNAME;
   struct {
     unsigned long LowPart;
-    long  HighPart;
+    long HighPart;
   } u;
   utest_int64_t QuadPart;
 } utest_large_integer;
 
-__declspec(dllimport) int __stdcall QueryPerformanceCounter(utest_large_integer *);
-__declspec(dllimport) int __stdcall QueryPerformanceFrequency(utest_large_integer *);
+UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceCounter(
+    utest_large_integer *);
+UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
+    utest_large_integer *);
 #elif defined(__linux__)
 
 /*
@@ -116,12 +124,6 @@ __declspec(dllimport) int __stdcall QueryPerformanceFrequency(utest_large_intege
 #define UTEST_PRId64 "I64d"
 #define UTEST_PRIu64 "I64u"
 #define UTEST_INLINE __forceinline
-
-#if defined(__cplusplus)
-#define UTEST_C_FUNC extern "C"
-#else
-#define UTEST_C_FUNC
-#endif
 
 #if defined(_WIN64)
 #define UTEST_SYMBOL_PREFIX
