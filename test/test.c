@@ -31,7 +31,6 @@
 /* disable 'conditional expression is constant' - our examples below use this!
  */
 #pragma warning(disable : 4127)
-#pragma
 #endif
 
 UTEST(c, ASSERT_TRUE) { ASSERT_TRUE(1); }

@@ -43,12 +43,12 @@
 #pragma warning(pop)
 #endif
 
-#if defined(__clang__) || defined(__GNUC__)
-#define subprocess_pure __attribute__((pure))
-#define subprocess_weak __attribute__((weak))
-#elif defined(_MSC_VER)
+#if defined(_MSC_VER)
 #define subprocess_pure
 #define subprocess_weak __inline
+#elif defined(__clang__) || defined(__GNUC__)
+#define subprocess_pure __attribute__((pure))
+#define subprocess_weak __attribute__((weak))
 #else
 #error Non clang, non gcc, non MSVC compiler found!
 #endif
@@ -75,7 +75,7 @@ extern "C" {
 /// this process. The last element must be NULL to signify the end of the array.
 /// @param options A bit field of subprocess_option_e's to pass.
 /// @param out_process The newly created process.
-/// @return On success 0 is returned.
+/// @return On success zero is returned.
 subprocess_weak int subprocess_create(const char *const command_line[],
                                       int options,
                                       struct subprocess_s *const out_process);
@@ -115,7 +115,7 @@ subprocess_stderr(const struct subprocess_s *const process);
 /// @param process The process to wait for.
 /// @param out_return_code The return code of the returned process (can be
 /// NULL).
-/// @return On success 0 is returned.
+/// @return On success zero is returned.
 ///
 /// Joining a process will close the stdin pipe to the process.
 subprocess_weak int subprocess_join(struct subprocess_s *const process,
@@ -123,7 +123,7 @@ subprocess_weak int subprocess_join(struct subprocess_s *const process,
 
 /// @brief Destroy a previously created process.
 /// @param process The process to destroy.
-/// @return On success 0 is returned.
+/// @return On success zero is returned.
 ///
 /// If the process to be destroyed had not finished execution, it may out live
 /// the parent process.
@@ -131,7 +131,7 @@ subprocess_weak int subprocess_destroy(struct subprocess_s *const process);
 
 /// @brief Terminate a previously created process.
 /// @param process The process to terminate.
-/// @return On success 0 is returned.
+/// @return On success zero is returned.
 ///
 /// If the process to be destroyed had not finished execution, it will be
 /// terminated (i.e killed).
@@ -165,27 +165,46 @@ subprocess_weak unsigned
 subprocess_read_stderr(struct subprocess_s *const process, char *const buffer,
                        unsigned size);
 
+/// @brief Returns if the subprocess is currently still alive and executing.
+/// @param process The process to check.
+/// @return If the process is still alive non-zero is returned.
+subprocess_weak int subprocess_alive(struct subprocess_s *const process);
+
 #if defined(__cplusplus)
 #define SUBPROCESS_CAST(type, x) static_cast<type>(x)
+#define SUBPROCESS_PTR_CAST(type, x) reinterpret_cast<type>(x)
+#define SUBPROCESS_CONST_CAST(type, x) const_cast<type>(x)
+#define SUBPROCESS_NULL NULL
 #else
-#define SUBPROCESS_CAST(type, x) ((type)x)
+#define SUBPROCESS_CAST(type, x) ((type)(x))
+#define SUBPROCESS_PTR_CAST(type, x) ((type)(x))
+#define SUBPROCESS_CONST_CAST(type, x) ((type)(x))
+#define SUBPROCESS_NULL 0
 #endif
 
 #if !defined(_MSC_VER)
+#include <signal.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <signal.h>
 #endif
 
 #if defined(_MSC_VER)
+
+#if (_MSC_VER < 1920)
 #ifdef _WIN64
 typedef __int64 subprocess_intptr_t;
 typedef unsigned __int64 subprocess_size_t;
 #else
 typedef int subprocess_intptr_t;
 typedef unsigned int subprocess_size_t;
+#endif
+#else
+#include <inttypes.h>
+
+typedef intptr_t subprocess_intptr_t;
+typedef size_t subprocess_size_t;
 #endif
 
 typedef struct _PROCESS_INFORMATION *LPPROCESS_INFORMATION;
@@ -272,8 +291,7 @@ __declspec(dllimport) unsigned long __stdcall WaitForSingleObject(
     void *, unsigned long);
 __declspec(dllimport) int __stdcall GetExitCodeProcess(
     void *, unsigned long *lpExitCode);
-__declspec(dllimport) int __stdcall TerminateProcess(
-  void *, unsigned int);
+__declspec(dllimport) int __stdcall TerminateProcess(void *, unsigned int);
 __declspec(dllimport) unsigned long __stdcall WaitForMultipleObjects(
     unsigned long, void *const *, int, unsigned long);
 __declspec(dllimport) int __stdcall GetOverlappedResult(void *, LPOVERLAPPED,
@@ -290,6 +308,8 @@ SUBPROCESS_DLLIMPORT int __cdecl _open_osfhandle(subprocess_intptr_t, int);
 SUBPROCESS_DLLIMPORT subprocess_intptr_t __cdecl _get_osfhandle(int);
 
 void *__cdecl _alloca(subprocess_size_t);
+#else
+typedef size_t subprocess_size_t;
 #endif
 
 #ifdef __clang__
@@ -308,7 +328,10 @@ struct subprocess_s {
   void *hEventError;
 #else
   pid_t child;
+  int return_status;
 #endif
+
+  subprocess_size_t alive;
 };
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -324,8 +347,10 @@ int subprocess_create_named_pipe_helper(void **rd, void **wr) {
   const unsigned long genericWrite = 0x40000000;
   const unsigned long openExisting = 3;
   const unsigned long fileAttributeNormal = 0x00000080;
-  const void *const invalidHandleValue = (void *)~((subprocess_intptr_t)0);
-  struct subprocess_security_attributes_s saAttr = {sizeof(saAttr), 0, 1};
+  const void *const invalidHandleValue =
+      SUBPROCESS_PTR_CAST(void *, ~(SUBPROCESS_CAST(subprocess_intptr_t, 0)));
+  struct subprocess_security_attributes_s saAttr = {sizeof(saAttr),
+                                                    SUBPROCESS_NULL, 1};
   char name[256] = {0};
   __declspec(thread) static long index = 0;
   const long unique = index++;
@@ -348,16 +373,18 @@ int subprocess_create_named_pipe_helper(void **rd, void **wr) {
 #pragma warning(pop)
 #endif
 
-  *rd = CreateNamedPipeA(name, pipeAccessInbound | fileFlagOverlapped,
-                         pipeTypeByte | pipeWait, 1, 4096, 4096, 0,
-                         (LPSECURITY_ATTRIBUTES)&saAttr);
+  *rd =
+      CreateNamedPipeA(name, pipeAccessInbound | fileFlagOverlapped,
+                       pipeTypeByte | pipeWait, 1, 4096, 4096, SUBPROCESS_NULL,
+                       SUBPROCESS_PTR_CAST(LPSECURITY_ATTRIBUTES, &saAttr));
 
   if (invalidHandleValue == rd) {
     return -1;
   }
 
-  *wr = CreateFileA(name, genericWrite, 0, (LPSECURITY_ATTRIBUTES)&saAttr,
-                    openExisting, fileAttributeNormal, 0);
+  *wr = CreateFileA(name, genericWrite, SUBPROCESS_NULL,
+                    SUBPROCESS_PTR_CAST(LPSECURITY_ATTRIBUTES, &saAttr),
+                    openExisting, fileAttributeNormal, SUBPROCESS_NULL);
 
   if (invalidHandleValue == wr) {
     return -1;
@@ -378,20 +405,38 @@ int subprocess_create(const char *const commandLine[], int options,
   const unsigned long startFUseStdHandles = 0x00000100;
   const unsigned long handleFlagInherit = 0x00000001;
   struct subprocess_subprocess_information_s processInfo;
-  struct subprocess_security_attributes_s saAttr = {sizeof(saAttr), 0, 1};
-  char *environment = 0;
-  struct subprocess_startup_info_s startInfo = {0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                0, 0, 0, 0, 0, 0, 0, 0, 0};
+  struct subprocess_security_attributes_s saAttr = {sizeof(saAttr),
+                                                    SUBPROCESS_NULL, 1};
+  char *environment = SUBPROCESS_NULL;
+  struct subprocess_startup_info_s startInfo = {0,
+                                                SUBPROCESS_NULL,
+                                                SUBPROCESS_NULL,
+                                                SUBPROCESS_NULL,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                SUBPROCESS_NULL,
+                                                SUBPROCESS_NULL,
+                                                SUBPROCESS_NULL,
+                                                SUBPROCESS_NULL};
 
   startInfo.cb = sizeof(startInfo);
   startInfo.dwFlags = startFUseStdHandles;
 
   if (subprocess_option_inherit_environment !=
       (options & subprocess_option_inherit_environment)) {
-    environment = "\0\0";
+    environment = SUBPROCESS_CONST_CAST(char *, "\0\0");
   }
 
-  if (!CreatePipe(&rd, &wr, (LPSECURITY_ATTRIBUTES)&saAttr, 0)) {
+  if (!CreatePipe(&rd, &wr, SUBPROCESS_PTR_CAST(LPSECURITY_ATTRIBUTES, &saAttr),
+                  0)) {
     return -1;
   }
 
@@ -399,12 +444,12 @@ int subprocess_create(const char *const commandLine[], int options,
     return -1;
   }
 
-  fd = _open_osfhandle((subprocess_intptr_t)wr, 0);
+  fd = _open_osfhandle(SUBPROCESS_PTR_CAST(subprocess_intptr_t, wr), 0);
 
   if (-1 != fd) {
     out_process->stdin_file = _fdopen(fd, "wb");
 
-    if (0 == out_process->stdin_file) {
+    if (SUBPROCESS_NULL == out_process->stdin_file) {
       return -1;
     }
   }
@@ -416,7 +461,8 @@ int subprocess_create(const char *const commandLine[], int options,
       return -1;
     }
   } else {
-    if (!CreatePipe(&rd, &wr, (LPSECURITY_ATTRIBUTES)&saAttr, 0)) {
+    if (!CreatePipe(&rd, &wr,
+                    SUBPROCESS_PTR_CAST(LPSECURITY_ATTRIBUTES, &saAttr), 0)) {
       return -1;
     }
   }
@@ -425,12 +471,12 @@ int subprocess_create(const char *const commandLine[], int options,
     return -1;
   }
 
-  fd = _open_osfhandle((subprocess_intptr_t)rd, 0);
+  fd = _open_osfhandle(SUBPROCESS_PTR_CAST(subprocess_intptr_t, rd), 0);
 
   if (-1 != fd) {
     out_process->stdout_file = _fdopen(fd, "rb");
 
-    if (0 == out_process->stdout_file) {
+    if (SUBPROCESS_NULL == out_process->stdout_file) {
       return -1;
     }
   }
@@ -447,7 +493,8 @@ int subprocess_create(const char *const commandLine[], int options,
         return -1;
       }
     } else {
-      if (!CreatePipe(&rd, &wr, (LPSECURITY_ATTRIBUTES)&saAttr, 0)) {
+      if (!CreatePipe(&rd, &wr,
+                      SUBPROCESS_PTR_CAST(LPSECURITY_ATTRIBUTES, &saAttr), 0)) {
         return -1;
       }
     }
@@ -456,12 +503,12 @@ int subprocess_create(const char *const commandLine[], int options,
       return -1;
     }
 
-    fd = _open_osfhandle((subprocess_intptr_t)rd, 0);
+    fd = _open_osfhandle(SUBPROCESS_PTR_CAST(subprocess_intptr_t, rd), 0);
 
     if (-1 != fd) {
       out_process->stderr_file = _fdopen(fd, "rb");
 
-      if (0 == out_process->stderr_file) {
+      if (SUBPROCESS_NULL == out_process->stderr_file) {
         return -1;
       }
     }
@@ -471,26 +518,41 @@ int subprocess_create(const char *const commandLine[], int options,
 
   if (options & subprocess_option_enable_async) {
     out_process->hEventOutput =
-        CreateEventA((LPSECURITY_ATTRIBUTES)&saAttr, 1, 1, 0);
+        CreateEventA(SUBPROCESS_PTR_CAST(LPSECURITY_ATTRIBUTES, &saAttr), 1, 1,
+                     SUBPROCESS_NULL);
     out_process->hEventError =
-        CreateEventA((LPSECURITY_ATTRIBUTES)&saAttr, 1, 1, 0);
+        CreateEventA(SUBPROCESS_PTR_CAST(LPSECURITY_ATTRIBUTES, &saAttr), 1, 1,
+                     SUBPROCESS_NULL);
   } else {
-    out_process->hEventOutput = 0;
-    out_process->hEventError = 0;
+    out_process->hEventOutput = SUBPROCESS_NULL;
+    out_process->hEventError = SUBPROCESS_NULL;
   }
 
   // Combine commandLine together into a single string
   len = 0;
   for (i = 0; commandLine[i]; i++) {
-    // For the ' ' between items and trailing '\0'
-    len++;
+    // For the ' ' and two '"' between items and trailing '\0'
+    len += 3;
 
     for (j = 0; '\0' != commandLine[i][j]; j++) {
+      switch (commandLine[i][j]) {
+      default:
+        break;
+      case '\\':
+        if (commandLine[i][j + 1] == '"') {
+          len++;
+        }
+
+        break;
+      case '"':
+        len++;
+        break;
+      }
       len++;
     }
   }
 
-  commandLineCombined = (char *)_alloca(len);
+  commandLineCombined = SUBPROCESS_CAST(char *, _alloca(len));
 
   if (!commandLineCombined) {
     return -1;
@@ -503,24 +565,42 @@ int subprocess_create(const char *const commandLine[], int options,
     if (0 != i) {
       commandLineCombined[len++] = ' ';
     }
+    commandLineCombined[len++] = '"';
 
     for (j = 0; '\0' != commandLine[i][j]; j++) {
+      switch (commandLine[i][j]) {
+      default:
+        break;
+      case '\\':
+        if (commandLine[i][j + 1] == '"') {
+          commandLineCombined[len++] = '\\';
+        }
+
+        break;
+      case '"':
+        commandLineCombined[len++] = '\\';
+        break;
+      }
+
       commandLineCombined[len++] = commandLine[i][j];
     }
+    commandLineCombined[len++] = '"';
   }
 
   commandLineCombined[len] = '\0';
 
-  if (!CreateProcessA(NULL,
-                      commandLineCombined, // command line
-                      NULL,                // process security attributes
-                      NULL,                // primary thread security attributes
-                      1,                   // handles are inherited
-                      0,                   // creation flags
-                      environment,         // use parent's environment
-                      NULL,                // use parent's current directory
-                      (LPSTARTUPINFOA)&startInfo, // STARTUPINFO pointer
-                      (LPPROCESS_INFORMATION)&processInfo)) {
+  if (!CreateProcessA(
+          SUBPROCESS_NULL,
+          commandLineCombined, // command line
+          SUBPROCESS_NULL,     // process security attributes
+          SUBPROCESS_NULL,     // primary thread security attributes
+          1,                   // handles are inherited
+          0,                   // creation flags
+          environment,         // use parent's environment
+          SUBPROCESS_NULL,     // use parent's current directory
+          SUBPROCESS_PTR_CAST(LPSTARTUPINFOA,
+                              &startInfo), // STARTUPINFO pointer
+          SUBPROCESS_PTR_CAST(LPPROCESS_INFORMATION, &processInfo))) {
     return -1;
   }
 
@@ -531,13 +611,15 @@ int subprocess_create(const char *const commandLine[], int options,
   // We don't need the handle of the primary thread in the called process.
   CloseHandle(processInfo.hThread);
 
-  if (0 != startInfo.hStdOutput) {
+  if (SUBPROCESS_NULL != startInfo.hStdOutput) {
     CloseHandle(startInfo.hStdOutput);
 
     if (startInfo.hStdError != startInfo.hStdOutput) {
       CloseHandle(startInfo.hStdError);
     }
   }
+
+  out_process->alive = 1;
 
   return 0;
 #else
@@ -595,7 +677,7 @@ int subprocess_create(const char *const commandLine[], int options,
 #endif
     if (subprocess_option_inherit_environment !=
         (options & subprocess_option_inherit_environment)) {
-      char *const environment[1] = {0};
+      char *const environment[1] = {SUBPROCESS_NULL};
       exit(execve(commandLine[0], (char *const *)commandLine, environment));
     } else {
       exit(execvp(commandLine[0], (char *const *)commandLine));
@@ -627,6 +709,8 @@ int subprocess_create(const char *const commandLine[], int options,
     // Store the child's pid
     out_process->child = child;
 
+    out_process->alive = 1;
+
     return 0;
   }
 #endif
@@ -644,7 +728,7 @@ FILE *subprocess_stderr(const struct subprocess_s *const process) {
   if (process->stdout_file != process->stderr_file) {
     return process->stderr_file;
   } else {
-    return 0;
+    return SUBPROCESS_NULL;
   }
 }
 
@@ -653,43 +737,55 @@ int subprocess_join(struct subprocess_s *const process,
 #if defined(_MSC_VER)
   const unsigned long infinite = 0xFFFFFFFF;
 
-  if (0 != process->stdin_file) {
+  if (process->stdin_file) {
     fclose(process->stdin_file);
-    process->stdin_file = 0;
+    process->stdin_file = SUBPROCESS_NULL;
   }
-  if (0 != process->hStdInput) {
+
+  if (process->hStdInput) {
     CloseHandle(process->hStdInput);
-    process->hStdInput = NULL;
+    process->hStdInput = SUBPROCESS_NULL;
   }
 
   WaitForSingleObject(process->hProcess, infinite);
 
   if (out_return_code) {
-    if (!GetExitCodeProcess(process->hProcess,
-                            (unsigned long *)out_return_code)) {
+    if (!GetExitCodeProcess(
+            process->hProcess,
+            SUBPROCESS_PTR_CAST(unsigned long *, out_return_code))) {
       return -1;
     }
   }
+
+  process->alive = 0;
 
   return 0;
 #else
   int status;
 
-  if (0 != process->stdin_file) {
+  if (process->stdin_file) {
     fclose(process->stdin_file);
-    process->stdin_file = 0;
+    process->stdin_file = SUBPROCESS_NULL;
   }
 
-  if (process->child != waitpid(process->child, &status, 0)) {
-    return -1;
+  if (process->child) {
+    if (process->child != waitpid(process->child, &status, 0)) {
+      return -1;
+    }
+
+    process->child = 0;
+
+    if (WIFEXITED(status)) {
+      process->return_status = WEXITSTATUS(status);
+    } else {
+      process->return_status = EXIT_FAILURE;
+    }
+
+    process->alive = 0;
   }
 
   if (out_return_code) {
-    if (WIFEXITED(status)) {
-      *out_return_code = WEXITSTATUS(status);
-    } else {
-      *out_return_code = EXIT_FAILURE;
-    }
+    *out_return_code = process->return_status;
   }
 
   return 0;
@@ -697,36 +793,36 @@ int subprocess_join(struct subprocess_s *const process,
 }
 
 int subprocess_destroy(struct subprocess_s *const process) {
-  if (0 != process->stdin_file) {
+  if (process->stdin_file) {
     fclose(process->stdin_file);
-    process->stdin_file = 0;
+    process->stdin_file = SUBPROCESS_NULL;
   }
 
-  if (0 != process->stdout_file) {
+  if (process->stdout_file) {
     fclose(process->stdout_file);
 
     if (process->stdout_file != process->stderr_file) {
       fclose(process->stderr_file);
     }
 
-    process->stdout_file = 0;
-    process->stderr_file = 0;
+    process->stdout_file = SUBPROCESS_NULL;
+    process->stderr_file = SUBPROCESS_NULL;
   }
 
 #if defined(_MSC_VER)
   if (process->hProcess) {
     CloseHandle(process->hProcess);
-    process->hProcess = 0;
+    process->hProcess = SUBPROCESS_NULL;
 
-    if (0 != process->hStdInput) {
+    if (process->hStdInput) {
       CloseHandle(process->hStdInput);
     }
 
-    if (0 != process->hEventOutput) {
+    if (process->hEventOutput) {
       CloseHandle(process->hEventOutput);
     }
 
-    if (0 != process->hEventError) {
+    if (process->hEventError) {
       CloseHandle(process->hEventError);
     }
   }
@@ -740,10 +836,11 @@ int subprocess_terminate(struct subprocess_s *const process) {
   unsigned int killed_process_exit_code;
   int success_terminate;
   int windows_call_result;
-  
+
   killed_process_exit_code = 99;
-  windows_call_result = TerminateProcess(process->hProcess, killed_process_exit_code);
-  success_terminate = (windows_call_result== 0) ? 1 : 0;
+  windows_call_result =
+      TerminateProcess(process->hProcess, killed_process_exit_code);
+  success_terminate = (windows_call_result == 0) ? 1 : 0;
   return success_terminate;
 #else
   int result;
@@ -757,19 +854,22 @@ unsigned subprocess_read_stdout(struct subprocess_s *const process,
 #if defined(_MSC_VER)
   void *handle;
   unsigned long bytes_read = 0;
-  struct subprocess_overlapped_s overlapped = {0};
+  struct subprocess_overlapped_s overlapped = {0, 0, {{0, 0}}, SUBPROCESS_NULL};
   overlapped.hEvent = process->hEventOutput;
 
-  handle = (void *)_get_osfhandle(_fileno(process->stdout_file));
+  handle = SUBPROCESS_PTR_CAST(void *,
+                               _get_osfhandle(_fileno(process->stdout_file)));
 
-  if (!ReadFile(handle, buffer, size, &bytes_read, (LPOVERLAPPED)&overlapped)) {
+  if (!ReadFile(handle, buffer, size, &bytes_read,
+                SUBPROCESS_PTR_CAST(LPOVERLAPPED, &overlapped))) {
     const unsigned long errorIoPending = 997;
     unsigned long error = GetLastError();
 
     // Means we've got an async read!
     if (error == errorIoPending) {
-      if (!GetOverlappedResult(handle, (LPOVERLAPPED)&overlapped, &bytes_read,
-                               1)) {
+      if (!GetOverlappedResult(handle,
+                               SUBPROCESS_PTR_CAST(LPOVERLAPPED, &overlapped),
+                               &bytes_read, 1)) {
         const unsigned long errorIoIncomplete = 996;
         const unsigned long errorHandleEOF = 38;
         error = GetLastError();
@@ -781,7 +881,7 @@ unsigned subprocess_read_stdout(struct subprocess_s *const process,
     }
   }
 
-  return (unsigned)bytes_read;
+  return SUBPROCESS_CAST(unsigned, bytes_read);
 #else
   const int fd = fileno(process->stdout_file);
   const ssize_t bytes_read = read(fd, buffer, size);
@@ -799,19 +899,22 @@ unsigned subprocess_read_stderr(struct subprocess_s *const process,
 #if defined(_MSC_VER)
   void *handle;
   unsigned long bytes_read = 0;
-  struct subprocess_overlapped_s overlapped = {0};
+  struct subprocess_overlapped_s overlapped = {0, 0, {{0, 0}}, SUBPROCESS_NULL};
   overlapped.hEvent = process->hEventError;
 
-  handle = (void *)_get_osfhandle(_fileno(process->stderr_file));
+  handle = SUBPROCESS_PTR_CAST(void *,
+                               _get_osfhandle(_fileno(process->stderr_file)));
 
-  if (!ReadFile(handle, buffer, size, &bytes_read, (LPOVERLAPPED)&overlapped)) {
+  if (!ReadFile(handle, buffer, size, &bytes_read,
+                SUBPROCESS_PTR_CAST(LPOVERLAPPED, &overlapped))) {
     const unsigned long errorIoPending = 997;
     unsigned long error = GetLastError();
 
     // Means we've got an async read!
     if (error == errorIoPending) {
-      if (!GetOverlappedResult(handle, (LPOVERLAPPED)&overlapped, &bytes_read,
-                               1)) {
+      if (!GetOverlappedResult(handle,
+                               SUBPROCESS_PTR_CAST(LPOVERLAPPED, &overlapped),
+                               &bytes_read, 1)) {
         const unsigned long errorIoIncomplete = 996;
         const unsigned long errorHandleEOF = 38;
         error = GetLastError();
@@ -823,7 +926,7 @@ unsigned subprocess_read_stderr(struct subprocess_s *const process,
     }
   }
 
-  return (unsigned)bytes_read;
+  return SUBPROCESS_CAST(unsigned, bytes_read);
 #else
   const int fd = fileno(process->stderr_file);
   const ssize_t bytes_read = read(fd, buffer, size);
@@ -834,6 +937,50 @@ unsigned subprocess_read_stderr(struct subprocess_s *const process,
 
   return SUBPROCESS_CAST(unsigned, bytes_read);
 #endif
+}
+
+int subprocess_alive(struct subprocess_s *const process) {
+  int is_alive = SUBPROCESS_CAST(int, process->alive);
+
+  if (!is_alive) {
+    return 0;
+  }
+#if defined(_MSC_VER)
+  {
+    const unsigned long zero = 0x0;
+    const unsigned long wait_object_0 = 0x00000000L;
+
+    is_alive = wait_object_0 != WaitForSingleObject(process->hProcess, zero);
+  }
+#else
+  {
+    int status;
+    is_alive = 0 == waitpid(process->child, &status, WNOHANG);
+
+    // If the process was successfully waited on we need to cleanup now.
+    if (!is_alive) {
+      if (WIFEXITED(status)) {
+        process->return_status = WEXITSTATUS(status);
+      } else {
+        process->return_status = EXIT_FAILURE;
+      }
+
+      // Since we've already successfully waited on the process, we need to wipe
+      // the child now.
+      process->child = 0;
+
+      if (subprocess_join(process, SUBPROCESS_NULL)) {
+        return -1;
+      }
+    }
+  }
+#endif
+
+  if (!is_alive) {
+    process->alive = 0;
+  }
+
+  return is_alive;
 }
 
 #if defined(__cplusplus)
