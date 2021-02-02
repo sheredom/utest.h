@@ -2,6 +2,7 @@
 
 [![Actions Status](https://github.com/sheredom/utest.h/workflows/CMake/badge.svg)](https://github.com/sheredom/utest.h/actions)
 [![Build status](https://ci.appveyor.com/api/projects/status/i2u3a0pw4pxprrcv?svg=true)](https://ci.appveyor.com/project/sheredom/utest-h)
+[![Sponsor](https://img.shields.io/badge/💜-sponsor-blueviolet)](https://github.com/sponsors/sheredom)
 
 A simple one header solution to unit testing for C/C++.
 
@@ -9,9 +10,9 @@ A simple one header solution to unit testing for C/C++.
 
 Just `#include "utest.h"` in your code!
 
-The current supported compilers are gcc, clang and msvc.
-
 The current supported platforms are Linux, macOS and Windows.
+
+The current supported compilers are gcc, clang, MSVC's cl.exe, and clang-cl.exe.
 
 ## Command Line Options
 
