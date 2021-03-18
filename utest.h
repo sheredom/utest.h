@@ -72,6 +72,16 @@ typedef uint64_t utest_uint64_t;
 #endif
 
 #if defined(_MSC_VER)
+// define UTEST_USE_OLD_QPC before #include "utest.h" to use old QueryPerformanceCounter
+#ifndef UTEST_USE_OLD_QPC
+#pragma warning(push, 0)
+#include <Windows.h>
+#pragma warning(pop)
+
+typedef LARGE_INTEGER utest_large_integer;
+#else 
+//use old QueryPerformanceCounter definitions (not sure is this needed in some edge cases or not)
+//on Win7 with VS2015 these extern declaration cause "second C linkage of overloaded function not allowed" error
 typedef union {
   struct {
     unsigned long LowPart;
@@ -88,6 +98,7 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceCounter(
     utest_large_integer *);
 UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
     utest_large_integer *);
+#endif
 #elif defined(__linux__)
 
 /*
