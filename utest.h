@@ -216,8 +216,13 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 #pragma warning(pop)
 #define UTEST_COLOUR_OUTPUT() (_isatty(_fileno(stdout)))
 #else
+#if  defined(__EMSCRIPTEN__)
+#include <emscripten/html5.h>
+#define UTEST_COLOUR_OUTPUT() false
+#else
 #include <unistd.h>
 #define UTEST_COLOUR_OUTPUT() (isatty(STDOUT_FILENO))
+#endif
 #endif
 
 static UTEST_INLINE void *utest_realloc(void *const pointer, size_t new_size) {
@@ -255,6 +260,8 @@ static UTEST_INLINE utest_int64_t utest_ns(void) {
   return UTEST_CAST(utest_int64_t, ts.tv_sec) * 1000 * 1000 * 1000 + ts.tv_nsec;
 #elif __APPLE__
   return UTEST_CAST(utest_int64_t, mach_absolute_time());
+#elif __EMSCRIPTEN__	                                    
+	return emscripten_performance_now()*1000000.0; 
 #endif
 }
 
@@ -937,6 +944,7 @@ int utest_main(int argc, const char *const argv[]) {
 
   const int use_colours = UTEST_COLOUR_OUTPUT();
   const char *colours[] = {"\033[0m", "\033[32m", "\033[31m"};
+
   if (!use_colours) {
     for (index = 0; index < sizeof colours / sizeof colours[0]; index++) {
       colours[index] = "";
@@ -977,7 +985,7 @@ int utest_main(int argc, const char *const argv[]) {
       return 0;
     }
   }
-
+  
   for (index = 0; index < utest_state.tests_length; index++) {
     if (utest_should_filter_test(filter, utest_state.tests[index].name)) {
       continue;
@@ -985,7 +993,6 @@ int utest_main(int argc, const char *const argv[]) {
 
     ran_tests++;
   }
-
   printf("%s[==========]%s Running %" UTEST_PRIu64 " test cases.\n",
          colours[GREEN], colours[RESET], UTEST_CAST(utest_uint64_t, ran_tests));
 
