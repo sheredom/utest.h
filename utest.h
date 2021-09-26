@@ -263,6 +263,7 @@ static UTEST_INLINE utest_int64_t utest_ns(void) {
 #elif __EMSCRIPTEN__	                                    
 	return emscripten_performance_now()*1000000.0; 
 #endif
+  return 0;
 }
 
 typedef void (*utest_testcase_t)(int *, size_t);
