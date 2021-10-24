@@ -261,7 +261,9 @@ static UTEST_INLINE utest_int64_t utest_ns(void) {
 #elif __APPLE__
   return UTEST_CAST(utest_int64_t, mach_absolute_time());
 #elif __EMSCRIPTEN__	                                    
-	return emscripten_performance_now()*1000000.0; 
+	return emscripten_performance_now() * 1000000.0;
+#else
+#error Unsupported platform!
 #endif
 }
 
