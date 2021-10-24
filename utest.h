@@ -54,6 +54,11 @@
 */
 #pragma warning(disable : 4255)
 
+/*
+  Disable warning about pointer or reference to potentially throwing function.
+*/
+#pragma warning(disable : 5039)
+
 #pragma warning(push, 1)
 #endif
 
