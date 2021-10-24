@@ -43,6 +43,12 @@
    Disable warning about inlining functions that are not marked 'inline'.
 */
 #pragma warning(disable : 4711)
+
+/*
+  Disable warning about preprocessor macros not being defined in MSVC headers.
+*/
+#pragma warning(disable : 4668)
+
 #pragma warning(push, 1)
 #endif
 
