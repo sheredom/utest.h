@@ -149,7 +149,13 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 #define UTEST_PRIu64 PRIu64
 #endif
 
-#if defined(_MSC_VER)
+#if defined(__cplusplus)
+#define UTEST_INLINE inline
+
+#define UTEST_INITIALIZER(f)                                                   \
+  struct f##_cpp_struct { f##_cpp_struct(); } f##_cpp_global; \
+  f##_cpp_struct::f##_cpp_struct()
+#elif defined(_MSC_VER)
 #define UTEST_INLINE __forceinline
 
 #if defined(_WIN64)
