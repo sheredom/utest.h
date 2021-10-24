@@ -49,6 +49,11 @@
 */
 #pragma warning(disable : 4668)
 
+/*
+  Disable warning about no function prototype given in MSVC headers.
+*/
+#pragma warning(disable : 4255)
+
 #pragma warning(push, 1)
 #endif
 
