@@ -44,6 +44,7 @@
 */
 #pragma warning(disable : 4711)
 
+#if _MSC_VER > 1900
 /*
   Disable warning about preprocessor macros not being defined in MSVC headers.
 */
@@ -58,6 +59,7 @@
   Disable warning about pointer or reference to potentially throwing function.
 */
 #pragma warning(disable : 5039)
+#endif
 
 #pragma warning(push, 1)
 #endif
