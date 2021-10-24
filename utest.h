@@ -152,9 +152,20 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 #if defined(__cplusplus)
 #define UTEST_INLINE inline
 
+#if defined(__clang__)
+#define UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS                               \
+  _Pragma("clang diagnostic push")                                             \
+      _Pragma("clang diagnostic ignored \"-Wglobal-constructors\"")
+
+#define UTEST_INITIALIZER_END_DISABLE_WARNINGS _Pragma("clang diagnostic pop")
+#else
+#define UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS
+#define UTEST_INITIALIZER_END_DISABLE_WARNINGS
+#endif
+
 #define UTEST_INITIALIZER(f)                                                   \
   struct f##_cpp_struct { f##_cpp_struct(); }; \
-  static f##_cpp_struct f##_cpp_global; \
+  UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS static f##_cpp_struct f##_cpp_global UTEST_INITIALIZER_END_DISABLE_WARNINGS; \
   f##_cpp_struct::f##_cpp_struct()
 #elif defined(_MSC_VER)
 #define UTEST_INLINE __forceinline
