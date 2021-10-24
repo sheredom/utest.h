@@ -117,7 +117,7 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceCounter(
 UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
     utest_large_integer *);
 #endif
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
 
 /*
    slightly obscure include here - we need to include glibc's features.h, but
@@ -281,7 +281,7 @@ static UTEST_INLINE utest_int64_t utest_ns(void) {
                     (counter.QuadPart * 1000000000) / frequency.QuadPart);
 #elif defined(__linux) && defined(__STRICT_ANSI__)
   return UTEST_CAST(utest_int64_t, clock()) * 1000000000 / CLOCKS_PER_SEC;
-#elif defined(__linux)
+#elif defined(__linux) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
   struct timespec ts;
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
   timespec_get(&ts, TIME_UTC);
