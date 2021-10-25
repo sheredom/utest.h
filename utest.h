@@ -1136,6 +1136,7 @@ cleanup:
   UTEST_STATE();                                                               \
   int main(int argc, const char *const argv[]) {                               \
     return utest_main(argc, argv);                                             \
-  }
+  }                                                                            \
+  void UTEST_EAT_ONE_SEMICOLON()
 
 #endif /* SHEREDOM_UTEST_H_INCLUDED */
