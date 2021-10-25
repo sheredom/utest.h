@@ -96,4 +96,4 @@ UTEST(utest_cmdline, filter_with_list) {
   free(hits);
 }
 
-UTEST_MAIN()
+UTEST_MAIN();
