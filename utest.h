@@ -1087,7 +1087,9 @@ int utest_main(int argc, const char *const argv[]) {
       failed_testcases = UTEST_PTR_CAST(
           size_t *, utest_realloc(UTEST_PTR_CAST(void *, failed_testcases),
                                   sizeof(size_t) * failed_testcases_length));
-      failed_testcases[failed_testcase_index] = index;
+      if (NULL != failed_testcases) {
+        failed_testcases[failed_testcase_index] = index;
+      }
       failed++;
       printf("%s[  FAILED  ]%s %s (%" UTEST_PRId64 "ns)\n", colours[RED],
              colours[RESET], utest_state.tests[index].name, ns);
