@@ -1087,7 +1087,7 @@ int utest_main(int argc, const char *const argv[]) {
       failed_testcases = UTEST_PTR_CAST(
           size_t *, utest_realloc(UTEST_PTR_CAST(void *, failed_testcases),
                                   sizeof(size_t) * failed_testcases_length));
-      if (NULL != failed_testcases) {
+      if (UTEST_NULL != failed_testcases) {
         failed_testcases[failed_testcase_index] = index;
       }
       failed++;
