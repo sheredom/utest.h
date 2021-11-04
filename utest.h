@@ -131,7 +131,7 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 #endif
 #endif
 
-#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
 /*
    slightly obscure include here - we need to include glibc's features.h, but
    we don't want to just include a header that might not be defined for other
@@ -294,7 +294,7 @@ static UTEST_INLINE utest_int64_t utest_ns(void) {
                     (counter.QuadPart * 1000000000) / frequency.QuadPart);
 #elif defined(__linux__) && defined(__STRICT_ANSI__)
   return UTEST_CAST(utest_int64_t, clock()) * 1000000000 / CLOCKS_PER_SEC;
-#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
   struct timespec ts;
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
   timespec_get(&ts, TIME_UTC);
