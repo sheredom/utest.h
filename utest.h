@@ -106,7 +106,7 @@ typedef uint64_t utest_uint64_t;
 #pragma warning(pop)
 
 typedef LARGE_INTEGER utest_large_integer;
-#else 
+#else
 //use old QueryPerformanceCounter definitions (not sure is this needed in some edge cases or not)
 //on Win7 with VS2015 these extern declaration cause "second C linkage of overloaded function not allowed" error
 typedef union {
@@ -321,7 +321,7 @@ static UTEST_INLINE utest_int64_t utest_ns(void) {
   return UTEST_CAST(utest_int64_t, ts.tv_sec) * 1000 * 1000 * 1000 + ts.tv_nsec;
 #elif __APPLE__
   return UTEST_CAST(utest_int64_t, mach_absolute_time());
-#elif __EMSCRIPTEN__	                                    
+#elif __EMSCRIPTEN__
 	return emscripten_performance_now() * 1000000.0;
 #else
 #error Unsupported platform!
@@ -819,9 +819,11 @@ utest_type_printer(long long unsigned int i) {
         utest_realloc(UTEST_PTR_CAST(void *, utest_state.tests),               \
                       sizeof(struct utest_test_state_s) *                      \
                           utest_state.tests_length));                          \
-    utest_state.tests[index].func = &utest_##SET##_##NAME;                     \
-    utest_state.tests[index].name = name;                                      \
-    utest_state.tests[index].index = 0;                                        \
+    if (utest_state.tests) {                                                   \
+      utest_state.tests[index].func = &utest_##SET##_##NAME;                   \
+      utest_state.tests[index].name = name;                                    \
+      utest_state.tests[index].index = 0;                                      \
+    }                                                                          \
     UTEST_SNPRINTF(name, name_size, "%s", name_part);                          \
   }                                                                            \
   void utest_run_##SET##_##NAME(int *utest_result)
@@ -1048,7 +1050,7 @@ int utest_main(int argc, const char *const argv[]) {
       return 0;
     }
   }
-  
+
   for (index = 0; index < utest_state.tests_length; index++) {
     if (utest_should_filter_test(filter, utest_state.tests[index].name)) {
       continue;
