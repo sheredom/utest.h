@@ -865,7 +865,19 @@ utest_type_printer(long long unsigned int i) {
   static void utest_f_teardown_##FIXTURE(int *utest_result,                    \
                                          struct FIXTURE *utest_fixture)
 
+#if defined(__GNUC__) && __GNUC__ >= 8 
+#define UTEST_FIXTURE_SURPRESS_WARNINGS_BEGIN                                   \
+  _Pragma("GCC diagnostic push")                                               \
+    _Pragma("GCC diagnostic ignored \"-Wclass-memaccess\"")
+#define UTEST_FIXTURE_SURPRESS_WARNINGS_END                                     \
+  _Pragma("GCC diagnostic pop")
+#else
+#define UTEST_FIXTURE_SURPRESS_WARNINGS_BEGIN
+#define UTEST_FIXTURE_SURPRESS_WARNINGS_END
+#endif
+
 #define UTEST_F(FIXTURE, NAME)                                                 \
+  UTEST_FIXTURE_SURPRESS_WARNINGS_BEGIN                                         \
   UTEST_EXTERN struct utest_state_s utest_state;                               \
   static void utest_f_setup_##FIXTURE(int *, struct FIXTURE *);                \
   static void utest_f_teardown_##FIXTURE(int *, struct FIXTURE *);             \
@@ -896,6 +908,7 @@ utest_type_printer(long long unsigned int i) {
     utest_state.tests[index].name = name;                                      \
     UTEST_SNPRINTF(name, name_size, "%s", name_part);                          \
   }                                                                            \
+  UTEST_FIXTURE_SURPRESS_WARNINGS_END                                           \
   void utest_run_##FIXTURE##_##NAME(int *utest_result,                         \
                                     struct FIXTURE *utest_fixture)
 
