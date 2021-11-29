@@ -1004,6 +1004,7 @@ int utest_main(int argc, const char *const argv[]) {
   size_t failed_testcases_length = 0;
   const char *filter = UTEST_NULL;
   utest_uint64_t ran_tests = 0;
+  int enable_mixed_units = 0;
 
   enum colours { RESET, GREEN, RED };
 
@@ -1020,6 +1021,7 @@ int utest_main(int argc, const char *const argv[]) {
     /* Informational switches */
     const char help_str[] = "--help";
     const char list_str[] = "--list-tests";
+    const char enable_mixed_units_str[] = "--enable-mixed-units";
     /* Test config switches */
     const char filter_str[] = "--filter=";
     const char output_str[] = "--output=";
@@ -1027,13 +1029,15 @@ int utest_main(int argc, const char *const argv[]) {
     if (0 == UTEST_STRNCMP(argv[index], help_str, strlen(help_str))) {
       printf("utest.h - the single file unit testing solution for C/C++!\n"
              "Command line Options:\n"
-             "  --help            Show this message and exit.\n"
-             "  --filter=<filter> Filter the test cases to run (EG. MyTest*.a "
-             "would run MyTestCase.a but not MyTestCase.b).\n"
-             "  --list-tests      List testnames, one per line. Output names "
-             "can be passed to --filter.\n"
-             "  --output=<output> Output an xunit XML file to the file "
-             "specified in <output>.\n");
+             "  --help               Show this message and exit.\n"
+             "  --filter=<filter>    Filter the test cases to run (EG. "
+             "MyTest*.a would run MyTestCase.a but not MyTestCase.b).\n"
+             "  --list-tests         List testnames, one per line. Output "
+             "names can be passed to --filter.\n"
+             "  --output=<output>    Output an xunit XML file to the file "
+             "specified in <output>.\n"
+             "  --enable-mixed-units Enable the per-test output to contain "
+             "mixed units (s/ms/us/ns).\n");
       goto cleanup;
     } else if (0 ==
                UTEST_STRNCMP(argv[index], filter_str, strlen(filter_str))) {
@@ -1048,6 +1052,9 @@ int utest_main(int argc, const char *const argv[]) {
       }
       /* when printing the test list, don't actually run the tests */
       return 0;
+    } else if (0 == UTEST_STRNCMP(argv[index], enable_mixed_units_str,
+                                  strlen(enable_mixed_units_str))) {
+      enable_mixed_units = 1;
     }
   }
 
@@ -1058,6 +1065,7 @@ int utest_main(int argc, const char *const argv[]) {
 
     ran_tests++;
   }
+
   printf("%s[==========]%s Running %" UTEST_PRIu64 " test cases.\n",
          colours[GREEN], colours[RESET], UTEST_CAST(utest_uint64_t, ran_tests));
 
@@ -1096,6 +1104,7 @@ int utest_main(int argc, const char *const argv[]) {
       fprintf(utest_state.output, "</testcase>\n");
     }
 
+    // Record the failing test.
     if (0 != result) {
       const size_t failed_testcase_index = failed_testcases_length++;
       failed_testcases = UTEST_PTR_CAST(
@@ -1105,11 +1114,32 @@ int utest_main(int argc, const char *const argv[]) {
         failed_testcases[failed_testcase_index] = index;
       }
       failed++;
-      printf("%s[  FAILED  ]%s %s (%" UTEST_PRId64 "ns)\n", colours[RED],
-             colours[RESET], utest_state.tests[index].name, ns);
-    } else {
-      printf("%s[       OK ]%s %s (%" UTEST_PRId64 "ns)\n", colours[GREEN],
-             colours[RESET], utest_state.tests[index].name, ns);
+    }
+
+    {
+      const char *const units[] = {"ns", "us", "ms", "s", UTEST_NULL};
+      unsigned int unit_index = 0;
+      utest_int64_t time = ns;
+
+      if (enable_mixed_units) {
+        for (unit_index = 0; UTEST_NULL != units[unit_index]; unit_index++) {
+          if (10000 > time) {
+            break;
+          }
+
+          time /= 1000;
+        }
+      }
+
+      if (0 != result) {
+        printf("%s[  FAILED  ]%s %s (%" UTEST_PRId64 "%s)\n", colours[RED],
+               colours[RESET], utest_state.tests[index].name, time,
+               units[unit_index]);
+      } else {
+        printf("%s[       OK ]%s %s (%" UTEST_PRId64 "%s)\n", colours[GREEN],
+               colours[RESET], utest_state.tests[index].name, time,
+               units[unit_index]);
+      }
     }
   }
 
