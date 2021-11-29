@@ -24,6 +24,7 @@ utest.h supports some command line options:
 * `--list-tests` will list testnames, one per line. Output names can be passed to `--filter`.
 * `--output=<output>` will output an xunit XML file with the test results (that
   Jenkins, travis-ci, and appveyor can parse for the test results).
+* `--enable-mixed-units` Enable the per-test output to contain mixed units (s/ms/us/ns).
 
 ## Design
 
