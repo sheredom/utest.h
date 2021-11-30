@@ -333,8 +333,8 @@ Asserts that the strings x and y are not equal.
 UTEST(foo, bar) {
   char* a = "foo";
   char* b = "bar";
-  ASSERT_STREQ(a, b); // pass!
-  ASSERT_STREQ(a, a); // fail!
+  ASSERT_STRNE(a, b); // pass!
+  ASSERT_STRNE(a, a); // fail!
 }
 ```
 
