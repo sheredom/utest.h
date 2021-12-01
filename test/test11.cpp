@@ -254,3 +254,11 @@ UTEST(cpp11, Exception) {
 }
 
 UTEST(cpp11, Todo) { UTEST_SKIP("Not yet implemented!"); }
+
+UTEST(cpp, String) {
+  std::string str("hello");
+  EXPECT_EQ(str, "hello");
+  EXPECT_EQ("hello", str);
+  EXPECT_NE("hello!", str);
+  EXPECT_NE(str, "hello!");
+}

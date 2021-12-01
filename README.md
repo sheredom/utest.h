@@ -627,7 +627,7 @@ UTEST(foo, bar) {
 ## Types Supported for Checks
 
 The library supports asserting on any builtin integer, floating-point, or
-pointer type.
+pointer type. It also has limited support for C++'s `std::string`.
 
 ## License
 
