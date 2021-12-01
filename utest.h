@@ -78,6 +78,9 @@ typedef uint64_t utest_uint64_t;
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#if defined(__cplusplus)
+#include <string>
+#endif
 
 #if defined(_MSC_VER)
 #pragma warning(pop)
@@ -435,6 +438,13 @@ UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const void *p);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const void *p) {
   UTEST_PRINTF("%p", p);
 }
+
+#if defined(__cplusplus)
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const std::string& s);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const std::string& s) {
+  UTEST_PRINTF("%s", s.c_str());
+}
+#endif
 
 /*
    long long is a c++11 extension

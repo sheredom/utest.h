@@ -234,3 +234,11 @@ UTEST(cpp11, VoidPtr) {
 static const int data[4] = {42, 13, 6, -53};
 
 UTEST(cpp11, Array) { EXPECT_NE(data, data + 1); }
+
+UTEST(cpp, String) {
+  std::string str("hello");
+  EXPECT_EQ(str, "hello");
+  EXPECT_EQ("hello", str);
+  EXPECT_NE("hello!", str);
+  EXPECT_NE(str, "hello!");
+}
