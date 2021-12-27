@@ -229,3 +229,10 @@ UTEST(c11, VoidPtr) {
 static const int data[4] = {42, 13, 6, -53};
 
 UTEST(c11, Array) { EXPECT_NE(data, data + 1); }
+
+UTEST(c11, Near) {
+  float a = 42.0f;
+  float b = 42.01f;
+  EXPECT_NEAR(a, b, 0.01f);
+  ASSERT_NEAR(a, b, 0.01f);
+}

@@ -661,6 +661,19 @@ utest_type_printer(long long unsigned int i) {
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
 
+#define EXPECT_NEAR(x, y, epsilon)                                             \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
+    if (utest_fabs(UTEST_CAST(double, x) - UTEST_CAST(double, y)) >            \
+        UTEST_CAST(double, epsilon)) {                                         \
+      UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_PRINTF("  Expected : %f\n", UTEST_CAST(double, x));                \
+      UTEST_PRINTF("    Actual : %f\n", UTEST_CAST(double, y));                \
+      *utest_result = 1;                                                       \
+    }                                                                          \
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
+
 #if defined(__clang__)
 #define UTEST_ASSERT(x, y, cond)                                               \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
@@ -802,6 +815,20 @@ utest_type_printer(long long unsigned int i) {
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
 
+#define ASSERT_NEAR(x, y, epsilon)                                             \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
+    if (utest_fabs(UTEST_CAST(double, x) - UTEST_CAST(double, y)) >            \
+        UTEST_CAST(double, epsilon)) {                                         \
+      UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_PRINTF("  Expected : %f\n", UTEST_CAST(double, x));                \
+      UTEST_PRINTF("    Actual : %f\n", UTEST_CAST(double, y));                \
+      *utest_result = 1;                                                       \
+      return;                                                                  \
+    }                                                                          \
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
+
 #define UTEST(SET, NAME)                                                       \
   UTEST_EXTERN struct utest_state_s utest_state;                               \
   static void utest_run_##SET##_##NAME(int *utest_result);                     \
@@ -914,6 +941,19 @@ utest_type_printer(long long unsigned int i) {
   }                                                                            \
   void utest_run_##FIXTURE##_##NAME##_##INDEX(int *utest_result,               \
                                               struct FIXTURE *utest_fixture)
+
+UTEST_WEAK
+double utest_fabs(double d);
+UTEST_WEAK
+double utest_fabs(double d) {
+  union {
+    double d;
+    utest_uint64_t u;
+  } both;
+  both.d = d;
+  both.u &= 0x7fffffffffffffffu;
+  return both.d;
+}
 
 UTEST_WEAK
 int utest_should_filter_test(const char *filter, const char *testcase);

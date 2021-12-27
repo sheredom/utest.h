@@ -366,6 +366,20 @@ UTEST(foo, bar) {
 }
 ```
 
+### ASSERT_NEAR(x, y, epsilon)
+
+Asserts that the floating-point values x and y are within epsilon distance of
+each other.
+
+```c
+UTEST(foo, bar) {
+  float a = 42.0f;
+  float b = 42.01f;
+  ASSERT_NEAR(a, b, 0.01f);  // pass!
+  ASSERT_NEAR(a, b, 0.001f); // fail!
+}
+```
+
 ### EXPECT_TRUE(x)
 
 Expects that x evaluates to true (i.e. non-zero).
@@ -544,6 +558,20 @@ UTEST(foo, bar) {
   char* b = "bar";
   EXPECT_STRNNE(a, b); // pass!
   EXPECT_STRNNE(a, a); // fail!
+}
+```
+
+### EXPECT_NEAR(x, y, epsilon)
+
+Expects that the floating-point values x and y are within epsilon distance of
+each other.
+
+```c
+UTEST(foo, bar) {
+  float a = 42.0f;
+  float b = 42.01f;
+  EXPECT_NEAR(a, b, 0.01f);  // pass!
+  EXPECT_NEAR(a, b, 0.001f); // fail!
 }
 ```
 
