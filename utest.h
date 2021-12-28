@@ -67,10 +67,12 @@
 #if defined(_MSC_VER) && (_MSC_VER < 1920)
 typedef __int64 utest_int64_t;
 typedef unsigned __int64 utest_uint64_t;
+typedef unsigned __int32 utest_uint32_t;
 #else
 #include <stdint.h>
 typedef int64_t utest_int64_t;
 typedef uint64_t utest_uint64_t;
+typedef uint32_t utest_uint32_t;
 #endif
 
 #include <stddef.h>
@@ -253,8 +255,8 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 #define UTEST_EXTERN extern "C"
 #define UTEST_NULL NULL
 #else
-#define UTEST_CAST(type, x) ((type)x)
-#define UTEST_PTR_CAST(type, x) ((type)x)
+#define UTEST_CAST(type, x) ((type)(x))
+#define UTEST_PTR_CAST(type, x) ((type)(x))
 #define UTEST_EXTERN extern
 #define UTEST_NULL 0
 #endif
@@ -1045,6 +1047,8 @@ int utest_main(int argc, const char *const argv[]) {
   const char *filter = UTEST_NULL;
   utest_uint64_t ran_tests = 0;
   int enable_mixed_units = 0;
+  int random_order = 0;
+  utest_uint32_t seed = 0;
 
   enum colours { RESET, GREEN, RED };
 
@@ -1061,23 +1065,28 @@ int utest_main(int argc, const char *const argv[]) {
     /* Informational switches */
     const char help_str[] = "--help";
     const char list_str[] = "--list-tests";
-    const char enable_mixed_units_str[] = "--enable-mixed-units";
     /* Test config switches */
     const char filter_str[] = "--filter=";
     const char output_str[] = "--output=";
+    const char enable_mixed_units_str[] = "--enable-mixed-units";
+    const char random_order_str[] = "--random-order";
+    const char random_order_with_seed_str[] = "--random-order=";
 
     if (0 == UTEST_STRNCMP(argv[index], help_str, strlen(help_str))) {
       printf("utest.h - the single file unit testing solution for C/C++!\n"
              "Command line Options:\n"
-             "  --help               Show this message and exit.\n"
-             "  --filter=<filter>    Filter the test cases to run (EG. "
+             "  --help                  Show this message and exit.\n"
+             "  --filter=<filter>       Filter the test cases to run (EG. "
              "MyTest*.a would run MyTestCase.a but not MyTestCase.b).\n"
-             "  --list-tests         List testnames, one per line. Output "
-             "names can be passed to --filter.\n"
-             "  --output=<output>    Output an xunit XML file to the file "
+             "  --list-tests            List testnames, one per line. Output "
+             "names can be passed to --filter.\n");
+      printf("  --output=<output>       Output an xunit XML file to the file "
              "specified in <output>.\n"
-             "  --enable-mixed-units Enable the per-test output to contain "
-             "mixed units (s/ms/us/ns).\n");
+             "  --enable-mixed-units    Enable the per-test output to contain "
+             "mixed units (s/ms/us/ns).\n"
+             "  --random-order[=<seed>] Randomize the order that the tests are "
+             "ran in. If the optional <seed> argument is not provided, then a "
+             "random starting seed is used.\n");
       goto cleanup;
     } else if (0 ==
                UTEST_STRNCMP(argv[index], filter_str, strlen(filter_str))) {
@@ -1095,6 +1104,44 @@ int utest_main(int argc, const char *const argv[]) {
     } else if (0 == UTEST_STRNCMP(argv[index], enable_mixed_units_str,
                                   strlen(enable_mixed_units_str))) {
       enable_mixed_units = 1;
+    } else if (0 == UTEST_STRNCMP(argv[index], random_order_with_seed_str,
+                                  strlen(random_order_with_seed_str))) {
+      seed =
+          UTEST_CAST(utest_uint32_t,
+                     strtoul(argv[index] + strlen(random_order_with_seed_str),
+                             UTEST_NULL, 10));
+      random_order = 1;
+    } else if (0 == UTEST_STRNCMP(argv[index], random_order_str,
+                                  strlen(random_order_str))) {
+      const utest_int64_t ns = utest_ns();
+
+      // Some really poor pseudo-random using the current time. I do this
+      // because I really want to avoid using C's rand() because that'd mean our
+      // random would be affected by any srand() usage by the user (which I
+      // don't want).
+      seed = UTEST_CAST(utest_uint32_t, ns >> 32) * 31 +
+             UTEST_CAST(utest_uint32_t, ns & 0xffffffff);
+      random_order = 1;
+    }
+  }
+
+  if (random_order) {
+    // Use Fisher-Yates with the Durstenfield's version to randomly re-order the
+    // tests.
+    for (index = utest_state.tests_length; index > 1; index--) {
+      // For the random order we'll use PCG.
+      const utest_uint32_t state = seed;
+      const utest_uint32_t word =
+          ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+      const utest_uint32_t next = ((word >> 22u) ^ word) % index;
+
+      // Swap the randomly chosen element into the last location.
+      const struct utest_test_state_s copy = utest_state.tests[index - 1];
+      utest_state.tests[index - 1] = utest_state.tests[next];
+      utest_state.tests[next] = copy;
+
+      // Move the seed onwards.
+      seed = seed * 747796405u + 2891336453u;
     }
   }
 

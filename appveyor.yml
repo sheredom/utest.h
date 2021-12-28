@@ -51,3 +51,5 @@ test_script:
   - utest_test.exe
   - utest_test_wpo.exe
   - utest_test_mt.exe
+  - utest_test.exe --random-order
+  - utest_test.exe --random-order=42
