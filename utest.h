@@ -91,9 +91,7 @@ typedef uint32_t utest_uint32_t;
 #define UTEST_C_FUNC
 #endif
 
-#if defined(_MSC_VER) \
-	|| defined(__MINGW64__) \
-	|| defined(__MINGW32__)
+#if defined(_MSC_VER) || defined(__MINGW64__) || defined(__MINGW32__)
 
 #if defined(__MINGW64__) || defined(__MINGW32__)
 #pragma GCC diagnostic push
@@ -101,7 +99,8 @@ typedef uint32_t utest_uint32_t;
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #endif
 
-// define UTEST_USE_OLD_QPC before #include "utest.h" to use old QueryPerformanceCounter
+// define UTEST_USE_OLD_QPC before #include "utest.h" to use old
+// QueryPerformanceCounter
 #ifndef UTEST_USE_OLD_QPC
 #pragma warning(push, 0)
 #include <Windows.h>
@@ -109,8 +108,9 @@ typedef uint32_t utest_uint32_t;
 
 typedef LARGE_INTEGER utest_large_integer;
 #else
-//use old QueryPerformanceCounter definitions (not sure is this needed in some edge cases or not)
-//on Win7 with VS2015 these extern declaration cause "second C linkage of overloaded function not allowed" error
+// use old QueryPerformanceCounter definitions (not sure is this needed in some
+// edge cases or not) on Win7 with VS2015 these extern declaration cause "second
+// C linkage of overloaded function not allowed" error
 typedef union {
   struct {
     unsigned long LowPart;
@@ -133,13 +133,9 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 #endif
 #endif
 
-#elif defined(__linux__) \
-	|| defined(__FreeBSD__) \
-	|| defined(__OpenBSD__) \
-	|| defined(__NetBSD__) \
-	|| defined(__DragonFly__) \
-	|| defined(__sun__) \
-	|| defined(__HAIKU__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) ||    \
+    defined(__NetBSD__) || defined(__DragonFly__) || defined(__sun__) ||       \
+    defined(__HAIKU__)
 /*
    slightly obscure include here - we need to include glibc's features.h, but
    we don't want to just include a header that might not be defined for other
@@ -192,8 +188,11 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 #endif
 
 #define UTEST_INITIALIZER(f)                                                   \
-  struct f##_cpp_struct { f##_cpp_struct(); }; \
-  UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS static f##_cpp_struct f##_cpp_global UTEST_INITIALIZER_END_DISABLE_WARNINGS; \
+  struct f##_cpp_struct {                                                      \
+    f##_cpp_struct();                                                          \
+  };                                                                           \
+  UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS static f##_cpp_struct               \
+      f##_cpp_global UTEST_INITIALIZER_END_DISABLE_WARNINGS;                   \
   f##_cpp_struct::f##_cpp_struct()
 #elif defined(_MSC_VER)
 #define UTEST_INLINE __forceinline
@@ -273,7 +272,7 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 #pragma warning(pop)
 #define UTEST_COLOUR_OUTPUT() (_isatty(_fileno(stdout)))
 #else
-#if  defined(__EMSCRIPTEN__)
+#if defined(__EMSCRIPTEN__)
 #include <emscripten/html5.h>
 #define UTEST_COLOUR_OUTPUT() false
 #else
@@ -302,15 +301,12 @@ static UTEST_INLINE utest_int64_t utest_ns(void) {
                     (counter.QuadPart * 1000000000) / frequency.QuadPart);
 #elif defined(__linux__) && defined(__STRICT_ANSI__)
   return UTEST_CAST(utest_int64_t, clock()) * 1000000000 / CLOCKS_PER_SEC;
-#elif defined(__linux__) \
-	|| defined(__FreeBSD__) \
-	|| defined(__OpenBSD__) \
-	|| defined(__NetBSD__) \
-	|| defined(__DragonFly__) \
-	|| defined(__sun__) \
-	|| defined(__HAIKU__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) ||    \
+    defined(__NetBSD__) || defined(__DragonFly__) || defined(__sun__) ||       \
+    defined(__HAIKU__)
   struct timespec ts;
-#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) && !defined(__HAIKU__)
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) &&              \
+    !defined(__HAIKU__)
   timespec_get(&ts, TIME_UTC);
 #else
   const clockid_t cid = CLOCK_REALTIME;
@@ -324,7 +320,7 @@ static UTEST_INLINE utest_int64_t utest_ns(void) {
 #elif __APPLE__
   return UTEST_CAST(utest_int64_t, mach_absolute_time());
 #elif __EMSCRIPTEN__
-	return emscripten_performance_now() * 1000000.0;
+  return emscripten_performance_now() * 1000000.0;
 #else
 #error Unsupported platform!
 #endif
@@ -865,19 +861,18 @@ utest_type_printer(long long unsigned int i) {
   static void utest_f_teardown_##FIXTURE(int *utest_result,                    \
                                          struct FIXTURE *utest_fixture)
 
-#if defined(__GNUC__) && __GNUC__ >= 8 
-#define UTEST_FIXTURE_SURPRESS_WARNINGS_BEGIN                                   \
+#if defined(__GNUC__) && __GNUC__ >= 8 && defined(__cplusplus)
+#define UTEST_FIXTURE_SURPRESS_WARNINGS_BEGIN                                  \
   _Pragma("GCC diagnostic push")                                               \
-    _Pragma("GCC diagnostic ignored \"-Wclass-memaccess\"")
-#define UTEST_FIXTURE_SURPRESS_WARNINGS_END                                     \
-  _Pragma("GCC diagnostic pop")
+      _Pragma("GCC diagnostic ignored \"-Wclass-memaccess\"")
+#define UTEST_FIXTURE_SURPRESS_WARNINGS_END _Pragma("GCC diagnostic pop")
 #else
 #define UTEST_FIXTURE_SURPRESS_WARNINGS_BEGIN
 #define UTEST_FIXTURE_SURPRESS_WARNINGS_END
 #endif
 
 #define UTEST_F(FIXTURE, NAME)                                                 \
-  UTEST_FIXTURE_SURPRESS_WARNINGS_BEGIN                                         \
+  UTEST_FIXTURE_SURPRESS_WARNINGS_BEGIN                                        \
   UTEST_EXTERN struct utest_state_s utest_state;                               \
   static void utest_f_setup_##FIXTURE(int *, struct FIXTURE *);                \
   static void utest_f_teardown_##FIXTURE(int *, struct FIXTURE *);             \
@@ -908,7 +903,7 @@ utest_type_printer(long long unsigned int i) {
     utest_state.tests[index].name = name;                                      \
     UTEST_SNPRINTF(name, name_size, "%s", name_part);                          \
   }                                                                            \
-  UTEST_FIXTURE_SURPRESS_WARNINGS_END                                           \
+  UTEST_FIXTURE_SURPRESS_WARNINGS_END                                          \
   void utest_run_##FIXTURE##_##NAME(int *utest_result,                         \
                                     struct FIXTURE *utest_fixture)
 
