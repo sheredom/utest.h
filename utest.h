@@ -537,12 +537,14 @@ utest_type_printer(long long unsigned int i) {
                     UTEST_AUTO(x) xEval = (x);                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
     if (!((xEval)cond(yEval))) {                                               \
-      _Pragma("clang diagnostic pop") UTEST_PRINTF(                            \
-          "%s:%u: Failure (Expected " #cond " Actual)\n", __FILE__, __LINE__); \
-      UTEST_PRINTF("  Expected : ");                                           \
-      utest_type_printer(xEval);                                               \
-      UTEST_PRINTF("\n");                                                      \
+      _Pragma("clang diagnostic pop")                                          \
+          UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                \
+      UTEST_PRINTF("  Expected : (");                                          \
+      UTEST_PRINTF(#x ") " #cond " (" #y);                                     \
+      UTEST_PRINTF(")\n");                                                     \
       UTEST_PRINTF("    Actual : ");                                           \
+      utest_type_printer(xEval);                                               \
+      UTEST_PRINTF(" vs ");                                                    \
       utest_type_printer(yEval);                                               \
       UTEST_PRINTF("\n");                                                      \
       *utest_result = 1;                                                       \
@@ -556,12 +558,13 @@ utest_type_printer(long long unsigned int i) {
     UTEST_AUTO(x) xEval = (x);                                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
     if (!((xEval)cond(yEval))) {                                               \
-      UTEST_PRINTF("%s:%u: Failure (Expected " #cond " Actual)\n", __FILE__,   \
-                   __LINE__);                                                  \
-      UTEST_PRINTF("  Expected : ");                                           \
-      utest_type_printer(xEval);                                               \
-      UTEST_PRINTF("\n");                                                      \
+      UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_PRINTF("  Expected : (");                                          \
+      UTEST_PRINTF(#x ") " #cond " (" #y);                                     \
+      UTEST_PRINTF(")\n");                                                     \
       UTEST_PRINTF("    Actual : ");                                           \
+      utest_type_printer(xEval);                                               \
+      UTEST_PRINTF(" vs ");                                                    \
       utest_type_printer(yEval);                                               \
       UTEST_PRINTF("\n");                                                      \
       *utest_result = 1;                                                       \
@@ -684,12 +687,14 @@ utest_type_printer(long long unsigned int i) {
                     UTEST_AUTO(x) xEval = (x);                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
     if (!((xEval)cond(yEval))) {                                               \
-      _Pragma("clang diagnostic pop") UTEST_PRINTF(                            \
-          "%s:%u: Failure (Expected " #cond " Actual)\n", __FILE__, __LINE__); \
-      UTEST_PRINTF("  Expected : ");                                           \
-      utest_type_printer(xEval);                                               \
-      UTEST_PRINTF("\n");                                                      \
+      _Pragma("clang diagnostic pop")                                          \
+          UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                \
+      UTEST_PRINTF("  Expected : (");                                          \
+      UTEST_PRINTF(#x ") " #cond " (" #y);                                     \
+      UTEST_PRINTF(")\n");                                                     \
       UTEST_PRINTF("    Actual : ");                                           \
+      utest_type_printer(xEval);                                               \
+      UTEST_PRINTF(" vs ");                                                    \
       utest_type_printer(yEval);                                               \
       UTEST_PRINTF("\n");                                                      \
       *utest_result = 1;                                                       \
@@ -704,12 +709,13 @@ utest_type_printer(long long unsigned int i) {
     UTEST_AUTO(x) xEval = (x);                                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
     if (!((xEval)cond(yEval))) {                                               \
-      UTEST_PRINTF("%s:%u: Failure (Expected " #cond " Actual)\n", __FILE__,   \
-                   __LINE__);                                                  \
-      UTEST_PRINTF("  Expected : ");                                           \
-      utest_type_printer(xEval);                                               \
-      UTEST_PRINTF("\n");                                                      \
+      UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_PRINTF("  Expected : (");                                          \
+      UTEST_PRINTF(#x ") " #cond " (" #y);                                     \
+      UTEST_PRINTF(")\n");                                                     \
       UTEST_PRINTF("    Actual : ");                                           \
+      utest_type_printer(xEval);                                               \
+      UTEST_PRINTF(" vs ");                                                    \
       utest_type_printer(yEval);                                               \
       UTEST_PRINTF("\n");                                                      \
       *utest_result = 1;                                                       \
