@@ -241,3 +241,10 @@ UTEST(cpp11, Near) {
   EXPECT_NEAR(a, b, 0.01f);
   ASSERT_NEAR(a, b, 0.01f);
 }
+
+extern int foo(int bar);
+
+UTEST(cpp11, Exception) {
+  EXPECT_EXCEPTION(foo(1), std::range_error);
+  ASSERT_EXCEPTION(foo(1), std::range_error);
+}
