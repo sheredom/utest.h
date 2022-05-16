@@ -240,3 +240,14 @@ UTEST(cpp, Near) {
   EXPECT_NEAR(a, b, 0.01f);
   ASSERT_NEAR(a, b, 0.01f);
 }
+
+int foo(int bar) {
+  if (bar == 1)
+    throw std::range_error("bad bar");
+  return bar + 1;
+}
+
+UTEST(cpp, Exception) {
+  EXPECT_EXCEPTION(foo(1), std::range_error);
+  ASSERT_EXCEPTION(foo(1), std::range_error);
+}

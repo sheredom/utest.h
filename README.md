@@ -381,6 +381,23 @@ UTEST(foo, bar) {
 }
 ```
 
+### ASSERT_EXCEPTION(x, exception_type)
+
+Asserts that exception_type will be thrown when code x is executed.
+
+```cpp
+void foo(int bar) {
+  if (bar == 1)
+    throw std::range_error;
+}
+
+UTEST(foo, bar) {
+  ASSERT_EXCEPTION(foo(1), std::range_error); // pass!
+  ASSERT_EXCEPTION(foo(2), std::range_error); // fail!
+  ASSERT_EXCEPTION(foo(1), std::exception);   // fail!
+}
+```
+
 ### EXPECT_TRUE(x)
 
 Expects that x evaluates to true (i.e. non-zero).
@@ -573,6 +590,23 @@ UTEST(foo, bar) {
   float b = 42.01f;
   EXPECT_NEAR(a, b, 0.01f);  // pass!
   EXPECT_NEAR(a, b, 0.001f); // fail!
+}
+```
+
+### EXPECT_EXCEPTION(x, exception_type)
+
+Expects that exception_type will be thrown when code x is executed.
+
+```cpp
+void foo(int bar) {
+  if (bar == 1)
+    throw std::range_error;
+}
+
+UTEST(foo, bar) {
+  EXPECT_EXCEPTION(foo(1), std::range_error); // pass!
+  EXPECT_EXCEPTION(foo(2), std::range_error); // fail!
+  EXPECT_EXCEPTION(foo(1), std::exception);   // fail!
 }
 ```
 
