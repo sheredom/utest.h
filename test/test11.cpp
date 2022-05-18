@@ -242,7 +242,11 @@ UTEST(cpp11, Near) {
   ASSERT_NEAR(a, b, 0.01f);
 }
 
-extern int foo(int bar);
+static int foo(int bar) {
+  if (bar == 1)
+    throw std::range_error("bad bar");
+  return bar + 1;
+}
 
 UTEST(cpp11, Exception) {
   EXPECT_EXCEPTION(foo(1), std::range_error);

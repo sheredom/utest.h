@@ -241,7 +241,7 @@ UTEST(cpp, Near) {
   ASSERT_NEAR(a, b, 0.01f);
 }
 
-int foo(int bar) {
+static int foo(int bar) {
   if (bar == 1)
     throw std::range_error("bad bar");
   return bar + 1;
