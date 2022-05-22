@@ -495,7 +495,9 @@ utest_type_printer(long long unsigned int i) {
 
 #ifdef _MSC_VER
 #define UTEST_SURPRESS_WARNING_BEGIN                                           \
-  __pragma(warning(push)) __pragma(warning(disable : 4127))
+  __pragma(warning(push))                                                      \
+  __pragma(warning(disable : 4127))                                            \
+  __pragma(warning(disable : 4571))
 #define UTEST_SURPRESS_WARNING_END __pragma(warning(pop))
 #else
 #define UTEST_SURPRESS_WARNING_BEGIN
@@ -687,9 +689,9 @@ utest_type_printer(long long unsigned int i) {
     int exception_caught = 0;                                                  \
     try {                                                                      \
       x;                                                                       \
-    } catch(const exception_type&) {                                           \
+    } catch (const exception_type&) {                                           \
       exception_caught = 1;                                                    \
-    } catch(...) {                                                             \
+    } catch (...) {                                                             \
       exception_caught = 2;                                                    \
     }                                                                          \
     if (exception_caught != 1) {                                               \
@@ -870,9 +872,9 @@ utest_type_printer(long long unsigned int i) {
     int exception_caught = 0;                                                  \
     try {                                                                      \
       x;                                                                       \
-    } catch(const exception_type&) {                                           \
+    } catch (const exception_type&) {                                           \
       exception_caught = 1;                                                    \
-    } catch(...) {                                                             \
+    } catch (...) {                                                             \
       exception_caught = 2;                                                    \
     }                                                                          \
     if (exception_caught != 1) {                                               \
