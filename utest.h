@@ -1256,6 +1256,7 @@ int utest_main(int argc, const char *const argv[]) {
     ns = utest_ns();
     errno = 0;
 #if defined(__cplusplus)
+    UTEST_SURPRESS_WARNING_BEGIN
     try {
       utest_state.tests[index].func(&result, utest_state.tests[index].index);
     }
@@ -1267,6 +1268,7 @@ int utest_main(int argc, const char *const argv[]) {
       printf(" Exception : Unknown\n");
       result = 1;
     }
+    UTEST_SURPRESS_WARNING_END
 #else
     utest_state.tests[index].func(&result, utest_state.tests[index].index);
 #endif
