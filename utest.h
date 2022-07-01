@@ -542,11 +542,11 @@ utest_type_printer(long long unsigned int i) {
 #endif
 
 #define UTEST_TODO(msg)                                                        \
-  {                                                                            \
+  do {                                                                         \
     UTEST_PRINTF("      Todo : '%s'\n", (msg));                                \
     *utest_result = UTEST_TEST_SKIPPED;                                        \
     return;                                                                    \
-  }
+  } while (0)
 
 #if defined(__clang__)
 #define UTEST_EXPECT(x, y, cond)                                               \
