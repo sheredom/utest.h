@@ -610,6 +610,20 @@ UTEST(foo, bar) {
 }
 ```
 
+### UTEST_TODO(msg)
+
+This macro lets you mark a test case as being TODO - eg. that the test case is
+not finished. The test will stop running as you execute the macro, report the
+`msg` as the reason for the TODO, and mark the test as _'skipped'_. These will
+be reported at the end of execution before failures, and skipped test cases will
+**not** cause the process to exit with a non-zero code.
+
+```c
+UTEST(foo, bar) {
+  UTEST_TODO("Need to implement this test!");
+}
+```
+
 ## Types Supported for Checks
 
 The library supports asserting on any builtin integer, floating-point, or

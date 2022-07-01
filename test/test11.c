@@ -236,3 +236,5 @@ UTEST(c11, Near) {
   EXPECT_NEAR(a, b, 0.01f);
   ASSERT_NEAR(a, b, 0.01f);
 }
+
+UTEST(c11, Todo) { UTEST_TODO("Not yet implemented!"); }
