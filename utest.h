@@ -100,6 +100,10 @@ typedef uint32_t utest_uint32_t;
 #define UTEST_C_FUNC
 #endif
 
+#define UTEST_TEST_PASSED (0)
+#define UTEST_TEST_FAILURE (1)
+#define UTEST_TEST_SKIPPED (2)
+
 #if defined(_MSC_VER) || defined(__MINGW64__) || defined(__MINGW32__)
 
 #if defined(__MINGW64__) || defined(__MINGW32__)
@@ -500,9 +504,8 @@ utest_type_printer(long long unsigned int i) {
 
 #ifdef _MSC_VER
 #define UTEST_SURPRESS_WARNING_BEGIN                                           \
-  __pragma(warning(push))                                                      \
-  __pragma(warning(disable : 4127))                                            \
-  __pragma(warning(disable : 4571))
+  __pragma(warning(push)) __pragma(warning(disable : 4127))                    \
+      __pragma(warning(disable : 4571))
 #define UTEST_SURPRESS_WARNING_END __pragma(warning(pop))
 #else
 #define UTEST_SURPRESS_WARNING_BEGIN
@@ -538,6 +541,13 @@ utest_type_printer(long long unsigned int i) {
 #define UTEST_STRNCMP(x, y, size) strncmp(x, y, size)
 #endif
 
+#define UTEST_TODO(msg)                                                        \
+  {                                                                            \
+    UTEST_PRINTF("      Todo : '%s'\n", (msg));                                \
+    *utest_result = UTEST_TEST_SKIPPED;                                        \
+    return;                                                                    \
+  }
+
 #if defined(__clang__)
 #define UTEST_EXPECT(x, y, cond)                                               \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
@@ -558,7 +568,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF(" vs ");                                                    \
       utest_type_printer(yEval);                                               \
       UTEST_PRINTF("\n");                                                      \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -578,7 +588,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF(" vs ");                                                    \
       utest_type_printer(yEval);                                               \
       UTEST_PRINTF("\n");                                                      \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -589,7 +599,7 @@ utest_type_printer(long long unsigned int i) {
     if (!((x)cond(y))) {                                                       \
       UTEST_PRINTF("%s:%u: Failure (Expected " #cond " Actual)\n", __FILE__,   \
                    __LINE__);                                                  \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -602,7 +612,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : true\n");                                     \
       UTEST_PRINTF("    Actual : %s\n", (x) ? "true" : "false");               \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -614,7 +624,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : false\n");                                    \
       UTEST_PRINTF("    Actual : %s\n", (x) ? "true" : "false");               \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -633,7 +643,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%s\"\n", x);                                \
       UTEST_PRINTF("    Actual : \"%s\"\n", y);                                \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -645,7 +655,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%s\"\n", x);                                \
       UTEST_PRINTF("    Actual : \"%s\"\n", y);                                \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -657,7 +667,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);          \
       UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);          \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -669,7 +679,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);          \
       UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);          \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -682,7 +692,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : %f\n", UTEST_CAST(double, x));                \
       UTEST_PRINTF("    Actual : %f\n", UTEST_CAST(double, y));                \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -694,17 +704,18 @@ utest_type_printer(long long unsigned int i) {
     int exception_caught = 0;                                                  \
     try {                                                                      \
       x;                                                                       \
-    } catch (const exception_type&) {                                           \
+    } catch (const exception_type &) {                                         \
       exception_caught = 1;                                                    \
-    } catch (...) {                                                             \
+    } catch (...) {                                                            \
       exception_caught = 2;                                                    \
     }                                                                          \
     if (exception_caught != 1) {                                               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : %s exception\n", #exception_type);            \
-      UTEST_PRINTF("    Actual : %s\n",                                        \
-        (exception_caught == 2) ? "Unexpected exception" : "No exception");    \
-      *utest_result = 1;                                                       \
+      UTEST_PRINTF("    Actual : %s\n", (exception_caught == 2)                \
+                                            ? "Unexpected exception"           \
+                                            : "No exception");                 \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -731,7 +742,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF(" vs ");                                                    \
       utest_type_printer(yEval);                                               \
       UTEST_PRINTF("\n");                                                      \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
   }                                                                            \
@@ -752,7 +763,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF(" vs ");                                                    \
       utest_type_printer(yEval);                                               \
       UTEST_PRINTF("\n");                                                      \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
   }                                                                            \
@@ -764,7 +775,7 @@ utest_type_printer(long long unsigned int i) {
     if (!((x)cond(y))) {                                                       \
       UTEST_PRINTF("%s:%u: Failure (Expected " #cond " Actual)\n", __FILE__,   \
                    __LINE__);                                                  \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
   }                                                                            \
@@ -778,7 +789,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : true\n");                                     \
       UTEST_PRINTF("    Actual : %s\n", (x) ? "true" : "false");               \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
   }                                                                            \
@@ -791,7 +802,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : false\n");                                    \
       UTEST_PRINTF("    Actual : %s\n", (x) ? "true" : "false");               \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
   }                                                                            \
@@ -811,7 +822,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%s\"\n", x);                                \
       UTEST_PRINTF("    Actual : \"%s\"\n", y);                                \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
   }                                                                            \
@@ -824,7 +835,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%s\"\n", x);                                \
       UTEST_PRINTF("    Actual : \"%s\"\n", y);                                \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
   }                                                                            \
@@ -837,7 +848,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);          \
       UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);          \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
   }                                                                            \
@@ -850,7 +861,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);          \
       UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);          \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
   }                                                                            \
@@ -864,7 +875,7 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : %f\n", UTEST_CAST(double, x));                \
       UTEST_PRINTF("    Actual : %f\n", UTEST_CAST(double, y));                \
-      *utest_result = 1;                                                       \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
   }                                                                            \
@@ -877,17 +888,18 @@ utest_type_printer(long long unsigned int i) {
     int exception_caught = 0;                                                  \
     try {                                                                      \
       x;                                                                       \
-    } catch (const exception_type&) {                                           \
+    } catch (const exception_type &) {                                         \
       exception_caught = 1;                                                    \
-    } catch (...) {                                                             \
+    } catch (...) {                                                            \
       exception_caught = 2;                                                    \
     }                                                                          \
     if (exception_caught != 1) {                                               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : %s exception\n", #exception_type);            \
-      UTEST_PRINTF("    Actual : %s\n",                                        \
-        (exception_caught == 2) ? "Unexpected exception" : "No exception");    \
-      *utest_result = 1;                                                       \
+      UTEST_PRINTF("    Actual : %s\n", (exception_caught == 2)                \
+                                            ? "Unexpected exception"           \
+                                            : "No exception");                 \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
   }                                                                            \
@@ -951,7 +963,7 @@ utest_type_printer(long long unsigned int i) {
     (void)utest_index;                                                         \
     memset(&fixture, 0, sizeof(fixture));                                      \
     utest_f_setup_##FIXTURE(utest_result, &fixture);                           \
-    if (0 != *utest_result) {                                                  \
+    if (UTEST_TEST_PASSED != *utest_result) {                                  \
       return;                                                                  \
     }                                                                          \
     utest_run_##FIXTURE##_##NAME(utest_result, &fixture);                      \
@@ -991,7 +1003,7 @@ utest_type_printer(long long unsigned int i) {
     struct FIXTURE fixture;                                                    \
     memset(&fixture, 0, sizeof(fixture));                                      \
     utest_i_setup_##FIXTURE(utest_result, &fixture, index);                    \
-    if (0 != *utest_result) {                                                  \
+    if (UTEST_TEST_PASSED != *utest_result) {                                  \
       return;                                                                  \
     }                                                                          \
     utest_run_##FIXTURE##_##NAME##_##INDEX(utest_result, &fixture);            \
@@ -1117,19 +1129,22 @@ static UTEST_INLINE FILE *utest_fopen(const char *filename, const char *mode) {
 static UTEST_INLINE int utest_main(int argc, const char *const argv[]);
 int utest_main(int argc, const char *const argv[]) {
   utest_uint64_t failed = 0;
+  utest_uint64_t skipped = 0;
   size_t index = 0;
   size_t *failed_testcases = UTEST_NULL;
   size_t failed_testcases_length = 0;
+  size_t *skipped_testcases = UTEST_NULL;
+  size_t skipped_testcases_length = 0;
   const char *filter = UTEST_NULL;
   utest_uint64_t ran_tests = 0;
   int enable_mixed_units = 0;
   int random_order = 0;
   utest_uint32_t seed = 0;
 
-  enum colours { RESET, GREEN, RED };
+  enum colours { RESET, GREEN, RED, YELLOW };
 
   const int use_colours = UTEST_COLOUR_OUTPUT();
-  const char *colours[] = {"\033[0m", "\033[32m", "\033[31m"};
+  const char *colours[] = {"\033[0m", "\033[32m", "\033[31m", "\033[33m"};
 
   if (!use_colours) {
     for (index = 0; index < sizeof colours / sizeof colours[0]; index++) {
@@ -1209,7 +1224,8 @@ int utest_main(int argc, const char *const argv[]) {
       const utest_uint32_t state = seed;
       const utest_uint32_t word =
           ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
-      const utest_uint32_t next = ((word >> 22u) ^ word) % index;
+      const utest_uint32_t next =
+          ((word >> 22u) ^ word) % UTEST_CAST(utest_uint32_t, index);
 
       // Swap the randomly chosen element into the last location.
       const struct utest_test_state_s copy = utest_state.tests[index - 1];
@@ -1243,7 +1259,7 @@ int utest_main(int argc, const char *const argv[]) {
   }
 
   for (index = 0; index < utest_state.tests_length; index++) {
-    int result = 0;
+    int result = UTEST_TEST_PASSED;
     utest_int64_t ns = 0;
 
     if (utest_should_filter_test(filter, utest_state.tests[index].name)) {
@@ -1264,14 +1280,12 @@ int utest_main(int argc, const char *const argv[]) {
     UTEST_SURPRESS_WARNING_BEGIN
     try {
       utest_state.tests[index].func(&result, utest_state.tests[index].index);
-    }
-    catch (const std::exception& err) {
+    } catch (const std::exception &err) {
       printf(" Exception : %s\n", err.what());
-      result = 1;
-    }
-    catch (...) {
+      result = UTEST_TEST_FAILURE;
+    } catch (...) {
       printf(" Exception : Unknown\n");
-      result = 1;
+      result = UTEST_TEST_FAILURE;
     }
     UTEST_SURPRESS_WARNING_END
 #else
@@ -1284,7 +1298,7 @@ int utest_main(int argc, const char *const argv[]) {
     }
 
     // Record the failing test.
-    if (0 != result) {
+    if (UTEST_TEST_FAILURE == result) {
       const size_t failed_testcase_index = failed_testcases_length++;
       failed_testcases = UTEST_PTR_CAST(
           size_t *, utest_realloc(UTEST_PTR_CAST(void *, failed_testcases),
@@ -1293,6 +1307,15 @@ int utest_main(int argc, const char *const argv[]) {
         failed_testcases[failed_testcase_index] = index;
       }
       failed++;
+    } else if (UTEST_TEST_SKIPPED == result) {
+      const size_t skipped_testcase_index = skipped_testcases_length++;
+      skipped_testcases = UTEST_PTR_CAST(
+          size_t *, utest_realloc(UTEST_PTR_CAST(void *, skipped_testcases),
+                                  sizeof(size_t) * skipped_testcases_length));
+      if (UTEST_NULL != skipped_testcases) {
+        skipped_testcases[skipped_testcase_index] = index;
+      }
+      skipped++;
     }
 
     {
@@ -1310,8 +1333,12 @@ int utest_main(int argc, const char *const argv[]) {
         }
       }
 
-      if (0 != result) {
+      if (UTEST_TEST_FAILURE == result) {
         printf("%s[  FAILED  ]%s %s (%" UTEST_PRId64 "%s)\n", colours[RED],
+               colours[RESET], utest_state.tests[index].name, time,
+               units[unit_index]);
+      } else if (UTEST_TEST_SKIPPED == result) {
+        printf("%s[  SKIPPED ]%s %s (%" UTEST_PRId64 "%s)\n", colours[YELLOW],
                colours[RESET], utest_state.tests[index].name, time,
                units[unit_index]);
       } else {
@@ -1326,6 +1353,15 @@ int utest_main(int argc, const char *const argv[]) {
          colours[RESET], ran_tests);
   printf("%s[  PASSED  ]%s %" UTEST_PRIu64 " tests.\n", colours[GREEN],
          colours[RESET], ran_tests - failed);
+
+  if (0 != skipped) {
+    printf("%s[  SKIPPED ]%s %" UTEST_PRIu64 " tests, listed below:\n",
+           colours[YELLOW], colours[RESET], skipped);
+    for (index = 0; index < skipped_testcases_length; index++) {
+      printf("%s[  SKIPPED ]%s %s\n", colours[YELLOW], colours[RESET],
+             utest_state.tests[skipped_testcases[index]].name);
+    }
+  }
 
   if (0 != failed) {
     printf("%s[  FAILED  ]%s %" UTEST_PRIu64 " tests, listed below:\n",
@@ -1345,6 +1381,7 @@ cleanup:
     free(UTEST_PTR_CAST(void *, utest_state.tests[index].name));
   }
 
+  free(UTEST_PTR_CAST(void *, skipped_testcases));
   free(UTEST_PTR_CAST(void *, failed_testcases));
   free(UTEST_PTR_CAST(void *, utest_state.tests));
 
