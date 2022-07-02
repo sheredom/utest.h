@@ -245,4 +245,4 @@ UTEST(c, Near) {
   ASSERT_NEAR(a, b, 0.01f);
 }
 
-UTEST(c, Todo) { UTEST_TODO("Not yet implemented!"); }
+UTEST(c, Todo) { UTEST_SKIP("Not yet implemented!"); }
