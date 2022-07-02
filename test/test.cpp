@@ -252,4 +252,4 @@ UTEST(cpp, Exception) {
   ASSERT_EXCEPTION(foo(1), std::range_error);
 }
 
-UTEST(cpp, Todo) { UTEST_TODO("Not yet implemented!"); }
+UTEST(cpp, Todo) { UTEST_SKIP("Not yet implemented!"); }

@@ -541,9 +541,9 @@ utest_type_printer(long long unsigned int i) {
 #define UTEST_STRNCMP(x, y, size) strncmp(x, y, size)
 #endif
 
-#define UTEST_TODO(msg)                                                        \
+#define UTEST_SKIP(msg)                                                        \
   do {                                                                         \
-    UTEST_PRINTF("      Todo : '%s'\n", (msg));                                \
+    UTEST_PRINTF("   Skipped : '%s'\n", (msg));                                \
     *utest_result = UTEST_TEST_SKIPPED;                                        \
     return;                                                                    \
   } while (0)
