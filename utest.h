@@ -1352,7 +1352,7 @@ int utest_main(int argc, const char *const argv[]) {
   printf("%s[==========]%s %" UTEST_PRIu64 " test cases ran.\n", colours[GREEN],
          colours[RESET], ran_tests);
   printf("%s[  PASSED  ]%s %" UTEST_PRIu64 " tests.\n", colours[GREEN],
-         colours[RESET], ran_tests - failed);
+         colours[RESET], ran_tests - failed - skipped);
 
   if (0 != skipped) {
     printf("%s[  SKIPPED ]%s %" UTEST_PRIu64 " tests, listed below:\n",
