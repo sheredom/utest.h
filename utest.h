@@ -49,7 +49,38 @@
 */
 #pragma warning(disable : 4820)
 
+/*
+   Disable warning about comma-separated expressions.
+*/
+#pragma warning(disable : 4548)
+
+/*
+   Disable warning about an const allocator change.
+*/
+#pragma warning(disable : 4350)
+
+/*
+   Disable warning about copy constructors being implicitly deleted.
+*/
+#pragma warning(disable : 4625)
+
+/*
+   Disable warning about assignment operators being implicitly deleted.
+*/
+#pragma warning(disable : 4626)
+
+/*
+   Disable warning about structured exceptions no longer being caught.
+*/
+#pragma warning(disable : 4571)
+
 #if _MSC_VER > 1900
+/*
+   Disable warning about using a non-literal in the format specifier for
+   printf.
+*/
+#pragma warning(disable : 4774)
+
 /*
   Disable warning about preprocessor macros not being defined in MSVC headers.
 */
@@ -59,6 +90,16 @@
   Disable warning about no function prototype given in MSVC headers.
 */
 #pragma warning(disable : 4255)
+
+/*
+   Disable warning about move constructors being implicitly deleted.
+*/
+#pragma warning(disable : 5026)
+
+/*
+   Disable warning about move assignment operators being implicitly deleted.
+*/
+#pragma warning(disable : 5027)
 
 /*
   Disable warning about pointer or reference to potentially throwing function.
