@@ -639,7 +639,7 @@ utest_type_printer(long long unsigned int i) {
 
 #define EXPECT_STREQ(x, y)                                                     \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (0 != strcmp(x, y)) {                                                   \
+    if (x == NULL || y == NULL || 0 != strcmp(x, y)) {                         \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%s\"\n", x);                                \
       UTEST_PRINTF("    Actual : \"%s\"\n", y);                                \
@@ -651,7 +651,7 @@ utest_type_printer(long long unsigned int i) {
 
 #define EXPECT_STRNE(x, y)                                                     \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (0 == strcmp(x, y)) {                                                   \
+    if (x == NULL || y == NULL || 0 == strcmp(x, y)) {                         \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%s\"\n", x);                                \
       UTEST_PRINTF("    Actual : \"%s\"\n", y);                                \
@@ -663,7 +663,7 @@ utest_type_printer(long long unsigned int i) {
 
 #define EXPECT_STRNEQ(x, y, n)                                                 \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (0 != UTEST_STRNCMP(x, y, n)) {                                         \
+    if (x == NULL || y == NULL || 0 != UTEST_STRNCMP(x, y, n)) {               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);          \
       UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);          \
@@ -675,7 +675,7 @@ utest_type_printer(long long unsigned int i) {
 
 #define EXPECT_STRNNE(x, y, n)                                                 \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (0 == UTEST_STRNCMP(x, y, n)) {                                         \
+    if (x == NULL || y == NULL || 0 == UTEST_STRNCMP(x, y, n)) {               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);          \
       UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);          \
@@ -818,7 +818,7 @@ utest_type_printer(long long unsigned int i) {
 
 #define ASSERT_STREQ(x, y)                                                     \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (0 != strcmp(x, y)) {                                                   \
+    if (x == NULL || y == NULL || 0 != strcmp(x, y)) {                         \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%s\"\n", x);                                \
       UTEST_PRINTF("    Actual : \"%s\"\n", y);                                \
@@ -831,7 +831,7 @@ utest_type_printer(long long unsigned int i) {
 
 #define ASSERT_STRNE(x, y)                                                     \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (0 == strcmp(x, y)) {                                                   \
+    if (x == NULL || y == NULL || 0 == strcmp(x, y)) {                         \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%s\"\n", x);                                \
       UTEST_PRINTF("    Actual : \"%s\"\n", y);                                \
@@ -844,7 +844,7 @@ utest_type_printer(long long unsigned int i) {
 
 #define ASSERT_STRNEQ(x, y, n)                                                 \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (0 != UTEST_STRNCMP(x, y, n)) {                                         \
+    if (x == NULL || y == NULL || 0 != UTEST_STRNCMP(x, y, n)) {               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);          \
       UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);          \
@@ -857,7 +857,7 @@ utest_type_printer(long long unsigned int i) {
 
 #define ASSERT_STRNNE(x, y, n)                                                 \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (0 == UTEST_STRNCMP(x, y, n)) {                                         \
+    if (x == NULL || y == NULL || 0 == UTEST_STRNCMP(x, y, n)) {               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);          \
       UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);          \
