@@ -687,8 +687,9 @@ utest_type_printer(long long unsigned int i) {
 
 #define EXPECT_NEAR(x, y, epsilon)                                             \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (utest_fabs(UTEST_CAST(double, x) - UTEST_CAST(double, y)) >            \
-        UTEST_CAST(double, epsilon)) {                                         \
+    const double diff =                                                        \
+        utest_fabs(UTEST_CAST(double, x) - UTEST_CAST(double, y));             \
+    if (diff > UTEST_CAST(double, epsilon) || utest_isnan(diff)) {             \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : %f\n", UTEST_CAST(double, x));                \
       UTEST_PRINTF("    Actual : %f\n", UTEST_CAST(double, y));                \
@@ -870,8 +871,9 @@ utest_type_printer(long long unsigned int i) {
 
 #define ASSERT_NEAR(x, y, epsilon)                                             \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (utest_fabs(UTEST_CAST(double, x) - UTEST_CAST(double, y)) >            \
-        UTEST_CAST(double, epsilon)) {                                         \
+    const double diff =                                                        \
+        utest_fabs(UTEST_CAST(double, x) - UTEST_CAST(double, y));             \
+    if (diff > UTEST_CAST(double, epsilon) || utest_isnan(diff)) {             \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : %f\n", UTEST_CAST(double, x));                \
       UTEST_PRINTF("    Actual : %f\n", UTEST_CAST(double, y));                \
@@ -1043,6 +1045,19 @@ double utest_fabs(double d) {
   both.d = d;
   both.u &= 0x7fffffffffffffffu;
   return both.d;
+}
+
+UTEST_WEAK
+int utest_isnan(double d);
+UTEST_WEAK
+int utest_isnan(double d) {
+  union {
+    double d;
+    utest_uint64_t u;
+  } both;
+  both.d = d;
+  both.u &= 0x7fffffffffffffffu;
+  return both.u > 0x7ff0000000000000u;
 }
 
 UTEST_WEAK
