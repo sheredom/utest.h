@@ -1,3 +1,6 @@
+
+
+
 # 🧪 utest.h
 
 [![Actions Status](https://github.com/sheredom/utest.h/workflows/CMake/badge.svg)](https://github.com/sheredom/utest.h/actions)
@@ -5,6 +8,47 @@
 [![Sponsor](https://img.shields.io/badge/💜-sponsor-blueviolet)](https://github.com/sponsors/sheredom)
 
 A simple one header solution to unit testing for C/C++.
+
+## Table of Contents
+  - [Usage](#usage)
+  - [Command Line Options](#command-line-options)
+  - [Design](#design)
+  - [UTEST_MAIN](#utest_main)
+  - [Define a Testcase](#define-a-testcase)
+  - [Define a Fixtured Testcase](#define-a-fixtured-testcase)
+  - [Define an Indexed Testcase](#define-an-indexed-testcase)
+  - [Testing Macros](#testing-macros)
+    - [ASSERT_TRUE(x)](#assert_truex)
+    - [ASSERT_FALSE(x)](#assert_falsex)
+    - [ASSERT_EQ(x, y)](#assert_eqx-y)
+    - [ASSERT_NE(x, y)](#assert_nex-y)
+    - [ASSERT_LT(x, y)](#assert_ltx-y)
+    - [ASSERT_LE(x, y)](#assert_lex-y)
+    - [ASSERT_GT(x, y)](#assert_gtx-y)
+    - [ASSERT_GE(x, y)](#assert_gex-y)
+    - [ASSERT_STREQ(x, y)](#assert_streqx-y)
+    - [ASSERT_STRNE(x, y)](#assert_strnex-y)
+    - [ASSERT_STRNEQ(x, y)](#assert_strneqx-y)
+    - [ASSERT_STRNNE(x, y)](#assert_strnnex-y)
+    - [ASSERT_NEAR(x, y, epsilon)](#assert_nearx-y-epsilon)
+    - [ASSERT_EXCEPTION(x, exception_type)](#assert_exceptionx-exception_type)
+    - [EXPECT_TRUE(x)](#expect_truex)
+    - [EXPECT_FALSE(x)](#expect_falsex)
+    - [EXPECT_EQ(x, y)](#expect_eqx-y)
+    - [EXPECT_NE(x, y)](#expect_nex-y)
+    - [EXPECT_LT(x, y)](#expect_ltx-y)
+    - [EXPECT_LE(x, y)](#expect_lex-y)
+    - [EXPECT_GT(x, y)](#expect_gtx-y)
+    - [EXPECT_GT(x, y)](#expect_gtx-y-1)
+    - [EXPECT_STREQ(x, y)](#expect_streqx-y)
+    - [EXPECT_STRNE(x, y)](#expect_strnex-y)
+    - [EXPECT_STRNEQ(x, y)](#expect_strneqx-y)
+    - [EXPECT_STRNNE(x, y)](#expect_strnnex-y)
+    - [EXPECT_NEAR(x, y, epsilon)](#expect_nearx-y-epsilon)
+    - [EXPECT_EXCEPTION(x, exception_type)](#expect_exceptionx-exception_type)
+    - [UTEST_SKIP(msg)](#utest_skipmsg)
+  - [Types Supported for Checks](#types-supported-for-checks)
+  - [License](#license)
 
 ## Usage
 
@@ -40,6 +84,8 @@ googletest framework:
 [==========] 1 test cases ran.
 [  PASSED  ] 1 tests.
 ```
+
+This library is designed to work with C and C++ in the same code base, as well as allowing users to filter certain test cases based on their need. As well, it is designed to run much faster than other testing frameworks.
 
 ## UTEST_MAIN
 
