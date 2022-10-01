@@ -88,6 +88,8 @@ typedef uint32_t utest_uint32_t;
 
 #if defined(__cplusplus)
 #include <stdexcept>
+#include <string>
+#include <vector>
 #endif
 
 #if defined(_MSC_VER)
@@ -446,6 +448,22 @@ UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const void *p);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const void *p) {
   UTEST_PRINTF("%p", p);
 }
+
+#ifdef __cplusplus
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const std::string& s);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const std::string& s) {
+  utest_type_printer(s.c_str());
+}
+
+template<typename T>
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const std::vector<T>& v) {
+  for (int i = 0; i < v.size(); i++)
+  {
+    if (i > 0) UTEST_PRINTF(" ,");
+    utest_type_printer(v[i]);
+  }
+}
+#endif
 
 /*
    long long is a c++11 extension
