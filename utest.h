@@ -180,7 +180,12 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 #define UTEST_PRId64 "I64d"
 #define UTEST_PRIu64 "I64u"
 #else
+
+#if defined(__cplusplus) && (__cplusplus >= 201103L)
+#include <cinttypes>
+#else
 #include <inttypes.h>
+#endif
 
 #define UTEST_PRId64 PRId64
 #define UTEST_PRIu64 PRIu64
