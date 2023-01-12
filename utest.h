@@ -66,6 +66,13 @@
 #pragma warning(disable : 5039)
 #endif
 
+#if _MSC_VER > 1930
+/*
+  Disable warning about 'const' variable is not used.
+*/
+#pragma warning(disable : 5264)
+#endif
+
 #pragma warning(push, 1)
 #endif
 
@@ -112,15 +119,6 @@ typedef uint32_t utest_uint32_t;
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #endif
 
-// define UTEST_USE_OLD_QPC before #include "utest.h" to use old
-// QueryPerformanceCounter
-#ifndef UTEST_USE_OLD_QPC
-#pragma warning(push, 0)
-#include <Windows.h>
-#pragma warning(pop)
-
-typedef LARGE_INTEGER utest_large_integer;
-#else
 // use old QueryPerformanceCounter definitions (not sure is this needed in some
 // edge cases or not) on Win7 with VS2015 these extern declaration cause "second
 // C linkage of overloaded function not allowed" error
@@ -143,7 +141,6 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 
 #if defined(__MINGW64__) || defined(__MINGW32__)
 #pragma GCC diagnostic pop
-#endif
 #endif
 
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) ||    \
@@ -358,8 +355,12 @@ UTEST_EXTERN struct utest_state_s utest_state;
 
 #if defined(_MSC_VER)
 #define UTEST_WEAK __forceinline
-#else
+#elif defined(__MINGW32__) || defined(__MINGW64__)
+#define UTEST_WEAK static __attribute__((used))
+#elif defined(__clang__) || defined(__GNUC__)
 #define UTEST_WEAK __attribute__((weak))
+#else
+#error Non clang, non gcc, non MSVC compiler found!
 #endif
 
 #if defined(_MSC_VER)
@@ -419,7 +420,12 @@ UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(double d) {
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long double d);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long double d) {
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  /* MINGW is weird - doesn't like LF at all?! */
+  UTEST_PRINTF("%f", (double)d);
+#else
   UTEST_PRINTF("%Lf", d);
+#endif
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(int i);
@@ -451,7 +457,8 @@ UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const void *p) {
    long long is a c++11 extension
 */
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) ||              \
-    defined(__cplusplus) && (__cplusplus >= 201103L)
+    defined(__cplusplus) && (__cplusplus >= 201103L) ||                        \
+    (defined(__MINGW32__) || defined(__MINGW64__))
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -474,7 +481,8 @@ utest_type_printer(long long unsigned int i) {
 #endif
 
 #endif
-#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) &&            \
+    !(defined(__MINGW32__) || defined(__MINGW64__))
 #define utest_type_printer(val)                                                \
   UTEST_PRINTF(_Generic((val), signed char                                     \
                         : "%d", unsigned char                                  \

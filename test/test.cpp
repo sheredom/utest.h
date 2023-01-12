@@ -26,10 +26,6 @@
 #include "utest.h"
 
 #ifdef _MSC_VER
-// test will including <Windows.h> mess up the compilation
-#pragma warning(push, 0)
-#include <Windows.h>
-#pragma warning(pop)
 // disable 'conditional expression is constant' - our examples below use this!
 #pragma warning(disable : 4127)
 #endif
