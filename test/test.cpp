@@ -237,7 +237,14 @@ UTEST(cpp, Near) {
   ASSERT_NEAR(a, b, 0.01f);
 }
 
-static int foo(int bar) {
+// GCC stdlib has a sanitizer bug in exceptions!
+#if defined(__has_feature)
+#if __has_feature(memory_sanitizer)
+__attribute__((no_sanitize("memory")))
+#endif
+#endif
+static int
+foo(int bar) {
   if (bar == 1)
     throw std::range_error("bad bar");
   return bar + 1;

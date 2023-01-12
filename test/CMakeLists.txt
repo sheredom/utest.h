@@ -26,6 +26,8 @@
 project(utest)
 cmake_minimum_required(VERSION 3.15)
 
+set(UTEST_USE_SANITIZER "" CACHE STRING "Set which Clang Sanitizer to use")
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 
 if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
@@ -157,6 +159,11 @@ add_executable(utest_test
   type_printers.cpp
 )
 
+if(NOT "${UTEST_USE_SANITIZER}" STREQUAL "")
+  target_compile_options(utest_test PUBLIC -fno-omit-frame-pointer -fsanitize=${UTEST_USE_SANITIZER})
+  target_link_options(utest_test PUBLIC -fno-omit-frame-pointer -fsanitize=${UTEST_USE_SANITIZER})
+endif()
+
 add_executable(utest_test_wpo
   ../utest.h
   main.c
@@ -169,6 +176,11 @@ add_executable(utest_test_wpo
   type_printers.c
   type_printers.cpp
 )
+
+if(NOT "${UTEST_USE_SANITIZER}" STREQUAL "")
+  target_compile_options(utest_test_wpo PUBLIC -fno-omit-frame-pointer -fsanitize=${UTEST_USE_SANITIZER})
+  target_link_options(utest_test_wpo PUBLIC -fno-omit-frame-pointer -fsanitize=${UTEST_USE_SANITIZER})
+endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   target_compile_options(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:/GL>")
