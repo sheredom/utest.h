@@ -15,7 +15,6 @@ jobs:
         compiler: [default, clang, gcc]
         exclude:
           - {os: "macOS-latest", compiler: "clang"}
-          - {os: "windows-latest", compiler: "gcc"}
           - {os: "macOS-latest", compiler: "gcc"}
           - {os: "ubuntu-latest", compiler: "default"}
           - {os: "ubuntu-latest", compiler: "default"}
@@ -27,9 +26,13 @@ jobs:
     - name: Create Build Environment
       run: cmake -E make_directory ${{github.workspace}}/build
 
-    - name: Setup dependencies
+    - name: Setup dependencies (Ubuntu)
       if: startsWith(matrix.os, 'ubuntu')
-      run: sudo apt-get install -y gcc-10 g++-10 clang-10
+      run: sudo apt-get install -y gcc-10 g++-10 clang
+
+    - name: Setup dependencies (MinGW)
+      if: matrix.compiler == 'gcc' && startsWith(matrix.os, 'windows')
+      uses: egor-tensin/setup-mingw@v2
 
     - name: Configure CMake
       shell: bash
@@ -37,9 +40,9 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: cmake $GITHUB_WORKSPACE/test -DCMAKE_BUILD_TYPE=${{ matrix.type }}
 
-    - name: Configure CMake with GCC
+    - name: Configure CMake with GCC (Ubuntu)
       shell: bash
-      if: matrix.compiler == 'gcc'
+      if: matrix.compiler == 'gcc' && startsWith(matrix.os, 'ubuntu')
       working-directory: ${{github.workspace}}/build
       run: cmake $GITHUB_WORKSPACE/test -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_C_COMPILER=gcc-10 -DCMAKE_CXX_COMPILER=g++-10
 
@@ -47,7 +50,13 @@ jobs:
       shell: bash
       if: (matrix.compiler == 'clang') && startsWith(matrix.os, 'ubuntu')
       working-directory: ${{github.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE/test -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_C_COMPILER=clang-10 -DCMAKE_CXX_COMPILER=clang++-10
+      run: cmake $GITHUB_WORKSPACE/test -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+
+    - name: Configure CMake with MinGW
+      shell: bash
+      if: matrix.compiler == 'gcc' && startsWith(matrix.os, 'windows')
+      working-directory: ${{github.workspace}}/build
+      run: cmake $GITHUB_WORKSPACE/test -DCMAKE_BUILD_TYPE=${{ matrix.type }} -G "MinGW Makefiles" -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++
 
     - name: Configure CMake with Clang (Windows)
       shell: bash
@@ -63,25 +72,25 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build
       shell: bash
-      run: if [ "${{ matrix.os }}" == "windows-latest" ]; then cd ${{ matrix.type }}; fi; ./utest_test
+      run: if [ "${{ matrix.os }}" == "windows-latest" ] && [ "${{ matrix.compiler }}" != "gcc" ]; then cd ${{ matrix.type }}; fi; ./utest_test
 
     - name: Test Whole Program Optimization
       working-directory: ${{github.workspace}}/build
       shell: bash
-      run: if [ "${{ matrix.os }}" == "windows-latest" ]; then cd ${{ matrix.type }}; fi; ./utest_test_wpo
+      run: if [ "${{ matrix.os }}" == "windows-latest" ] && [ "${{ matrix.compiler }}" != "gcc" ]; then cd ${{ matrix.type }}; fi; ./utest_test_wpo
 
     - name: Test with Multithreading
       working-directory: ${{github.workspace}}/build
       shell: bash
       if: startsWith(matrix.os, 'windows')
-      run: if [ "${{ matrix.os }}" == "windows-latest" ]; then cd ${{ matrix.type }}; fi; ./utest_test_mt
+      run: if [ "${{ matrix.os }}" == "windows-latest" ] && [ "${{ matrix.compiler }}" != "gcc" ]; then cd ${{ matrix.type }}; fi; ./utest_test_mt
 
     - name: Test with random order
       working-directory: ${{github.workspace}}/build
       shell: bash
-      run: if [ "${{ matrix.os }}" == "windows-latest" ]; then cd ${{ matrix.type }}; fi; ./utest_test --random-order
+      run: if [ "${{ matrix.os }}" == "windows-latest" ] && [ "${{ matrix.compiler }}" != "gcc" ]; then cd ${{ matrix.type }}; fi; ./utest_test --random-order
 
     - name: Test with random order and seed
       working-directory: ${{github.workspace}}/build
       shell: bash
-      run: if [ "${{ matrix.os }}" == "windows-latest" ]; then cd ${{ matrix.type }}; fi; ./utest_test --random-order=42
+      run: if [ "${{ matrix.os }}" == "windows-latest" ] && [ "${{ matrix.compiler }}" != "gcc" ]; then cd ${{ matrix.type }}; fi; ./utest_test --random-order=42
