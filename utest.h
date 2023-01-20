@@ -64,6 +64,12 @@
   Disable warning about pointer or reference to potentially throwing function.
 */
 #pragma warning(disable : 5039)
+
+/*
+  Disable warning about macro expansion producing 'defined' has undefined
+  behavior.
+*/
+#pragma warning(disable : 5105)
 #endif
 
 #if _MSC_VER > 1930
@@ -417,7 +423,122 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #define UTEST_OVERLOADABLE __attribute__((overloadable))
 #endif
 
-#if defined(UTEST_OVERLOADABLE)
+#if defined(__cplusplus) && (__cplusplus >= 201103L)
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
+#endif
+
+#include <type_traits>
+
+template <typename T, bool is_enum = std::is_enum<T>::value>
+struct utest_type_deducer final {
+  static void _(const T t);
+};
+
+template <> struct utest_type_deducer<signed char, false> {
+  static void _(const signed char c) {
+    UTEST_PRINTF("%d", static_cast<int>(c));
+  }
+};
+
+template <> struct utest_type_deducer<unsigned char, false> {
+  static void _(const unsigned char c) {
+    UTEST_PRINTF("%u", static_cast<unsigned int>(c));
+  }
+};
+
+template <> struct utest_type_deducer<short, false> {
+  static void _(const short s) { UTEST_PRINTF("%d", static_cast<int>(s)); }
+};
+
+template <> struct utest_type_deducer<unsigned short, false> {
+  static void _(const unsigned short s) {
+    UTEST_PRINTF("%u", static_cast<int>(s));
+  }
+};
+
+template <> struct utest_type_deducer<float, false> {
+  static void _(const float f) { UTEST_PRINTF("%f", static_cast<double>(f)); }
+};
+
+template <> struct utest_type_deducer<double, false> {
+  static void _(const double d) { UTEST_PRINTF("%f", d); }
+};
+
+template <> struct utest_type_deducer<long double, false> {
+  static void _(const long double d) {
+#if defined(__MINGW32__) || defined(__MINGW64__)
+    /* MINGW is weird - doesn't like LF at all?! */
+    UTEST_PRINTF("%f", (double)d);
+#else
+    UTEST_PRINTF("%Lf", d);
+#endif
+  }
+};
+
+template <> struct utest_type_deducer<int, false> {
+  static void _(const int i) { UTEST_PRINTF("%d", i); }
+};
+
+template <> struct utest_type_deducer<unsigned int, false> {
+  static void _(const unsigned int i) { UTEST_PRINTF("%u", i); }
+};
+
+template <> struct utest_type_deducer<long, false> {
+  static void _(const long i) { UTEST_PRINTF("%ld", i); }
+};
+
+template <> struct utest_type_deducer<unsigned long, false> {
+  static void _(const unsigned long i) { UTEST_PRINTF("%lu", i); }
+};
+
+template <> struct utest_type_deducer<long long, false> {
+  static void _(const long long i) { UTEST_PRINTF("%lld", i); }
+};
+
+template <> struct utest_type_deducer<unsigned long long, false> {
+  static void _(const unsigned long long i) { UTEST_PRINTF("%llu", i); }
+};
+
+template <typename T> struct utest_type_deducer<const T *, false> {
+  static void _(const T *t) {
+    UTEST_PRINTF("%p", static_cast<void *>(const_cast<T *>(t)));
+  }
+};
+
+template <typename T> struct utest_type_deducer<T *, false> {
+  static void _(T *t) { UTEST_PRINTF("%p", static_cast<void *>(t)); }
+};
+
+template <typename T> struct utest_type_deducer<T, true> {
+  static void _(const T t) {
+    UTEST_PRINTF("%llu", static_cast<unsigned long long>(t));
+  }
+};
+
+template <typename T>
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const T t) {
+  utest_type_deducer<T>::_(t);
+}
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#elif defined(UTEST_OVERLOADABLE)
+
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(signed char c);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(signed char c) {
+  UTEST_PRINTF("%d", UTEST_CAST(int, c));
+}
+
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned char c);
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned char c) {
+  UTEST_PRINTF("%u", UTEST_CAST(unsigned int, c));
+}
+
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(float f);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(float f) {
   UTEST_PRINTF("%f", UTEST_CAST(double, f));

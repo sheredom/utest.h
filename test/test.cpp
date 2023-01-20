@@ -256,3 +256,10 @@ UTEST(cpp, Exception) {
 }
 
 UTEST(cpp, Todo) { UTEST_SKIP("Not yet implemented!"); }
+
+enum SomeEnum { SomeEnumFoo, SomeEnumBar };
+
+UTEST(cpp, Enum) {
+  EXPECT_NE(SomeEnumFoo, SomeEnumBar);
+  ASSERT_EQ(SomeEnumFoo, SomeEnumFoo);
+}
