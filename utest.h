@@ -94,6 +94,16 @@ typedef uint32_t utest_uint32_t;
 #include <errno.h>
 
 #if defined(__cplusplus)
+#if defined(_MSC_VER) && !defined(_CPPUNWIND)
+/* We're on MSVC and the compiler is compiling without exception support! */
+#elif !defined(_MSC_VER) && !defined(__EXCEPTIONS)
+/* We're on a GCC/Clang compiler that doesn't have exception support! */
+#else
+#define UTEST_HAS_EXCEPTIONS 1
+#endif
+#endif
+
+#if defined(UTEST_HAS_EXCEPTIONS)
 #include <stdexcept>
 #endif
 
@@ -707,7 +717,7 @@ utest_type_printer(long long unsigned int i) {
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
 
-#if defined(__cplusplus)
+#if defined(UTEST_HAS_EXCEPTIONS)
 #define EXPECT_EXCEPTION(x, exception_type)                                    \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     int exception_caught = 0;                                                  \
@@ -892,7 +902,7 @@ utest_type_printer(long long unsigned int i) {
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
 
-#if defined(__cplusplus)
+#if defined(UTEST_HAS_EXCEPTIONS)
 #define ASSERT_EXCEPTION(x, exception_type)                                    \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     int exception_caught = 0;                                                  \
@@ -1299,7 +1309,7 @@ int utest_main(int argc, const char *const argv[]) {
 
     ns = utest_ns();
     errno = 0;
-#if defined(__cplusplus)
+#if defined(UTEST_HAS_EXCEPTIONS)
     UTEST_SURPRESS_WARNING_BEGIN
     try {
       utest_state.tests[index].func(&result, utest_state.tests[index].index);

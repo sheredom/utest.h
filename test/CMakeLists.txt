@@ -146,6 +146,28 @@ else()
   message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
 endif()
 
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  set_source_files_properties(test_no_exceptions.cpp PROPERTIES
+    COMPILE_FLAGS "-Wall -Wextra -Werror -std=gnu++98 -fno-exceptions"
+  )
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    set_source_files_properties(test_no_exceptions.cpp PROPERTIES
+      COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045 /EHs-c-"
+    )
+  else()
+    set_source_files_properties(test_no_exceptions.cpp PROPERTIES
+      COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=gnu++98 -fno-exceptions"
+    )
+  endif()
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  set_source_files_properties(test_no_exceptions.cpp PROPERTIES
+    COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045 /EHs-c-"
+  )
+else()
+  message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
+endif()
+
 add_executable(utest_test
   ../utest.h
   main.c
@@ -154,6 +176,7 @@ add_executable(utest_test
   test99.c
   test.cpp
   test11.cpp
+  test_no_exceptions.cpp
   stdint_include.c
   type_printers.c
   type_printers.cpp
@@ -172,6 +195,7 @@ add_executable(utest_test_wpo
   test99.c
   test.cpp
   test11.cpp
+  test_no_exceptions.cpp
   stdint_include.c
   type_printers.c
   type_printers.cpp
@@ -195,6 +219,7 @@ add_executable(utest_test_mt
   test99.c
   test.cpp
   test11.cpp
+  test_no_exceptions.cpp
   stdint_include.c
   type_printers.c
   type_printers.cpp
