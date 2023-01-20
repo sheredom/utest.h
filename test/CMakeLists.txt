@@ -30,145 +30,59 @@ set(UTEST_USE_SANITIZER "" CACHE STRING "Set which Clang Sanitizer to use")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 
-if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-  set_source_files_properties(main.c test.c PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Werror -std=gnu89"
-  )
-elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
-  if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-    set_source_files_properties(main.c test.c PROPERTIES
-      COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045"
-    )
-  else()
-    set_source_files_properties(main.c test.c PROPERTIES
-      COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=gnu89"
-    )
-  endif()
-elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
-  set_source_files_properties(main.c test.c PROPERTIES
-    COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045"
-  )
-else()
-  message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
-endif()
-
-if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-  set_source_files_properties(test99.c PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Werror -std=c99"
-  )
-elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
-  if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-    set_source_files_properties(test99.c PROPERTIES
-      COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045"
-    )
-  else()
-    set_source_files_properties(test99.c PROPERTIES
-      COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=c99"
-    )
-  endif()
-elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
-  set_source_files_properties(test99.c PROPERTIES
-    COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045"
-  )
-else()
-  message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
-endif()
-
-list(FIND CMAKE_C_COMPILE_FEATURES c_std_11 IDX)
-if (${IDX} GREATER -1)
+function(set_flags file msvc gcc clang_extra)
   if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-      set_source_files_properties(type_printers.c PROPERTIES
-        COMPILE_FLAGS "-std=gnu11")
-
-      set_source_files_properties(test11.c PROPERTIES
-        COMPILE_FLAGS "-Wall -Wextra -Werror -std=c11"
-      )
+    set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${gcc}")
   elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
-    if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-      set_source_files_properties(test11.c PROPERTIES
-        COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045"
-      )
+    if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+      set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${msvc}")
     else()
-      set_source_files_properties(test11.c PROPERTIES
-        COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=c11"
-      )
+      set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${gcc} ${clang_extra}")
     endif()
   elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
-    set_source_files_properties(test11.c PROPERTIES
-      COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045"
-    )
+    set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${msvc}")
   else()
     message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
   endif()
-endif()
+endfunction()
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  set_source_files_properties(test.cpp PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Werror -std=gnu++98"
-  )
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-    set_source_files_properties(test.cpp PROPERTIES
-      COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045"
-    )
-  else()
-    set_source_files_properties(test.cpp PROPERTIES
-      COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=gnu++98"
-    )
+set(MSVC_WARNINGS "/Wall /WX /wd4514 /wd5045")
+set(GCC_WARNINGS "-Wall -Wextra -Werror")
+set(CLANG_WARNINGS "-Weverything")
+
+set_flags(main.c "${MSVC_WARNINGS}" "${GCC_WARNINGS} -std=gnu89" "${CLANG_WARNINGS}")
+set_flags(test.c "${MSVC_WARNINGS}" "${GCC_WARNINGS} -std=gnu89" "${CLANG_WARNINGS}")
+set_flags(test99.c "${MSVC_WARNINGS}" "${GCC_WARNINGS} -std=c99" "${CLANG_WARNINGS}")
+
+list(FIND CMAKE_C_COMPILE_FEATURES c_std_11 IDX)
+if (${IDX} GREATER -1)
+  set_flags(test11.c "${MSVC_WARNINGS} /std:c11" "${GCC_WARNINGS} -std=c11" "${CLANG_WARNINGS}")
+
+  if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+      set_source_files_properties(type_printers.c PROPERTIES
+        COMPILE_FLAGS "-std=gnu11")
   endif()
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-  set_source_files_properties(test.cpp PROPERTIES
-    COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045"
-  )
-else()
-  message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
 endif()
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  set_source_files_properties(test11.cpp PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Werror -std=c++11"
-  )
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-    set_source_files_properties(test11.cpp PROPERTIES
-      COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045"
-    )
-  else()
-    set_source_files_properties(test11.cpp PROPERTIES
-      COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=c++11 -Wno-c++98-compat"
-    )
-  endif()
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-  set_source_files_properties(test11.cpp PROPERTIES
-    COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045"
-  )
-else()
-  message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
+set_flags(test.cpp "${MSVC_WARNINGS}" "${GCC_WARNINGS} -std=gnu++98" "${CLANG_WARNINGS}")
+set_flags(test_no_exceptions.cpp "${MSVC_WARNINGS} /EHs-c-" "${GCC_WARNINGS} -fno-exceptions -std=gnu++98" "${CLANG_WARNINGS}")
+
+list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 IDX)
+if (${IDX} GREATER -1)
+  set_flags(test11.cpp "${MSVC_WARNINGS}" "${GCC_WARNINGS} -std=c++11" "${CLANG_WARNINGS}")
 endif()
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  set_source_files_properties(test_no_exceptions.cpp PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Werror -std=gnu++98 -fno-exceptions"
-  )
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-    set_source_files_properties(test_no_exceptions.cpp PROPERTIES
-      COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045 /EHs-c-"
-    )
-  else()
-    set_source_files_properties(test_no_exceptions.cpp PROPERTIES
-      COMPILE_FLAGS "-Wall -Wextra -Weverything -Werror -std=gnu++98 -fno-exceptions"
-    )
-  endif()
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-  set_source_files_properties(test_no_exceptions.cpp PROPERTIES
-    COMPILE_FLAGS "/Wall /WX /wd4514 /wd5045 /EHs-c-"
-  )
-else()
-  message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
+list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_14 IDX)
+if (${IDX} GREATER -1)
+  set_flags(test14.cpp "${MSVC_WARNINGS} /std:c++14" "${GCC_WARNINGS} -std=c++14" "${CLANG_WARNINGS}")
 endif()
 
-add_executable(utest_test
+list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_17 IDX)
+if (${IDX} GREATER -1)
+  set_flags(test17.cpp "${MSVC_WARNINGS} /std:c++17" "${GCC_WARNINGS} -std=c++17" "${CLANG_WARNINGS}")
+endif()
+
+set(SOURCES
   ../utest.h
   main.c
   test.c
@@ -176,30 +90,22 @@ add_executable(utest_test
   test99.c
   test.cpp
   test11.cpp
+  test14.cpp
+  test17.cpp
   test_no_exceptions.cpp
   stdint_include.c
   type_printers.c
   type_printers.cpp
 )
+
+add_executable(utest_test ${SOURCES})
 
 if(NOT "${UTEST_USE_SANITIZER}" STREQUAL "")
   target_compile_options(utest_test PUBLIC -fno-omit-frame-pointer -fsanitize=${UTEST_USE_SANITIZER})
   target_link_options(utest_test PUBLIC -fno-omit-frame-pointer -fsanitize=${UTEST_USE_SANITIZER})
 endif()
 
-add_executable(utest_test_wpo
-  ../utest.h
-  main.c
-  test.c
-  test11.c
-  test99.c
-  test.cpp
-  test11.cpp
-  test_no_exceptions.cpp
-  stdint_include.c
-  type_printers.c
-  type_printers.cpp
-)
+add_executable(utest_test_wpo ${SOURCES})
 
 if(NOT "${UTEST_USE_SANITIZER}" STREQUAL "")
   target_compile_options(utest_test_wpo PUBLIC -fno-omit-frame-pointer -fsanitize=${UTEST_USE_SANITIZER})
@@ -211,19 +117,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   target_link_options(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:/LTCG>")
 endif()
 
-add_executable(utest_test_mt
-  ../utest.h
-  main.c
-  test.c
-  test11.c
-  test99.c
-  test.cpp
-  test11.cpp
-  test_no_exceptions.cpp
-  stdint_include.c
-  type_printers.c
-  type_printers.cpp
-)
+add_executable(utest_test_mt ${SOURCES})
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
