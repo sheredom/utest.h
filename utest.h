@@ -1084,16 +1084,42 @@ utest_type_printer(long long unsigned int i) {
   UTEST_SURPRESS_WARNING_END
 #endif
 
-#define UTEST(SET, NAME)                                                       \
+UTEST_WEAK
+void utest_replace_commas_by_dot(char *str, size_t size) {
+  size_t i;
+  unsigned int commas_found = 0;
+  for (i = 0; i < size; i++) {
+    if (0 < commas_found) {
+      str[i] = str[i + commas_found];
+    }
+    if (',' == str[i]) {
+      commas_found += 1;
+      str[i] = '.';
+    }
+  }
+}
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wvariadic-macros"
+#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
+#endif
+
+#define UTEST1_(first, ...) first
+#define UTEST1(...) UTEST1_(__VA_ARGS__, dummy)
+#define UTEST(SET, ...) UTEST_(SET, UTEST1(__VA_ARGS__), __LINE__, __VA_ARGS__)
+#define UTEST_(SET, NAME, LINE, ...) UTEST__(SET, NAME, LINE, __VA_ARGS__)
+#define UTEST__(SET, NAME, LINE, ...)                                          \
   UTEST_EXTERN struct utest_state_s utest_state;                               \
-  static void utest_run_##SET##_##NAME(int *utest_result);                     \
-  static void utest_##SET##_##NAME(int *utest_result, size_t utest_index) {    \
+  static void utest_run_##SET##_##NAME##_##LINE(int *utest_result);            \
+  static void utest_##SET##_##NAME##_##LINE(int *utest_result,                 \
+                                            size_t utest_index) {              \
     (void)utest_index;                                                         \
-    utest_run_##SET##_##NAME(utest_result);                                    \
+    utest_run_##SET##_##NAME##_##LINE(utest_result);                           \
   }                                                                            \
-  UTEST_INITIALIZER(utest_register_##SET##_##NAME) {                           \
+  UTEST_INITIALIZER(utest_register_##SET##_##NAME##_##LINE) {                  \
     const size_t index = utest_state.tests_length++;                           \
-    const char *name_part = #SET "." #NAME;                                    \
+    const char *name_part = #SET "." #__VA_ARGS__;                             \
     const size_t name_size = strlen(name_part) + 1;                            \
     char *name = UTEST_PTR_CAST(char *, malloc(name_size));                    \
     utest_state.tests = UTEST_PTR_CAST(                                        \
@@ -1102,13 +1128,18 @@ utest_type_printer(long long unsigned int i) {
                       sizeof(struct utest_test_state_s) *                      \
                           utest_state.tests_length));                          \
     if (utest_state.tests) {                                                   \
-      utest_state.tests[index].func = &utest_##SET##_##NAME;                   \
+      utest_state.tests[index].func = &utest_##SET##_##NAME##_##LINE;          \
       utest_state.tests[index].name = name;                                    \
       utest_state.tests[index].index = 0;                                      \
     }                                                                          \
     UTEST_SNPRINTF(name, name_size, "%s", name_part);                          \
+    utest_replace_commas_by_dot(name, name_size);                              \
   }                                                                            \
-  void utest_run_##SET##_##NAME(int *utest_result)
+  void utest_run_##SET##_##NAME##_##LINE(int *utest_result)
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 #define UTEST_F_SETUP(FIXTURE)                                                 \
   static void utest_f_setup_##FIXTURE(int *utest_result,                       \
