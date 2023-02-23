@@ -984,7 +984,7 @@ utest_type_printer(long long unsigned int i) {
     const char *yEval = (y);                                                   \
     if (UTEST_NULL == xEval ||                                                 \
         UTEST_NULL == yEval ||                                                 \
-        0 != strcmp(x, y)) {                                                   \
+        0 != strcmp(xEval, yEval)) {                                           \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%s\"\n", xEval);                            \
       UTEST_PRINTF("    Actual : \"%s\"\n", yEval);                            \
@@ -1001,7 +1001,7 @@ utest_type_printer(long long unsigned int i) {
     const char *yEval = (y);                                                   \
     if (UTEST_NULL == xEval ||                                                 \
         UTEST_NULL == yEval ||                                                 \
-        0 == strcmp(x, y)) {                                                   \
+        0 == strcmp(xEval, yEval)) {                                           \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%s\"\n", xEval);                            \
       UTEST_PRINTF("    Actual : \"%s\"\n", yEval);                            \
