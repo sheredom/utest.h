@@ -96,6 +96,8 @@ set(SOURCES
   stdint_include.c
   type_printers.c
   type_printers.cpp
+  side_effects.c
+  side_effects.cpp
 )
 
 add_executable(utest_test ${SOURCES})
