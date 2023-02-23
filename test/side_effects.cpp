@@ -35,9 +35,9 @@ static int test_next(struct test_reader *r) {
   return current;
 }
 
-static int test_bools[20] = {0, 1, 0, 1};
-static int test_ints[20] = {42, 13, 6, -53};
-static const char *test_strings[20] = {"42", "13", "6", "-53"};
+static const int test_bools[20] = {0, 1, 0, 1};
+static const int test_ints[20] = {42, 13, 6, -53};
+static const char *const test_strings[20] = {"42", "13", "6", "-53"};
 
 UTEST(cpp_side_effects, EXPECT_TRUE_EXPECT_FALSE) {
   struct test_reader reader = {0};
