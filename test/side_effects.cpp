@@ -29,9 +29,9 @@ struct test_reader {
   int offset;
 };
 
-static int test_next(struct test_reader *r) {
-  const int current = r->offset;
-  r->offset += 1;
+static int test_next(struct test_reader *reader) {
+  const int current = reader->offset;
+  reader->offset += 1;
   return current;
 }
 
