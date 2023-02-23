@@ -747,10 +747,11 @@ utest_type_printer(long long unsigned int i) {
 
 #define EXPECT_TRUE(x)                                                         \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (!(x)) {                                                                \
+    const int xEval = (x);                                                     \
+    if (!(xEval)) {                                                            \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : true\n");                                     \
-      UTEST_PRINTF("    Actual : %s\n", (x) ? "true" : "false");               \
+      UTEST_PRINTF("    Actual : %s\n", (xEval) ? "true" : "false");           \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
@@ -759,10 +760,11 @@ utest_type_printer(long long unsigned int i) {
 
 #define EXPECT_FALSE(x)                                                        \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (x) {                                                                   \
+    const int xEval = (x);                                                     \
+    if (xEval) {                                                               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : false\n");                                    \
-      UTEST_PRINTF("    Actual : %s\n", (x) ? "true" : "false");               \
+      UTEST_PRINTF("    Actual : %s\n", (xEval) ? "true" : "false");           \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
@@ -925,10 +927,11 @@ utest_type_printer(long long unsigned int i) {
 
 #define ASSERT_TRUE(x)                                                         \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (!(x)) {                                                                \
+    const int xEval = (x);                                                     \
+    if (!(xEval)) {                                                            \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : true\n");                                     \
-      UTEST_PRINTF("    Actual : %s\n", (x) ? "true" : "false");               \
+      UTEST_PRINTF("    Actual : %s\n", (xEval) ? "true" : "false");           \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
@@ -938,10 +941,11 @@ utest_type_printer(long long unsigned int i) {
 
 #define ASSERT_FALSE(x)                                                        \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (x) {                                                                   \
+    const int xEval = (x);                                                     \
+    if (xEval) {                                                               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : false\n");                                    \
-      UTEST_PRINTF("    Actual : %s\n", (x) ? "true" : "false");               \
+      UTEST_PRINTF("    Actual : %s\n", (xEval) ? "true" : "false");           \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
