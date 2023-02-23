@@ -784,10 +784,14 @@ utest_type_printer(long long unsigned int i) {
 
 #define EXPECT_STREQ(x, y)                                                     \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (UTEST_NULL == x || UTEST_NULL == y || 0 != strcmp(x, y)) {             \
+    const char *xEval = (x);                                                   \
+    const char *yEval = (y);                                                   \
+    if (UTEST_NULL == xEval ||                                                 \
+        UTEST_NULL == yEval ||                                                 \
+        0 != strcmp(xEval, yEval)) {                                           \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : \"%s\"\n", x);                                \
-      UTEST_PRINTF("    Actual : \"%s\"\n", y);                                \
+      UTEST_PRINTF("  Expected : \"%s\"\n", xEval);                            \
+      UTEST_PRINTF("    Actual : \"%s\"\n", yEval);                            \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
@@ -796,10 +800,14 @@ utest_type_printer(long long unsigned int i) {
 
 #define EXPECT_STRNE(x, y)                                                     \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (UTEST_NULL == x || UTEST_NULL == y || 0 == strcmp(x, y)) {             \
+    const char *xEval = (x);                                                   \
+    const char *yEval = (y);                                                   \
+    if (UTEST_NULL == xEval ||                                                 \
+        UTEST_NULL == yEval ||                                                 \
+        0 == strcmp(xEval, yEval)) {                                           \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : \"%s\"\n", x);                                \
-      UTEST_PRINTF("    Actual : \"%s\"\n", y);                                \
+      UTEST_PRINTF("  Expected : \"%s\"\n", xEval);                            \
+      UTEST_PRINTF("    Actual : \"%s\"\n", yEval);                            \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
@@ -808,10 +816,15 @@ utest_type_printer(long long unsigned int i) {
 
 #define EXPECT_STRNEQ(x, y, n)                                                 \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (UTEST_NULL == x || UTEST_NULL == y || 0 != UTEST_STRNCMP(x, y, n)) {   \
+    const char *xEval = (x);                                                   \
+    const char *yEval = (y);                                                   \
+    const int nEval = UTEST_CAST(int, n);                                      \
+    if (UTEST_NULL == xEval ||                                                 \
+        UTEST_NULL == yEval ||                                                 \
+        0 != UTEST_STRNCMP(xEval, yEval, nEval)) {                             \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);          \
-      UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);          \
+      UTEST_PRINTF("  Expected : \"%.*s\"\n", nEval, xEval);                   \
+      UTEST_PRINTF("    Actual : \"%.*s\"\n", nEval, yEval);                   \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
@@ -820,10 +833,15 @@ utest_type_printer(long long unsigned int i) {
 
 #define EXPECT_STRNNE(x, y, n)                                                 \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (UTEST_NULL == x || UTEST_NULL == y || 0 == UTEST_STRNCMP(x, y, n)) {   \
+    const char *xEval = (x);                                                   \
+    const char *yEval = (y);                                                   \
+    const int nEval = UTEST_CAST(int, n);                                      \
+    if (UTEST_NULL == xEval ||                                                 \
+        UTEST_NULL == yEval ||                                                 \
+        0 == UTEST_STRNCMP(xEval, yEval, nEval)) {                             \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);          \
-      UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);          \
+      UTEST_PRINTF("  Expected : \"%.*s\"\n", nEval, xEval);                   \
+      UTEST_PRINTF("    Actual : \"%.*s\"\n", nEval, yEval);                   \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
@@ -966,10 +984,14 @@ utest_type_printer(long long unsigned int i) {
 
 #define ASSERT_STREQ(x, y)                                                     \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (UTEST_NULL == x || UTEST_NULL == y || 0 != strcmp(x, y)) {             \
+    const char *xEval = (x);                                                   \
+    const char *yEval = (y);                                                   \
+    if (UTEST_NULL == xEval ||                                                 \
+        UTEST_NULL == yEval ||                                                 \
+        0 != strcmp(x, y)) {                                                   \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : \"%s\"\n", x);                                \
-      UTEST_PRINTF("    Actual : \"%s\"\n", y);                                \
+      UTEST_PRINTF("  Expected : \"%s\"\n", xEval);                            \
+      UTEST_PRINTF("    Actual : \"%s\"\n", yEval);                            \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
@@ -979,10 +1001,14 @@ utest_type_printer(long long unsigned int i) {
 
 #define ASSERT_STRNE(x, y)                                                     \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (UTEST_NULL == x || UTEST_NULL == y || 0 == strcmp(x, y)) {             \
+    const char *xEval = (x);                                                   \
+    const char *yEval = (y);                                                   \
+    if (UTEST_NULL == xEval ||                                                 \
+        UTEST_NULL == yEval ||                                                 \
+        0 == strcmp(x, y)) {                                                   \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : \"%s\"\n", x);                                \
-      UTEST_PRINTF("    Actual : \"%s\"\n", y);                                \
+      UTEST_PRINTF("  Expected : \"%s\"\n", xEval);                            \
+      UTEST_PRINTF("    Actual : \"%s\"\n", yEval);                            \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
@@ -992,10 +1018,15 @@ utest_type_printer(long long unsigned int i) {
 
 #define ASSERT_STRNEQ(x, y, n)                                                 \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (UTEST_NULL == x || UTEST_NULL == y || 0 != UTEST_STRNCMP(x, y, n)) {   \
+    const char *xEval = (x);                                                   \
+    const char *yEval = (y);                                                   \
+    const int nEval = UTEST_CAST(int, n);                                      \
+    if (UTEST_NULL == xEval ||                                                 \
+        UTEST_NULL == yEval ||                                                 \
+        0 != UTEST_STRNCMP(xEval, yEval, nEval)) {                             \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);          \
-      UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);          \
+      UTEST_PRINTF("  Expected : \"%.*s\"\n", nEval, xEval);                   \
+      UTEST_PRINTF("    Actual : \"%.*s\"\n", nEval, yEval);                   \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
@@ -1005,10 +1036,15 @@ utest_type_printer(long long unsigned int i) {
 
 #define ASSERT_STRNNE(x, y, n)                                                 \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (UTEST_NULL == x || UTEST_NULL == y || 0 == UTEST_STRNCMP(x, y, n)) {   \
+    const char *xEval = (x);                                                   \
+    const char *yEval = (y);                                                   \
+    const int nEval = UTEST_CAST(int, n);                                      \
+    if (UTEST_NULL == xEval ||                                                 \
+        UTEST_NULL == yEval ||                                                 \
+        0 == UTEST_STRNCMP(xEval, yEval, nEval)) {                             \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, n), x);          \
-      UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, n), y);          \
+      UTEST_PRINTF("  Expected : \"%.*s\"\n", nEval, xEval);                   \
+      UTEST_PRINTF("    Actual : \"%.*s\"\n", nEval, yEval);                   \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       return;                                                                  \
     }                                                                          \
