@@ -747,7 +747,7 @@ utest_type_printer(long long unsigned int i) {
 
 #define EXPECT_TRUE(x)                                                         \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    const int xEval = (x);                                                     \
+    const int xEval = !!(x);                                                   \
     if (!(xEval)) {                                                            \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : true\n");                                     \
@@ -760,7 +760,7 @@ utest_type_printer(long long unsigned int i) {
 
 #define EXPECT_FALSE(x)                                                        \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    const int xEval = (x);                                                     \
+    const int xEval = !!(x);                                                   \
     if (xEval) {                                                               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : false\n");                                    \
@@ -945,7 +945,7 @@ utest_type_printer(long long unsigned int i) {
 
 #define ASSERT_TRUE(x)                                                         \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    const int xEval = (x);                                                     \
+    const int xEval = !!(x);                                                   \
     if (!(xEval)) {                                                            \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : true\n");                                     \
@@ -959,7 +959,7 @@ utest_type_printer(long long unsigned int i) {
 
 #define ASSERT_FALSE(x)                                                        \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    const int xEval = (x);                                                     \
+    const int xEval = !!(x);                                                   \
     if (xEval) {                                                               \
       UTEST_PRINTF("%s:%u: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : false\n");                                    \
