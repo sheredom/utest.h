@@ -190,7 +190,7 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 #endif
 
 #elif defined(__APPLE__)
-#include <mach/mach_time.h>
+#include <time.h>
 #endif
 
 #if defined(_MSC_VER) && (_MSC_VER < 1920)
@@ -348,7 +348,7 @@ static UTEST_INLINE utest_int64_t utest_ns(void) {
 #endif
   return UTEST_CAST(utest_int64_t, ts.tv_sec) * 1000 * 1000 * 1000 + ts.tv_nsec;
 #elif __APPLE__
-  return UTEST_CAST(utest_int64_t, mach_absolute_time());
+  return UTEST_CAST(utest_int64_t, clock_gettime_nsec_np(CLOCK_UPTIME_RAW));
 #elif __EMSCRIPTEN__
   return emscripten_performance_now() * 1000000.0;
 #else
