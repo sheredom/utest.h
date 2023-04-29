@@ -273,9 +273,16 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 
 #define UTEST_INLINE inline
 
+#if defined(__TINYC__)
+#define UTEST_INITIALIZER(f)                                                   \
+  static void f(void) __attribute((constructor));                              \
+  static void f(void)
+#else
 #define UTEST_INITIALIZER(f)                                                   \
   static void f(void) __attribute__((constructor));                            \
   static void f(void)
+#endif
+
 #endif
 
 #if defined(__cplusplus)
@@ -379,12 +386,16 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #define UTEST_WEAK static __attribute__((used))
 #elif defined(__clang__) || defined(__GNUC__)
 #define UTEST_WEAK __attribute__((weak))
+#elif defined(__TINYC__)
+#define UTEST_WEAK __attribute((weak))
 #else
-#error Non clang, non gcc, non MSVC compiler found!
+#error Non clang, non gcc, non MSVC, non tcc compiler found!
 #endif
 
 #if defined(_MSC_VER)
 #define UTEST_UNUSED
+#elif defined(__TINYC__)
+#define UTEST_UNUSED __attribute((unused))
 #else
 #define UTEST_UNUSED __attribute__((unused))
 #endif
@@ -617,7 +628,8 @@ utest_type_printer(long long unsigned int i) {
 
 #endif
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) &&            \
-    !(defined(__MINGW32__) || defined(__MINGW64__))
+        !(defined(__MINGW32__) || defined(__MINGW64__)) ||                     \
+    defined(__TINYC__)
 #define utest_type_printer(val)                                                \
   UTEST_PRINTF(_Generic((val), signed char                                     \
                         : "%d", unsigned char                                  \
@@ -716,7 +728,7 @@ utest_type_printer(long long unsigned int i) {
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) || defined(__TINYC__)
 #define UTEST_EXPECT(x, y, cond)                                               \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     UTEST_AUTO(x) xEval = (x);                                                 \
@@ -908,7 +920,7 @@ utest_type_printer(long long unsigned int i) {
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) || defined(__TINYC__)
 #define UTEST_ASSERT(x, y, cond)                                               \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     UTEST_AUTO(x) xEval = (x);                                                 \
