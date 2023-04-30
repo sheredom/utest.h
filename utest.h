@@ -127,6 +127,12 @@ typedef uint32_t utest_uint32_t;
 #define UTEST_TEST_FAILURE (1)
 #define UTEST_TEST_SKIPPED (2)
 
+#if defined(__TINYC__)
+#define UTEST_ATTRIBUTE(a) __attribute((a))
+#else
+#define UTEST_ATTRIBUTE(a) __attribute__((a))
+#endif
+
 #if defined(_MSC_VER) || defined(__MINGW64__) || defined(__MINGW32__)
 
 #if defined(__MINGW64__) || defined(__MINGW32__)
@@ -273,16 +279,9 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 
 #define UTEST_INLINE inline
 
-#if defined(__TINYC__)
 #define UTEST_INITIALIZER(f)                                                   \
-  static void f(void) __attribute((constructor));                              \
+  static void f(void) UTEST_ATTRIBUTE(constructor);                            \
   static void f(void)
-#else
-#define UTEST_INITIALIZER(f)                                                   \
-  static void f(void) __attribute__((constructor));                            \
-  static void f(void)
-#endif
-
 #endif
 
 #if defined(__cplusplus)
@@ -383,21 +382,17 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #if defined(_MSC_VER)
 #define UTEST_WEAK __forceinline
 #elif defined(__MINGW32__) || defined(__MINGW64__)
-#define UTEST_WEAK static __attribute__((used))
-#elif defined(__clang__) || defined(__GNUC__)
-#define UTEST_WEAK __attribute__((weak))
-#elif defined(__TINYC__)
-#define UTEST_WEAK __attribute((weak))
+#define UTEST_WEAK static UTEST_ATTRIBUTE(used)
+#elif defined(__clang__) || defined(__GNUC__) || defined(__TINYC__)
+#define UTEST_WEAK UTEST_ATTRIBUTE(weak)
 #else
 #error Non clang, non gcc, non MSVC, non tcc compiler found!
 #endif
 
 #if defined(_MSC_VER)
 #define UTEST_UNUSED
-#elif defined(__TINYC__)
-#define UTEST_UNUSED __attribute((unused))
 #else
-#define UTEST_UNUSED __attribute__((unused))
+#define UTEST_UNUSED UTEST_ATTRIBUTE(unused)
 #endif
 
 #ifdef __clang__
@@ -435,7 +430,7 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #define UTEST_OVERLOADABLE
 #elif defined(__clang__)
 /* otherwise, if we are using clang with c - use the overloadable attribute */
-#define UTEST_OVERLOADABLE __attribute__((overloadable))
+#define UTEST_OVERLOADABLE UTEST_ATTRIBUTE(overloadable)
 #endif
 
 #if defined(__cplusplus) && (__cplusplus >= 201103L)
