@@ -48,20 +48,26 @@
 #pragma warning(pop)
 #endif
 
+#if defined(__TINYC__)
+#define subprocess_attribute(a) __attribute((a))
+#else
+#define subprocess_attribute(a) __attribute__((a))
+#endif
+
 #if defined(_MSC_VER)
 #define subprocess_pure
 #define subprocess_weak __inline
 #define subprocess_tls __declspec(thread)
 #elif defined(__MINGW32__)
-#define subprocess_pure __attribute__((pure))
-#define subprocess_weak static __attribute__((used))
+#define subprocess_pure subprocess_attribute(pure)
+#define subprocess_weak static subprocess_attribute(used)
 #define subprocess_tls __thread
-#elif defined(__clang__) || defined(__GNUC__)
-#define subprocess_pure __attribute__((pure))
-#define subprocess_weak __attribute__((weak))
+#elif defined(__clang__) || defined(__GNUC__) || defined(__TINYC__)
+#define subprocess_pure subprocess_attribute(pure)
+#define subprocess_weak subprocess_attribute(weak)
 #define subprocess_tls __thread
 #else
-#error Non clang, non gcc, non MSVC compiler found!
+#error Non clang, non gcc, non MSVC, non tcc compiler found!
 #endif
 
 struct subprocess_s;
