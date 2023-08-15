@@ -327,6 +327,14 @@ static UTEST_INLINE void *utest_realloc(void *const pointer, size_t new_size) {
   return new_pointer;
 }
 
+static UTEST_INLINE void utest_strcpy(char * dest, size_t dest_size, const char * src) {
+#if defined(_MSC_VER)
+    strcpy_s(dest, dest_size, src);
+#else
+    strcpy(dest, src);
+#endif
+}
+
 static UTEST_INLINE utest_int64_t utest_ns(void) {
 #if defined(_MSC_VER) || defined(__MINGW64__) || defined(__MINGW32__)
   utest_large_integer counter;
@@ -899,7 +907,7 @@ utest_type_printer(long long unsigned int i) {
       if (strcmp(e.what(), exception_message) != 0) {                          \
         const size_t message_size = strlen(e.what()) + 1;                      \
         message_caught = UTEST_PTR_CAST(char *, malloc(message_size));         \
-        strcpy(message_caught, e.what());                                      \
+        utest_strcpy(message_caught, message_size, e.what());                  \
       }                                                                        \
     } catch (...) {                                                            \
       exception_caught = 2;                                                    \
@@ -1136,7 +1144,7 @@ utest_type_printer(long long unsigned int i) {
       if (strcmp(e.what(), exception_message) != 0) {                          \
         const size_t message_size = strlen(e.what()) + 1;                      \
         message_caught = UTEST_PTR_CAST(char *, malloc(message_size));         \
-        strcpy(message_caught, e.what());                                      \
+        utest_strcpy(message_caught, message_size, e.what());                  \
       }                                                                        \
     } catch (...) {                                                            \
       exception_caught = 2;                                                    \
