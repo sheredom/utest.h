@@ -276,6 +276,11 @@ UTEST(cpp14, Exception) {
   ASSERT_EXCEPTION(foo(1), std::range_error);
 }
 
+UTEST(cpp14, ExceptionWithMessage) {
+    EXPECT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar");
+    ASSERT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar");
+}
+
 UTEST(cpp14, Todo) { UTEST_SKIP("Not yet implemented!"); }
 
 enum SomeEnum { SomeEnumFoo, SomeEnumBar };
