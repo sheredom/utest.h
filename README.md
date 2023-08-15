@@ -612,6 +612,23 @@ UTEST(foo, bar) {
 }
 ```
 
+### EXPECT_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message)
+
+Expects that exception_type will be thrown with message exception_message when code x is executed.
+
+```cpp
+void foo(int bar) {
+  if (bar == 1)
+    throw std::range_error("bad bar");
+}
+
+UTEST(foo, bar) {
+  EXPECT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar"); // pass!
+  EXPECT_EXCEPTION_WITH_MESSAGE(foo(2), std::range_error, "bad bar2"); // fail!
+  EXPECT_EXCEPTION_WITH_MESSAGE(foo(1), std::exception, "bad bar");   // fail!
+}
+```
+
 ### UTEST_SKIP(msg)
 
 This macro lets you mark a test case as being skipped - eg. that the test case
