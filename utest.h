@@ -896,10 +896,15 @@ utest_type_printer(long long unsigned int i) {
 
 #define EXPECT_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message)    \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
+  UTEST_PRINTF("FUCKER %i\n", __LINE__); \
     int exception_caught = 0;                                                  \
+    UTEST_PRINTF("FUCKER %i\n", __LINE__); \
     char *message_caught = UTEST_NULL;                                         \
+    UTEST_PRINTF("FUCKER %i\n", __LINE__); \
     try {                                                                      \
+    UTEST_PRINTF("FUCKER %i\n", __LINE__); \
       x;                                                                       \
+      UTEST_PRINTF("FUCKER %i\n", __LINE__); \
     } catch (const exception_type &e) {                                        \
       UTEST_PRINTF("FUCKER %i\n", __LINE__); \
       exception_caught = 1;                                                    \
