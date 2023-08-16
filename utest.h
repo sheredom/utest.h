@@ -904,9 +904,8 @@ utest_type_printer(long long unsigned int i) {
       exception_caught = 1;                                                    \
       if (0 != UTEST_STRNCMP(e.what(), exception_message,                      \
                              strlen(exception_message))) {                     \
-        const size_t message_size = strlen(e.what()) + 1;                      \
-        message_caught = UTEST_PTR_CAST(char *, malloc(message_size));         \
-        message_caught[0] = '\0';                                              \
+        const size_t message_size = strlen(e.what());                          \
+        message_caught = UTEST_PTR_CAST(char *, malloc(message_size + 1));     \
         UTEST_STRCPY(message_caught, message_size, e.what());                  \
       }                                                                        \
     } catch (...) {                                                            \
@@ -1143,9 +1142,8 @@ utest_type_printer(long long unsigned int i) {
       exception_caught = 1;                                                    \
       if (0 != UTEST_STRNCMP(e.what(), exception_message,                      \
                              strlen(exception_message))) {                     \
-        const size_t message_size = strlen(e.what()) + 1;                      \
-        message_caught = UTEST_PTR_CAST(char *, malloc(message_size));         \
-        message_caught[0] = '\0';                                              \
+        const size_t message_size = strlen(e.what());                          \
+        message_caught = UTEST_PTR_CAST(char *, malloc(message_size + 1));     \
         UTEST_STRCPY(message_caught, message_size, e.what());                  \
       }                                                                        \
     } catch (...) {                                                            \
