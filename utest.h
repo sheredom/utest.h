@@ -906,9 +906,12 @@ utest_type_printer(long long unsigned int i) {
     UTEST_PRINTF("FUCKER %i\n", __LINE__); \
       x;                                                                       \
       UTEST_PRINTF("FUCKER %i\n", __LINE__); \
-    } catch (const exception_type &) {                                        \
+    } catch (const exception_type &e) {                                        \
       UTEST_PRINTF("FUCKER %i\n", __LINE__); \
       exception_caught = 1;                                                    \
+      if (0 != UTEST_STRNCMP(e.what(), exception_message,                      \
+                             strlen(exception_message))) {                     \
+      }                                                                        \
     } catch (...) {                                                            \
       exception_caught = 2;                                                    \
     }                                                                          \
