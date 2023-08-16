@@ -885,7 +885,7 @@ utest_type_printer(long long unsigned int i) {
     if (1 != exception_caught) {                                               \
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : %s exception\n", #exception_type);            \
-      UTEST_PRINTF("    Actual : %s\n", (exception_caught == 2)                \
+      UTEST_PRINTF("    Actual : %s\n", (2 == exception_caught)                \
                                             ? "Unexpected exception"           \
                                             : "No exception");                 \
       *utest_result = UTEST_TEST_FAILURE;                                      \
@@ -902,10 +902,11 @@ utest_type_printer(long long unsigned int i) {
       x;                                                                       \
     } catch (const exception_type &e) {                                        \
       exception_caught = 1;                                                    \
-      if (UTEST_STRNCMP(e.what(), exception_message,                           \
-                        strlen(exception_message)) != 0) {                     \
+      if (0 != UTEST_STRNCMP(e.what(), exception_message,                      \
+                             strlen(exception_message))) {                     \
         const size_t message_size = strlen(e.what()) + 1;                      \
         message_caught = UTEST_PTR_CAST(char *, malloc(message_size));         \
+        message_caught[0] = '\0';                                              \
         UTEST_STRCPY(message_caught, message_size, e.what());                  \
       }                                                                        \
     } catch (...) {                                                            \
@@ -914,7 +915,7 @@ utest_type_printer(long long unsigned int i) {
     if (1 != exception_caught) {                                               \
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : %s exception\n", #exception_type);            \
-      UTEST_PRINTF("    Actual : %s\n", (exception_caught == 2)                \
+      UTEST_PRINTF("    Actual : %s\n", (2 == exception_caught)                \
                                             ? "Unexpected exception"           \
                                             : "No exception");                 \
       *utest_result = UTEST_TEST_FAILURE;                                      \
@@ -1122,7 +1123,7 @@ utest_type_printer(long long unsigned int i) {
     if (1 != exception_caught) {                                               \
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : %s exception\n", #exception_type);            \
-      UTEST_PRINTF("    Actual : %s\n", (exception_caught == 2)                \
+      UTEST_PRINTF("    Actual : %s\n", (2 == exception_caught)                \
                                             ? "Unexpected exception"           \
                                             : "No exception");                 \
       *utest_result = UTEST_TEST_FAILURE;                                      \
@@ -1140,8 +1141,8 @@ utest_type_printer(long long unsigned int i) {
       x;                                                                       \
     } catch (const exception_type &e) {                                        \
       exception_caught = 1;                                                    \
-      if (UTEST_STRNCMP(e.what(), exception_message,                           \
-                        strlen(exception_message)) != 0) {                     \
+      if (0 != UTEST_STRNCMP(e.what(), exception_message,                      \
+                             strlen(exception_message))) {                     \
         const size_t message_size = strlen(e.what()) + 1;                      \
         message_caught = UTEST_PTR_CAST(char *, malloc(message_size));         \
         message_caught[0] = '\0';                                              \
@@ -1153,7 +1154,7 @@ utest_type_printer(long long unsigned int i) {
     if (1 != exception_caught) {                                               \
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : %s exception\n", #exception_type);            \
-      UTEST_PRINTF("    Actual : %s\n", (exception_caught == 2)                \
+      UTEST_PRINTF("    Actual : %s\n", (2 == exception_caught)                \
                                             ? "Unexpected exception"           \
                                             : "No exception");                 \
       *utest_result = UTEST_TEST_FAILURE;                                      \
