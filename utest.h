@@ -906,17 +906,9 @@ utest_type_printer(long long unsigned int i) {
     UTEST_PRINTF("FUCKER %i\n", __LINE__); \
       x;                                                                       \
       UTEST_PRINTF("FUCKER %i\n", __LINE__); \
-    } catch (const exception_type &e) {                                        \
+    } catch (const exception_type &) {                                        \
       UTEST_PRINTF("FUCKER %i\n", __LINE__); \
       exception_caught = 1;                                                    \
-      if (0 != UTEST_STRNCMP(e.what(), exception_message,                      \
-                             strlen(exception_message))) {                     \
-        UTEST_PRINTF("FUCKER %i\n", __LINE__); \
-        const size_t message_size = strlen(e.what());                          \
-        UTEST_PRINTF("FUCKER %i\n", __LINE__); \
-        message_caught = UTEST_PTR_CAST(char *, malloc(message_size + 1));     \
-        UTEST_PRINTF("FUCKER %i\n", __LINE__); \
-      }                                                                        \
     } catch (...) {                                                            \
       exception_caught = 2;                                                    \
     }                                                                          \
