@@ -910,8 +910,8 @@ utest_type_printer(long long unsigned int i) {
       UTEST_PRINTF("FUCKER %i\n", __LINE__); \
       exception_caught = 1;                                                    \
       const char* const what = e.what(); \
-      if (0 != UTEST_STRNCMP(what, exception_message,                      \
-                             strlen(exception_message))) {                     \
+      if (UTEST_NULL != what) {                     \
+        UTEST_PRINTF("FUCKER %i\n", __LINE__); \
       }                                                                        \
     } catch (...) {                                                            \
       exception_caught = 2;                                                    \
