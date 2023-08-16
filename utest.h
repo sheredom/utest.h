@@ -895,7 +895,8 @@ utest_type_printer(long long unsigned int i) {
   UTEST_SURPRESS_WARNING_END
 
 #define EXPECT_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message)    \
-  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
+  UTEST_SURPRESS_WARNING_BEGIN UTEST_PRINTF("FUCKER %i\n", __LINE__); \
+   do {                                            \
   UTEST_PRINTF("FUCKER %i\n", __LINE__); \
     int exception_caught = 0;                                                  \
     UTEST_PRINTF("FUCKER %i\n", __LINE__); \
