@@ -255,6 +255,12 @@ UTEST(cpp, Exception) {
   ASSERT_EXCEPTION(foo(1), std::range_error);
 }
 
+// GCC stdlib has a sanitizer bug in exceptions!
+#if defined(__has_feature)
+#if __has_feature(memory_sanitizer)
+__attribute__((no_sanitize("memory")))
+#endif
+#endif
 UTEST(cpp, ExceptionWithMessage) {
   EXPECT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar");
   ASSERT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar");
