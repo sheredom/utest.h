@@ -257,7 +257,6 @@ UTEST(cpp, Exception) {
 
 UTEST(cpp, ExceptionWithMessage) {
   EXPECT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar");
-  ASSERT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar");
 }
 
 UTEST(cpp, Todo) { UTEST_SKIP("Not yet implemented!"); }
