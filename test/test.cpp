@@ -240,8 +240,12 @@ UTEST(cpp, Near) {
 // GCC stdlib has a sanitizer bug in exceptions!
 #if defined(__has_feature)
 #if __has_feature(memory_sanitizer)
-__attribute__((no_sanitize("memory")))
+#define MEMORY_SANITIZER
 #endif
+#endif
+
+#if defined(MEMORY_SANITIZER)
+__attribute__((no_sanitize("memory")))
 #endif
 static int
 foo(int bar) {
@@ -255,10 +259,12 @@ UTEST(cpp, Exception) {
   ASSERT_EXCEPTION(foo(1), std::range_error);
 }
 
+#if !defined(MEMORY_SANITIZER)
 UTEST(cpp, ExceptionWithMessage) {
     EXPECT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar");
     ASSERT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar");
 }
+#endif
 
 UTEST(cpp, Todo) { UTEST_SKIP("Not yet implemented!"); }
 
