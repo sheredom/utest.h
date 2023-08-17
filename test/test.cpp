@@ -261,8 +261,8 @@ UTEST(cpp, Exception) {
 
 #if !defined(MEMORY_SANITIZER)
 UTEST(cpp, ExceptionWithMessage) {
-    EXPECT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar");
-    ASSERT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar");
+  EXPECT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar");
+  ASSERT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar");
 }
 #endif
 
