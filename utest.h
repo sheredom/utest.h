@@ -317,6 +317,16 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 #endif
 #endif
 
+// Macros to allow overloading of macros with different number of parameters
+// EXPAND is only necessary because of vc++
+#define EXPAND(x) x
+// macro with 1 or 2 parameters
+#define GET_MACRO_1_2(_1, _2, NAME, ...) NAME
+// macro with 2 or 3 parameters
+#define GET_MACRO_2_3(_1, _2, _3, NAME, ...) NAME
+// macro with 3 or 4 parameters
+#define GET_MACRO_3_4(_1, _2, _3, _4, NAME, ...) NAME
+
 static UTEST_INLINE void *utest_realloc(void *const pointer, size_t new_size) {
   void *const new_pointer = realloc(pointer, new_size);
 
@@ -715,7 +725,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   } while (0)
 
 #if defined(__clang__)
-#define UTEST_EXPECT(x, y, cond)                                               \
+#define UTEST_EXPECT_4(x, y, cond, msg)                                        \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     _Pragma("clang diagnostic push")                                           \
         _Pragma("clang diagnostic ignored \"-Wlanguage-extension-token\"")     \
@@ -734,13 +744,19 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       UTEST_PRINTF(" vs ");                                                    \
       utest_type_printer(yEval);                                               \
       UTEST_PRINTF("\n");                                                      \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF("   Message : %s\n", msg);                                \
+      }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+#define UTEST_EXPECT_3(x, y, cond) UTEST_EXPECT_4(x, y, cond, "")
+#define UTEST_EXPECT(...)                                                       \
+  EXPAND(GET_MACRO_3_4(__VA_ARGS__, UTEST_EXPECT_4, UTEST_EXPECT_3)(__VA_ARGS__))
 #elif defined(__GNUC__) || defined(__TINYC__)
-#define UTEST_EXPECT(x, y, cond)                                               \
+#define UTEST_EXPECT_4(x, y, cond, msg)                                        \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     UTEST_AUTO(x) xEval = (x);                                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
@@ -754,58 +770,109 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       UTEST_PRINTF(" vs ");                                                    \
       utest_type_printer(yEval);                                               \
       UTEST_PRINTF("\n");                                                      \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF("   Message : %s\n", msg);                                \
+      }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+#define UTEST_EXPECT_3(x, y, cond) UTEST_EXPECT_4(x, y, cond, "")
+#define UTEST_EXPECT(...)                                                      \
+  EXPAND(GET_MACRO_3_4(__VA_ARGS__, UTEST_EXPECT_4, UTEST_EXPECT_3)(__VA_ARGS__))
+
 #else
-#define UTEST_EXPECT(x, y, cond)                                               \
+#define UTEST_EXPECT_4(x, y, cond, msg)                                        \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (!((x)cond(y))) {                                                       \
-      UTEST_PRINTF("%s:%i: Failure (Expected " #cond " Actual)\n", __FILE__,   \
+      UTEST_PRINTF("%s:%i: Failure (Expected " #cond " Actual)", __FILE__,     \
                    __LINE__);                                                  \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF(" Message : %s", msg);                                    \
+      }                                                                        \
+      UTEST_PRINTF("\n")                                                       \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+#define UTEST_EXPECT_3(x, y, cond) UTEST_EXPECT_4(x, y, cond, "")
+#define UTEST_EXPECT(...)                                                       \
+  EXPAND(GET_MACRO_3_4(__VA_ARGS__, UTEST_EXPECT_4, UTEST_EXPECT_3)(__VA_ARGS__))
 #endif
 
-#define EXPECT_TRUE(x)                                                         \
+#define UTEST_W_MSG(test_name,...)
+
+#define EXPECT_TRUE_2(x, msg)                                                  \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     const int xEval = !!(x);                                                   \
     if (!(xEval)) {                                                            \
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : true\n");                                     \
       UTEST_PRINTF("    Actual : %s\n", (xEval) ? "true" : "false");           \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF("   Message : %s\n", msg);                                \
+      }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+#define EXPECT_TRUE_1(exp) EXPECT_TRUE_2(exp, "")
+#define EXPECT_TRUE(...)                                                       \
+  EXPAND(GET_MACRO_1_2(__VA_ARGS__, EXPECT_TRUE_2, EXPECT_TRUE_1)(__VA_ARGS__))
 
-#define EXPECT_FALSE(x)                                                        \
+#define EXPECT_FALSE_2(x, msg)                                                 \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     const int xEval = !!(x);                                                   \
     if (xEval) {                                                               \
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : false\n");                                    \
       UTEST_PRINTF("    Actual : %s\n", (xEval) ? "true" : "false");           \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF("   Message : %s\n", msg);                                \
+      }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+#define EXPECT_FALSE_1(exp) EXPECT_FALSE_2(exp, "")
+#define EXPECT_FALSE(...)                                                      \
+  EXPAND(GET_MACRO_1_2(__VA_ARGS__, EXPECT_FALSE_2, EXPECT_FALSE_1)(__VA_ARGS__))
 
-#define EXPECT_EQ(x, y) UTEST_EXPECT(x, y, ==)
-#define EXPECT_NE(x, y) UTEST_EXPECT(x, y, !=)
-#define EXPECT_LT(x, y) UTEST_EXPECT(x, y, <)
-#define EXPECT_LE(x, y) UTEST_EXPECT(x, y, <=)
-#define EXPECT_GT(x, y) UTEST_EXPECT(x, y, >)
-#define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >=)
+#define EXPECT_EQ_3(x, y, msg) UTEST_EXPECT(x, y, ==, msg)
+#define EXPECT_EQ_2(x, y) UTEST_EXPECT(x, y, ==, "")
+#define EXPECT_EQ(...)                                                         \
+  EXPAND(GET_MACRO_2_3(__VA_ARGS__, EXPECT_EQ_3, EXPECT_EQ_2)(__VA_ARGS__))
 
-#define EXPECT_STREQ(x, y)                                                     \
+#define EXPECT_NE_3(x, y, msg) UTEST_EXPECT(x, y, !=, msg)
+#define EXPECT_NE_2(x, y) UTEST_EXPECT(x, y, !=, "")
+#define EXPECT_NE(...)                                                         \
+  EXPAND(GET_MACRO_2_3(__VA_ARGS__, EXPECT_NE_3, EXPECT_NE_2)(__VA_ARGS__))
+
+#define EXPECT_LT_3(x, y, msg) UTEST_EXPECT(x, y, <, msg)
+#define EXPECT_LT_2(x, y) UTEST_EXPECT(x, y, <, "")
+#define EXPECT_LT(...)                                                         \
+  EXPAND(GET_MACRO_2_3(__VA_ARGS__, EXPECT_LT_3, EXPECT_LT_2)(__VA_ARGS__))
+
+#define EXPECT_LE_3(x, y, msg) UTEST_EXPECT(x, y, <=, msg)
+#define EXPECT_LE_2(x, y) UTEST_EXPECT(x, y, <=, "")
+#define EXPECT_LE(...)                                                         \
+  EXPAND(GET_MACRO_2_3(__VA_ARGS__, EXPECT_LE_3, EXPECT_LE_2)(__VA_ARGS__))
+
+#define EXPECT_GT_3(x, y, msg) UTEST_EXPECT(x, y, >, msg)
+#define EXPECT_GT_2(x, y) UTEST_EXPECT(x, y, >, "")
+#define EXPECT_GT(...)                                                         \
+  EXPAND(GET_MACRO_2_3(__VA_ARGS__, EXPECT_GT_3, EXPECT_GT_2)(__VA_ARGS__))
+
+#define EXPECT_GE_3(x, y, msg) UTEST_EXPECT(x, y, >=, msg)
+#define EXPECT_GE_2(x, y) UTEST_EXPECT(x, y, >=, "")
+#define EXPECT_GE(...)                                                         \
+  EXPAND(GET_MACRO_2_3(__VA_ARGS__, EXPECT_GE_3, EXPECT_GE_2)(__VA_ARGS__))
+
+#define EXPECT_STREQ_3(x, y, msg)                                              \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     const char *xEval = (x);                                                   \
     const char *yEval = (y);                                                   \
@@ -814,13 +881,19 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%s\"\n", xEval);                            \
       UTEST_PRINTF("    Actual : \"%s\"\n", yEval);                            \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF("   Message : %s\n", msg);                                \
+      }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+#define EXPECT_STREQ_2(x, y) EXPECT_STREQ_3(x, y, "")
+#define EXPECT_STREQ(...)                                                      \
+  EXPAND(GET_MACRO_2_3(__VA_ARGS__, EXPECT_STREQ_3, EXPECT_STREQ_2)(__VA_ARGS__))
 
-#define EXPECT_STRNE(x, y)                                                     \
+#define EXPECT_STRNE_3(x, y, msg)                                              \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     const char *xEval = (x);                                                   \
     const char *yEval = (y);                                                   \
@@ -829,13 +902,19 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%s\"\n", xEval);                            \
       UTEST_PRINTF("    Actual : \"%s\"\n", yEval);                            \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF("   Message : %s\n", msg);                                \
+      }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+#define EXPECT_STRNE_2(x, y) EXPECT_STRNE_3(x, y, "")
+#define EXPECT_STRNE(...)                                                      \
+  EXPAND(GET_MACRO_2_3(__VA_ARGS__, EXPECT_STRNE_3, EXPECT_STRNE_2)(__VA_ARGS__))
 
-#define EXPECT_STRNEQ(x, y, n)                                                 \
+#define EXPECT_STRNEQ_4(x, y, n, msg)                                          \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     const char *xEval = (x);                                                   \
     const char *yEval = (y);                                                   \
@@ -845,13 +924,19 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, nEval), xEval);  \
       UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, nEval), yEval);  \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF("   Message : %s\n", msg);                                \
+      }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+#define EXPECT_STRNEQ_3(x, y, n) EXPECT_STRNEQ_4(x, y, n, "")
+#define EXPECT_STRNEQ(...)                                                     \
+  EXPAND(GET_MACRO_3_4(__VA_ARGS__, EXPECT_STRNEQ_4, EXPECT_STRNEQ_3)(__VA_ARGS__))
 
-#define EXPECT_STRNNE(x, y, n)                                                 \
+#define EXPECT_STRNNE_4(x, y, n, msg)                                          \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     const char *xEval = (x);                                                   \
     const char *yEval = (y);                                                   \
@@ -861,13 +946,19 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, nEval), xEval);  \
       UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, nEval), yEval);  \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF("   Message : %s\n", msg);                                \
+      }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+#define EXPECT_STRNNE_3(x, y, n) EXPECT_STRNNE_4(x, y, n, "")
+#define EXPECT_STRNNE(...)                                                     \
+  EXPAND(GET_MACRO_3_4(__VA_ARGS__, EXPECT_STRNNE_4, EXPECT_STRNNE_3)(__VA_ARGS__))
 
-#define EXPECT_NEAR(x, y, epsilon)                                             \
+#define EXPECT_NEAR_4(x, y, epsilon, msg)                                      \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     const double diff =                                                        \
         utest_fabs(UTEST_CAST(double, x) - UTEST_CAST(double, y));             \
@@ -875,14 +966,20 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : %f\n", UTEST_CAST(double, x));                \
       UTEST_PRINTF("    Actual : %f\n", UTEST_CAST(double, y));                \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF("   Message : %s\n", msg);                                \
+      }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+#define EXPECT_NEAR_3(x, y, epsilon) EXPECT_NEAR_4(x, y, epsilon, "")
+#define EXPECT_NEAR(...)                                                       \
+  EXPAND(GET_MACRO_3_4(__VA_ARGS__, EXPECT_NEAR_4, EXPECT_NEAR_3)(__VA_ARGS__))
 
 #if defined(UTEST_HAS_EXCEPTIONS)
-#define EXPECT_EXCEPTION(x, exception_type)                                    \
+#define EXPECT_EXCEPTION_3(x, exception_type, msg)                             \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     int exception_caught = 0;                                                  \
     try {                                                                      \
@@ -898,13 +995,20 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       UTEST_PRINTF("    Actual : %s\n", (2 == exception_caught)                \
                                             ? "Unexpected exception"           \
                                             : "No exception");                 \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF("   Message : %s\n", msg);                                \
+      }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+#define EXPECT_EXCEPTION_2(x, exception_type)                                  \
+  EXPECT_EXCEPTION_3(x, exception_type, "")
+#define EXPECT_EXCEPTION(...)                                                  \
+  EXPAND(GET_MACRO_2_3(__VA_ARGS__, EXPECT_EXCEPTION_3, EXPECT_EXCEPTION_2)(__VA_ARGS__))
 
-#define EXPECT_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message)    \
+#define EXPECT_EXCEPTION_WITH_MESSAGE_4(x, exception_type, exception_msg, msg) \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     int exception_caught = 0;                                                  \
     char *message_caught = UTEST_NULL;                                         \
@@ -914,7 +1018,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       const char *const what = e.what();                                       \
       exception_caught = 1;                                                    \
       if (0 !=                                                                 \
-          UTEST_STRNCMP(what, exception_message, strlen(exception_message))) { \
+          UTEST_STRNCMP(what, exception_msg, strlen(exception_msg))) {         \
         const size_t message_size = strlen(what) + 1;                          \
         message_caught = UTEST_PTR_CAST(char *, malloc(message_size));         \
         UTEST_STRNCPY(message_caught, what, message_size);                     \
@@ -928,18 +1032,28 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       UTEST_PRINTF("    Actual : %s\n", (2 == exception_caught)                \
                                             ? "Unexpected exception"           \
                                             : "No exception");                 \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF("   Message : %s\n", msg);                                \
+      }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
     } else if (UTEST_NULL != message_caught) {                                 \
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : %s exception with message %s\n",              \
-                   #exception_type, exception_message);                        \
+                   #exception_type, exception_msg);                            \
       UTEST_PRINTF("    Actual message : %s\n", message_caught);               \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF("   Message : %s\n", msg);                                \
+      }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       free(message_caught);                                                    \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+#define EXPECT_EXCEPTION_WITH_MESSAGE_3(x, exception_type, exception_msg)      \
+  EXPECT_EXCEPTION_WITH_MESSAGE_4(x, exception_type, exception_msg, "")
+#define EXPECT_EXCEPTION_WITH_MESSAGE(...)                                     \
+  EXPAND(GET_MACRO_3_4(__VA_ARGS__, EXPECT_EXCEPTION_WITH_MESSAGE_4, EXPECT_EXCEPTION_WITH_MESSAGE_3)(__VA_ARGS__))
 #endif
 
 #if defined(__clang__)
@@ -1143,7 +1257,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
 
-#define ASSERT_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message)    \
+#define ASSERT_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_msg)        \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     int exception_caught = 0;                                                  \
     char *message_caught = UTEST_NULL;                                         \
@@ -1153,7 +1267,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       const char *const what = e.what();                                       \
       exception_caught = 1;                                                    \
       if (0 !=                                                                 \
-          UTEST_STRNCMP(what, exception_message, strlen(exception_message))) { \
+          UTEST_STRNCMP(what, exception_msg, strlen(exception_msg))) {         \
         const size_t message_size = strlen(what) + 1;                          \
         message_caught = UTEST_PTR_CAST(char *, malloc(message_size));         \
         UTEST_STRNCPY(message_caught, what, message_size);                     \
@@ -1172,7 +1286,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
     } else if (UTEST_NULL != message_caught) {                                 \
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : %s exception with message %s\n",              \
-                   #exception_type, exception_message);                        \
+                   #exception_type, exception_msg);                            \
       UTEST_PRINTF("    Actual message : %s\n", message_caught);               \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       free(message_caught);                                                    \

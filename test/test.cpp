@@ -62,33 +62,63 @@ UTEST(cpp, ASSERT_STRNNE) { ASSERT_STRNNE("foo", "barfoo", strlen("foo")); }
 
 UTEST(cpp, EXPECT_TRUE) { EXPECT_TRUE(1); }
 
+UTEST(cpp, EXPECT_TRUE_MSG) { EXPECT_TRUE(1, "custom message"); }
+
 UTEST(cpp, EXPECT_FALSE) { EXPECT_FALSE(0); }
+
+UTEST(cpp, EXPECT_FALSE_MSG) { EXPECT_FALSE(0, "custom message"); }
 
 UTEST(cpp, EXPECT_EQ) { EXPECT_EQ(1, 1); }
 
+UTEST(cpp, EXPECT_EQ_MSG) { EXPECT_EQ(1, 1, "custom message"); }
+
 UTEST(cpp, EXPECT_NE) { EXPECT_NE(1, 2); }
 
+UTEST(cpp, EXPECT_NE_MSG) { EXPECT_NE(1, 2, "custom message"); }
+
 UTEST(cpp, EXPECT_LT) { EXPECT_LT(1, 2); }
+
+UTEST(cpp, EXPECT_LT_MSG) { EXPECT_LT(1, 2, "custom message"); }
 
 UTEST(cpp, EXPECT_LE) {
   EXPECT_LE(1, 1);
   EXPECT_LE(1, 2);
 }
 
+UTEST(cpp, EXPECT_LE_MSG) {
+    EXPECT_LE(1, 1, "custom message");
+    EXPECT_LE(1, 2, "custom message");
+}
+
 UTEST(cpp, EXPECT_GT) { EXPECT_GT(2, 1); }
+
+UTEST(cpp, EXPECT_GT_MSG) { EXPECT_GT(2, 1, "custom message"); }
 
 UTEST(cpp, EXPECT_GE) {
   EXPECT_GE(1, 1);
   EXPECT_GE(2, 1);
 }
 
+UTEST(cpp, EXPECT_GE_MSG) {
+    EXPECT_GE(1, 1, "custom message");
+    EXPECT_GE(2, 1, "custom message");
+}
+
 UTEST(cpp, EXPECT_STREQ) { EXPECT_STREQ("foo", "foo"); }
+
+UTEST(cpp, EXPECT_STREQ_MSG) { EXPECT_STREQ("foo", "foo", "custom message"); }
 
 UTEST(cpp, EXPECT_STRNE) { EXPECT_STRNE("foo", "bar"); }
 
+UTEST(cpp, EXPECT_STRNE_MSG) { EXPECT_STRNE("foo", "bar", "custom message"); }
+
 UTEST(cpp, EXPECT_STRNEQ) { EXPECT_STRNEQ("foo", "foobar", strlen("foo")); }
 
+UTEST(cpp, EXPECT_STRNEQ_MSG) { EXPECT_STRNEQ("foo", "foobar", strlen("foo"), "custom message"); }
+
 UTEST(cpp, EXPECT_STRNNE) { EXPECT_STRNNE("foo", "barfoo", strlen("foo")); }
+
+UTEST(cpp, EXPECT_STRNNE_MSG) { EXPECT_STRNNE("foo", "barfoo", strlen("foo"), "custom message"); }
 
 UTEST(cpp, no_double_eval) {
   int i = 0;
@@ -151,11 +181,25 @@ UTEST(cpp, Float) {
   ASSERT_NE(a, b);
 }
 
+UTEST(cpp, Float_MSG) {
+    float a = 1;
+    float b = 2;
+    EXPECT_NE(a, b, "custom message");
+    ASSERT_NE(a, b);
+}
+
 UTEST(cpp, Double) {
   double a = 1;
   double b = 2;
   EXPECT_NE(a, b);
   ASSERT_NE(a, b);
+}
+
+UTEST(cpp, Double_MSG) {
+    double a = 1;
+    double b = 2;
+    EXPECT_NE(a, b, "custom message");
+    ASSERT_NE(a, b);
 }
 
 UTEST(cpp, LongDouble) {
@@ -165,11 +209,25 @@ UTEST(cpp, LongDouble) {
   ASSERT_NE(a, b);
 }
 
+UTEST(cpp, LongDouble_MSG) {
+    long double a = 1;
+    long double b = 2;
+    EXPECT_NE(a, b, "custom message");
+    ASSERT_NE(a, b);
+}
+
 UTEST(cpp, Char) {
   signed char a = 1;
   signed char b = 2;
   EXPECT_NE(a, b);
   ASSERT_NE(a, b);
+}
+
+UTEST(cpp, Char_MSG) {
+    signed char a = 1;
+    signed char b = 2;
+    EXPECT_NE(a, b, "custom message");
+    ASSERT_NE(a, b);
 }
 
 UTEST(cpp, UChar) {
@@ -179,11 +237,25 @@ UTEST(cpp, UChar) {
   ASSERT_NE(a, b);
 }
 
+UTEST(cpp, UChar_MSG) {
+    unsigned char a = 1;
+    unsigned char b = 2;
+    EXPECT_NE(a, b, "custom message");
+    ASSERT_NE(a, b);
+}
+
 UTEST(cpp, Short) {
   short a = 1;
   short b = 2;
   EXPECT_NE(a, b);
   ASSERT_NE(a, b);
+}
+
+UTEST(cpp, Short_MSG) {
+    short a = 1;
+    short b = 2;
+    EXPECT_NE(a, b, "custom message");
+    ASSERT_NE(a, b);
 }
 
 UTEST(cpp, UShort) {
@@ -193,11 +265,25 @@ UTEST(cpp, UShort) {
   ASSERT_NE(a, b);
 }
 
+UTEST(cpp, UShort_MSG) {
+    unsigned short a = 1;
+    unsigned short b = 2;
+    EXPECT_NE(a, b, "custom message");
+    ASSERT_NE(a, b);
+}
+
 UTEST(cpp, Int) {
   int a = 1;
   int b = 2;
   EXPECT_NE(a, b);
   ASSERT_NE(a, b);
+}
+
+UTEST(cpp, Int_MSG) {
+    int a = 1;
+    int b = 2;
+    EXPECT_NE(a, b, "custom message");
+    ASSERT_NE(a, b);
 }
 
 UTEST(cpp, UInt) {
@@ -207,11 +293,25 @@ UTEST(cpp, UInt) {
   ASSERT_NE(a, b);
 }
 
+UTEST(cpp, UInt_MSG) {
+    unsigned int a = 1;
+    unsigned int b = 2;
+    EXPECT_NE(a, b, "custom message");
+    ASSERT_NE(a, b);
+}
+
 UTEST(cpp, Long) {
   long a = 1;
   long b = 2;
   EXPECT_NE(a, b);
   ASSERT_NE(a, b);
+}
+
+UTEST(cpp, Long_MSG) {
+    long a = 1;
+    long b = 2;
+    EXPECT_NE(a, b, "custom message");
+    ASSERT_NE(a, b);
 }
 
 UTEST(cpp, ULong) {
@@ -221,20 +321,41 @@ UTEST(cpp, ULong) {
   ASSERT_NE(a, b);
 }
 
+UTEST(cpp, ULong_MSG) {
+    unsigned long a = 1;
+    unsigned long b = 2;
+    EXPECT_NE(a, b, "custom message");
+    ASSERT_NE(a, b);
+}
+
 UTEST(cpp, Ptr) {
   char foo = 42;
   EXPECT_NE(&foo, &foo + 1);
+}
+
+UTEST(cpp, Ptr_MSG) {
+    char foo = 42;
+    EXPECT_NE(&foo, &foo + 1, "custom message");
 }
 
 static const int data[4] = {42, 13, 6, -53};
 
 UTEST(cpp, Array) { EXPECT_NE(data, data + 1); }
 
+UTEST(cpp, Array_MSG) { EXPECT_NE(data, data + 1, "custom message"); }
+
 UTEST(cpp, Near) {
   float a = 42.0f;
   float b = 42.01f;
   EXPECT_NEAR(a, b, 0.01f);
   ASSERT_NEAR(a, b, 0.01f);
+}
+
+UTEST(cpp, Near_MSG) {
+    float a = 42.0f;
+    float b = 42.01f;
+    EXPECT_NEAR(a, b, 0.01f, "custom message");
+    ASSERT_NEAR(a, b, 0.01f);
 }
 
 // GCC stdlib has a sanitizer bug in exceptions!
@@ -259,10 +380,22 @@ UTEST(cpp, Exception) {
   ASSERT_EXCEPTION(foo(1), std::range_error);
 }
 
+UTEST(cpp, Exception_MSG) {
+    EXPECT_EXCEPTION(foo(1), std::range_error, "custom message");
+    ASSERT_EXCEPTION(foo(1), std::range_error);
+}
+
 #if !defined(MEMORY_SANITIZER)
 UTEST(cpp, ExceptionWithMessage) {
   EXPECT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar");
   ASSERT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar");
+}
+#endif
+
+#if !defined(MEMORY_SANITIZER)
+UTEST(cpp, ExceptionWithMessage_MSG) {
+    EXPECT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar", "custom message");
+    ASSERT_EXCEPTION_WITH_MESSAGE(foo(1), std::range_error, "bad bar");
 }
 #endif
 
@@ -273,4 +406,9 @@ enum SomeEnum { SomeEnumFoo, SomeEnumBar };
 UTEST(cpp, Enum) {
   EXPECT_NE(SomeEnumFoo, SomeEnumBar);
   ASSERT_EQ(SomeEnumFoo, SomeEnumFoo);
+}
+
+UTEST(cpp, Enum_MSG) {
+    EXPECT_NE(SomeEnumFoo, SomeEnumBar, "custom message");
+    ASSERT_EQ(SomeEnumFoo, SomeEnumFoo);
 }
