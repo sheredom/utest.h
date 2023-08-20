@@ -885,7 +885,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
 #define EXPECT_STRNEQ(x, y, n) UTEST_STRNEQ(x, y, n, 0)
 #define ASSERT_STRNEQ(x, y, n) UTEST_STRNEQ(x, y, n, 1)
 
-#define EXPECT_STRNNE(x, y, n)                                                 \
+#define UTEST_STRNNE(x, y, n, is_assert)                                       \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     const char *xEval = (x);                                                   \
     const char *yEval = (y);                                                   \
@@ -896,10 +896,14 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, nEval), xEval);  \
       UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, nEval), yEval);  \
       *utest_result = UTEST_TEST_FAILURE;                                      \
+      if (is_assert) return;                                                   \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+
+#define EXPECT_STRNNE(x, y, n) UTEST_STRNNE(x, y, n, 0)
+#define ASSERT_STRNNE(x, y, n) UTEST_STRNNE(x, y, n, 1)
 
 #define EXPECT_NEAR(x, y, epsilon)                                             \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
@@ -975,23 +979,6 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
 #endif
-
-#define ASSERT_STRNNE(x, y, n)                                                 \
-  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    const char *xEval = (x);                                                   \
-    const char *yEval = (y);                                                   \
-    const size_t nEval = UTEST_CAST(size_t, n);                                \
-    if (UTEST_NULL == xEval || UTEST_NULL == yEval ||                          \
-        0 == UTEST_STRNCMP(xEval, yEval, nEval)) {                             \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, nEval), xEval);  \
-      UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, nEval), yEval);  \
-      *utest_result = UTEST_TEST_FAILURE;                                      \
-      return;                                                                  \
-    }                                                                          \
-  }                                                                            \
-  while (0)                                                                    \
-  UTEST_SURPRESS_WARNING_END
 
 #define ASSERT_NEAR(x, y, epsilon)                                             \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
