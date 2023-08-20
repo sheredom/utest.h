@@ -924,7 +924,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
 #define ASSERT_NEAR(x, y, epsilon) UTEST_NEAR(x, y, epsilon, 1)
 
 #if defined(UTEST_HAS_EXCEPTIONS)
-#define EXPECT_EXCEPTION(x, exception_type)                                    \
+#define UTEST_EXCEPTION(x, exception_type, is_assert)                          \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     int exception_caught = 0;                                                  \
     try {                                                                      \
@@ -941,10 +941,16 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
                                             ? "Unexpected exception"           \
                                             : "No exception");                 \
       *utest_result = UTEST_TEST_FAILURE;                                      \
+      if (is_assert) return;                                                   \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+
+#define EXPECT_EXCEPTION(x, exception_type)                                    \
+  UTEST_EXCEPTION(x, exception_type, 0)
+#define ASSERT_EXCEPTION(x, exception_type)                                    \
+  UTEST_EXCEPTION(x, exception_type, 1)
 
 #define EXPECT_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message)    \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
@@ -985,29 +991,6 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
 #endif
 
 #if defined(UTEST_HAS_EXCEPTIONS)
-#define ASSERT_EXCEPTION(x, exception_type)                                    \
-  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    int exception_caught = 0;                                                  \
-    try {                                                                      \
-      x;                                                                       \
-    } catch (const exception_type &) {                                         \
-      exception_caught = 1;                                                    \
-    } catch (...) {                                                            \
-      exception_caught = 2;                                                    \
-    }                                                                          \
-    if (1 != exception_caught) {                                               \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : %s exception\n", #exception_type);            \
-      UTEST_PRINTF("    Actual : %s\n", (2 == exception_caught)                \
-                                            ? "Unexpected exception"           \
-                                            : "No exception");                 \
-      *utest_result = UTEST_TEST_FAILURE;                                      \
-      return;                                                                  \
-    }                                                                          \
-  }                                                                            \
-  while (0)                                                                    \
-  UTEST_SURPRESS_WARNING_END
-
 #define ASSERT_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message)    \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     int exception_caught = 0;                                                  \
