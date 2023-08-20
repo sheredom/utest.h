@@ -793,7 +793,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
 #define EXPECT_GE(x, y) UTEST_COND(x, y, >=, 0)
 #define ASSERT_GE(x, y) UTEST_COND(x, y, >=, 1)
 
-#define EXPECT_TRUE(x)                                                         \
+#define UTEST_TRUE(x, is_assert)                                               \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     const int xEval = !!(x);                                                   \
     if (!(xEval)) {                                                            \
@@ -801,10 +801,14 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       UTEST_PRINTF("  Expected : true\n");                                     \
       UTEST_PRINTF("    Actual : %s\n", (xEval) ? "true" : "false");           \
       *utest_result = UTEST_TEST_FAILURE;                                      \
+      if (is_assert) return;                                                   \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+
+#define EXPECT_TRUE(x) UTEST_TRUE(x, 0)
+#define ASSERT_TRUE(x) UTEST_TRUE(x, 1)
 
 #define EXPECT_FALSE(x)                                                        \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
@@ -955,20 +959,6 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
 #endif
-
-#define ASSERT_TRUE(x)                                                         \
-  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    const int xEval = !!(x);                                                   \
-    if (!(xEval)) {                                                            \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : true\n");                                     \
-      UTEST_PRINTF("    Actual : %s\n", (xEval) ? "true" : "false");           \
-      *utest_result = UTEST_TEST_FAILURE;                                      \
-      return;                                                                  \
-    }                                                                          \
-  }                                                                            \
-  while (0)                                                                    \
-  UTEST_SURPRESS_WARNING_END
 
 #define ASSERT_FALSE(x)                                                        \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
