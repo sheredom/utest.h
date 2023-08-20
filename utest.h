@@ -905,7 +905,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
 #define EXPECT_STRNNE(x, y, n) UTEST_STRNNE(x, y, n, 0)
 #define ASSERT_STRNNE(x, y, n) UTEST_STRNNE(x, y, n, 1)
 
-#define EXPECT_NEAR(x, y, epsilon)                                             \
+#define UTEST_NEAR(x, y, epsilon, is_assert)                                   \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     const double diff =                                                        \
         utest_fabs(UTEST_CAST(double, x) - UTEST_CAST(double, y));             \
@@ -914,10 +914,14 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       UTEST_PRINTF("  Expected : %f\n", UTEST_CAST(double, x));                \
       UTEST_PRINTF("    Actual : %f\n", UTEST_CAST(double, y));                \
       *utest_result = UTEST_TEST_FAILURE;                                      \
+      if (is_assert) return;                                                   \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+
+#define EXPECT_NEAR(x, y, epsilon) UTEST_NEAR(x, y, epsilon, 0)
+#define ASSERT_NEAR(x, y, epsilon) UTEST_NEAR(x, y, epsilon, 1)
 
 #if defined(UTEST_HAS_EXCEPTIONS)
 #define EXPECT_EXCEPTION(x, exception_type)                                    \
@@ -979,21 +983,6 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
 #endif
-
-#define ASSERT_NEAR(x, y, epsilon)                                             \
-  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    const double diff =                                                        \
-        utest_fabs(UTEST_CAST(double, x) - UTEST_CAST(double, y));             \
-    if (diff > UTEST_CAST(double, epsilon) || utest_isnan(diff)) {             \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : %f\n", UTEST_CAST(double, x));                \
-      UTEST_PRINTF("    Actual : %f\n", UTEST_CAST(double, y));                \
-      *utest_result = UTEST_TEST_FAILURE;                                      \
-      return;                                                                  \
-    }                                                                          \
-  }                                                                            \
-  while (0)                                                                    \
-  UTEST_SURPRESS_WARNING_END
 
 #if defined(UTEST_HAS_EXCEPTIONS)
 #define ASSERT_EXCEPTION(x, exception_type)                                    \
