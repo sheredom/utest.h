@@ -833,9 +833,9 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   UTEST_SURPRESS_WARNING_END
 
 #define EXPECT_TRUE(x) UTEST_TRUE(x, "", 0)
-#define EXPECT_TRUE_MSG(x, msg) UTEST_TRUE(x, "", 0)
+#define EXPECT_TRUE_MSG(x, msg) UTEST_TRUE(x, msg, 0)
 #define ASSERT_TRUE(x) UTEST_TRUE(x, "", 1)
-#define ASSERT_TRUE_MSG(x, msg) UTEST_TRUE(x, "", 1)
+#define ASSERT_TRUE_MSG(x, msg) UTEST_TRUE(x, msg, 1)
 
 #define UTEST_FALSE(x, msg, is_assert)                                         \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
