@@ -715,7 +715,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   } while (0)
 
 #if defined(__clang__)
-#define UTEST_EXPECT(x, y, cond)                                               \
+#define UTEST_COND(x, y, cond, is_assert)                                      \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     _Pragma("clang diagnostic push")                                           \
         _Pragma("clang diagnostic ignored \"-Wlanguage-extension-token\"")     \
@@ -735,12 +735,13 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       utest_type_printer(yEval);                                               \
       UTEST_PRINTF("\n");                                                      \
       *utest_result = UTEST_TEST_FAILURE;                                      \
+      if (is_assert) return;                                                   \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
 #elif defined(__GNUC__) || defined(__TINYC__)
-#define UTEST_EXPECT(x, y, cond)                                               \
+#define UTEST_COND(x, y, cond, is_assert)                                      \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     UTEST_AUTO(x) xEval = (x);                                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
@@ -755,22 +756,42 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       utest_type_printer(yEval);                                               \
       UTEST_PRINTF("\n");                                                      \
       *utest_result = UTEST_TEST_FAILURE;                                      \
+      if (is_assert) return;                                                   \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
 #else
-#define UTEST_EXPECT(x, y, cond)                                               \
+#define UTEST_COND(x, y, cond, is_assert)                                      \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (!((x)cond(y))) {                                                       \
       UTEST_PRINTF("%s:%i: Failure (Expected " #cond " Actual)\n", __FILE__,   \
                    __LINE__);                                                  \
       *utest_result = UTEST_TEST_FAILURE;                                      \
+      if (is_assert) return;                                                   \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
 #endif
+
+#define EXPECT_EQ(x, y) UTEST_COND(x, y, ==, 0)
+#define ASSERT_EQ(x, y) UTEST_COND(x, y, ==, 1)
+
+#define EXPECT_NE(x, y) UTEST_COND(x, y, !=, 0)
+#define ASSERT_NE(x, y) UTEST_COND(x, y, !=, 1)
+
+#define EXPECT_LT(x, y) UTEST_COND(x, y, <, 0)
+#define ASSERT_LT(x, y) UTEST_COND(x, y, <, 1)
+
+#define EXPECT_LE(x, y) UTEST_COND(x, y, <=, 0)
+#define ASSERT_LE(x, y) UTEST_COND(x, y, <=, 1)
+
+#define EXPECT_GT(x, y) UTEST_COND(x, y, >, 0)
+#define ASSERT_GT(x, y) UTEST_COND(x, y, >, 1)
+
+#define EXPECT_GE(x, y) UTEST_COND(x, y, >=, 0)
+#define ASSERT_GE(x, y) UTEST_COND(x, y, >=, 1)
 
 #define EXPECT_TRUE(x)                                                         \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
@@ -797,13 +818,6 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
-
-#define EXPECT_EQ(x, y) UTEST_EXPECT(x, y, ==)
-#define EXPECT_NE(x, y) UTEST_EXPECT(x, y, !=)
-#define EXPECT_LT(x, y) UTEST_EXPECT(x, y, <)
-#define EXPECT_LE(x, y) UTEST_EXPECT(x, y, <=)
-#define EXPECT_GT(x, y) UTEST_EXPECT(x, y, >)
-#define EXPECT_GE(x, y) UTEST_EXPECT(x, y, >=)
 
 #define EXPECT_STREQ(x, y)                                                     \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
@@ -942,67 +956,6 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   UTEST_SURPRESS_WARNING_END
 #endif
 
-#if defined(__clang__)
-#define UTEST_ASSERT(x, y, cond)                                               \
-  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    _Pragma("clang diagnostic push")                                           \
-        _Pragma("clang diagnostic ignored \"-Wlanguage-extension-token\"")     \
-            _Pragma("clang diagnostic ignored \"-Wc++98-compat-pedantic\"")    \
-                _Pragma("clang diagnostic ignored \"-Wfloat-equal\"")          \
-                    UTEST_AUTO(x) xEval = (x);                                 \
-    UTEST_AUTO(y) yEval = (y);                                                 \
-    if (!((xEval)cond(yEval))) {                                               \
-      _Pragma("clang diagnostic pop")                                          \
-          UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                \
-      UTEST_PRINTF("  Expected : (");                                          \
-      UTEST_PRINTF(#x ") " #cond " (" #y);                                     \
-      UTEST_PRINTF(")\n");                                                     \
-      UTEST_PRINTF("    Actual : ");                                           \
-      utest_type_printer(xEval);                                               \
-      UTEST_PRINTF(" vs ");                                                    \
-      utest_type_printer(yEval);                                               \
-      UTEST_PRINTF("\n");                                                      \
-      *utest_result = UTEST_TEST_FAILURE;                                      \
-      return;                                                                  \
-    }                                                                          \
-  }                                                                            \
-  while (0)                                                                    \
-  UTEST_SURPRESS_WARNING_END
-#elif defined(__GNUC__) || defined(__TINYC__)
-#define UTEST_ASSERT(x, y, cond)                                               \
-  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    UTEST_AUTO(x) xEval = (x);                                                 \
-    UTEST_AUTO(y) yEval = (y);                                                 \
-    if (!((xEval)cond(yEval))) {                                               \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : (");                                          \
-      UTEST_PRINTF(#x ") " #cond " (" #y);                                     \
-      UTEST_PRINTF(")\n");                                                     \
-      UTEST_PRINTF("    Actual : ");                                           \
-      utest_type_printer(xEval);                                               \
-      UTEST_PRINTF(" vs ");                                                    \
-      utest_type_printer(yEval);                                               \
-      UTEST_PRINTF("\n");                                                      \
-      *utest_result = UTEST_TEST_FAILURE;                                      \
-      return;                                                                  \
-    }                                                                          \
-  }                                                                            \
-  while (0)                                                                    \
-  UTEST_SURPRESS_WARNING_END
-#else
-#define UTEST_ASSERT(x, y, cond)                                               \
-  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    if (!((x)cond(y))) {                                                       \
-      UTEST_PRINTF("%s:%i: Failure (Expected " #cond " Actual)\n", __FILE__,   \
-                   __LINE__);                                                  \
-      *utest_result = UTEST_TEST_FAILURE;                                      \
-      return;                                                                  \
-    }                                                                          \
-  }                                                                            \
-  while (0)                                                                    \
-  UTEST_SURPRESS_WARNING_END
-#endif
-
 #define ASSERT_TRUE(x)                                                         \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     const int xEval = !!(x);                                                   \
@@ -1030,13 +983,6 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
-
-#define ASSERT_EQ(x, y) UTEST_ASSERT(x, y, ==)
-#define ASSERT_NE(x, y) UTEST_ASSERT(x, y, !=)
-#define ASSERT_LT(x, y) UTEST_ASSERT(x, y, <)
-#define ASSERT_LE(x, y) UTEST_ASSERT(x, y, <=)
-#define ASSERT_GT(x, y) UTEST_ASSERT(x, y, >)
-#define ASSERT_GE(x, y) UTEST_ASSERT(x, y, >=)
 
 #define ASSERT_STREQ(x, y)                                                     \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
