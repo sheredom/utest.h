@@ -643,6 +643,32 @@ UTEST(foo, bar) {
 }
 ```
 
+### Testing macros with custom message
+
+In addition, to give the possibility of having custom messages in the fault
+tests, all macros can be used with a suffix called "_MSG", which receives an
+extra parameter, which is the string with the custom message to print in case
+of failure.
+
+For example:
+
+```c
+UTEST(foo, bar) {
+  int i = 1;
+  EXPECT_TRUE_MSG(i, "custom message");  // pass!
+  EXPECT_TRUE_MSG(42, "custom message"); // pass!
+  EXPECT_TRUE_MSG(0, "custom message");  // fail! (with the following output)
+}
+```
+
+```
+test.cpp:42: Failure
+  Expected : true
+    Actual : false
+   Message : custom message
+[  FAILED  ] foo.bar (8086ns)
+```
+
 ## Types Supported for Checks
 
 The library supports asserting on any builtin integer, floating-point, or
