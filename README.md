@@ -508,7 +508,7 @@ UTEST(foo, bar) {
 }
 ```
 
-### EXPECT_GT(x, y)
+### EXPECT_GE(x, y)
 
 Expects that x is greater than or equal to y.
 
