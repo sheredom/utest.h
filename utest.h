@@ -738,7 +738,9 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
         UTEST_PRINTF("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
-      if (is_assert) return;                                                   \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -762,7 +764,9 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
         UTEST_PRINTF("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
-      if (is_assert) return;                                                   \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -778,7 +782,9 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       }                                                                        \
       UTEST_PRINTF("\n");                                                      \
       *utest_result = UTEST_TEST_FAILURE;                                      \
-      if (is_assert) return;                                                   \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -826,7 +832,9 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
         UTEST_PRINTF("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
-      if (is_assert) return;                                                   \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -848,7 +856,9 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
         UTEST_PRINTF("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
-      if (is_assert) return;                                                   \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -872,7 +882,9 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
         UTEST_PRINTF("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
-      if (is_assert) return;                                                   \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -896,7 +908,9 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
         UTEST_PRINTF("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
-      if (is_assert) return;                                                   \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -921,7 +935,9 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
         UTEST_PRINTF("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
-      if (is_assert) return;                                                   \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -946,7 +962,9 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
         UTEST_PRINTF("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
-      if (is_assert) return;                                                   \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -969,7 +987,9 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
         UTEST_PRINTF("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
-      if (is_assert) return;                                                   \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -1001,7 +1021,9 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
         UTEST_PRINTF("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
-      if (is_assert) return;                                                   \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -1045,7 +1067,9 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
         UTEST_PRINTF("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
-      if (is_assert) return;                                                   \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
     } else if (UTEST_NULL != message_caught) {                                 \
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : %s exception with message %s\n",              \
@@ -1056,7 +1080,9 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       free(message_caught);                                                    \
-      if (is_assert) return;                                                   \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
     }                                                                          \
   }                                                                            \
   while (0)                                                                    \
@@ -1074,7 +1100,28 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   UTEST_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message, msg, 1)
 #endif
 
+#if defined(__clang__)
+#if __has_warning("-Wunsafe-buffer-usage")
+#define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
+  _Pragma("clang diagnostic push")                                             \
+      _Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage\"")
+#define UTEST_SURPRESS_WARNINGS_END _Pragma("clang diagnostic pop")
+#else
+#define UTEST_SURPRESS_WARNINGS_BEGIN
+#define UTEST_SURPRESS_WARNINGS_END
+#endif
+#elif defined(__GNUC__) && __GNUC__ >= 8 && defined(__cplusplus)
+#define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
+  _Pragma("GCC diagnostic push")                                               \
+      _Pragma("GCC diagnostic ignored \"-Wclass-memaccess\"")
+#define UTEST_SURPRESS_WARNINGS_END _Pragma("GCC diagnostic pop")
+#else
+#define UTEST_SURPRESS_WARNINGS_BEGIN
+#define UTEST_SURPRESS_WARNINGS_END
+#endif
+
 #define UTEST(SET, NAME)                                                       \
+  UTEST_SURPRESS_WARNINGS_BEGIN                                                \
   UTEST_EXTERN struct utest_state_s utest_state;                               \
   static void utest_run_##SET##_##NAME(int *utest_result);                     \
   static void utest_##SET##_##NAME(int *utest_result, size_t utest_index) {    \
@@ -1100,6 +1147,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       free(name);                                                              \
     }                                                                          \
   }                                                                            \
+  UTEST_SURPRESS_WARNINGS_END                                                  \
   void utest_run_##SET##_##NAME(int *utest_result)
 
 #define UTEST_F_SETUP(FIXTURE)                                                 \
@@ -1110,18 +1158,8 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   static void utest_f_teardown_##FIXTURE(int *utest_result,                    \
                                          struct FIXTURE *utest_fixture)
 
-#if defined(__GNUC__) && __GNUC__ >= 8 && defined(__cplusplus)
-#define UTEST_FIXTURE_SURPRESS_WARNINGS_BEGIN                                  \
-  _Pragma("GCC diagnostic push")                                               \
-      _Pragma("GCC diagnostic ignored \"-Wclass-memaccess\"")
-#define UTEST_FIXTURE_SURPRESS_WARNINGS_END _Pragma("GCC diagnostic pop")
-#else
-#define UTEST_FIXTURE_SURPRESS_WARNINGS_BEGIN
-#define UTEST_FIXTURE_SURPRESS_WARNINGS_END
-#endif
-
 #define UTEST_F(FIXTURE, NAME)                                                 \
-  UTEST_FIXTURE_SURPRESS_WARNINGS_BEGIN                                        \
+  UTEST_SURPRESS_WARNINGS_BEGIN                                                \
   UTEST_EXTERN struct utest_state_s utest_state;                               \
   static void utest_f_setup_##FIXTURE(int *, struct FIXTURE *);                \
   static void utest_f_teardown_##FIXTURE(int *, struct FIXTURE *);             \
@@ -1156,7 +1194,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       free(name);                                                              \
     }                                                                          \
   }                                                                            \
-  UTEST_FIXTURE_SURPRESS_WARNINGS_END                                          \
+  UTEST_SURPRESS_WARNINGS_END                                                  \
   void utest_run_##FIXTURE##_##NAME(int *utest_result,                         \
                                     struct FIXTURE *utest_fixture)
 
@@ -1169,6 +1207,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       int *utest_result, struct FIXTURE *utest_fixture, size_t utest_index)
 
 #define UTEST_I(FIXTURE, NAME, INDEX)                                          \
+  UTEST_SURPRESS_WARNINGS_BEGIN                                                \
   UTEST_EXTERN struct utest_state_s utest_state;                               \
   static void utest_run_##FIXTURE##_##NAME##_##INDEX(int *, struct FIXTURE *); \
   static void utest_i_##FIXTURE##_##NAME##_##INDEX(int *utest_result,          \
@@ -1206,8 +1245,14 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       }                                                                        \
     }                                                                          \
   }                                                                            \
+  UTEST_SURPRESS_WARNINGS_END                                                  \
   void utest_run_##FIXTURE##_##NAME##_##INDEX(int *utest_result,               \
                                               struct FIXTURE *utest_fixture)
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
+#endif
 
 UTEST_WEAK
 double utest_fabs(double d);
@@ -1234,6 +1279,17 @@ int utest_isnan(double d) {
   both.u &= 0x7fffffffffffffffu;
   return both.u > 0x7ff0000000000000u;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#if defined(__clang__)
+#if __has_warning("-Wunsafe-buffer-usage")
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+#endif
 
 UTEST_WEAK
 int utest_should_filter_test(const char *filter, const char *testcase);
@@ -1581,6 +1637,12 @@ cleanup:
 
   return UTEST_CAST(int, failed);
 }
+
+#if defined(__clang__)
+#if __has_warning("-Wunsafe-buffer-usage")
+#pragma clang diagnostic pop
+#endif
+#endif
 
 /*
    we need, in exactly one source file, define the global struct that will hold

@@ -216,6 +216,13 @@ UTEST(c11, ULong) {
   ASSERT_NE(a, b);
 }
 
+#if defined(__clang__)
+#if __has_warning("-Wunsafe-buffer-usage")
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+#endif
+
 UTEST(c11, Ptr) {
   char foo = 42;
   EXPECT_NE(&foo, &foo + 1);
@@ -229,6 +236,12 @@ UTEST(c11, VoidPtr) {
 static const int data[4] = {42, 13, 6, -53};
 
 UTEST(c11, Array) { EXPECT_NE(data, data + 1); }
+
+#if defined(__clang__)
+#if __has_warning("-Wunsafe-buffer-usage")
+#pragma clang diagnostic pop
+#endif
+#endif
 
 UTEST(c11, Near) {
   float a = 42.0f;
