@@ -24,6 +24,15 @@
 // For more information, please refer to <http://unlicense.org/>
 
 #include "utest.h"
+
+// TODO: Fix in subprocess.h!
+#if defined(__clang__)
+#if __has_warning("-Wunsafe-buffer-usage")
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+#endif
+
 #include "subprocess.h"
 
 // TODO: Broken under MINGW for some reason.
