@@ -1130,7 +1130,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   }                                                                            \
   UTEST_INITIALIZER(utest_register_##SET##_##NAME) {                           \
     const size_t index = utest_state.tests_length++;                           \
-    const char *name_part = #SET "." #NAME;                                    \
+    const char name_part[] = #SET "." #NAME;                                   \
     const size_t name_size = strlen(name_part) + 1;                            \
     char *name = UTEST_PTR_CAST(char *, malloc(name_size));                    \
     utest_state.tests = UTEST_PTR_CAST(                                        \
@@ -1178,7 +1178,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   }                                                                            \
   UTEST_INITIALIZER(utest_register_##FIXTURE##_##NAME) {                       \
     const size_t index = utest_state.tests_length++;                           \
-    const char *name_part = #FIXTURE "." #NAME;                                \
+    const char name_part[] = #FIXTURE "." #NAME;                               \
     const size_t name_size = strlen(name_part) + 1;                            \
     char *name = UTEST_PTR_CAST(char *, malloc(name_size));                    \
     utest_state.tests = UTEST_PTR_CAST(                                        \
@@ -1226,7 +1226,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
     utest_uint64_t iUp;                                                        \
     for (i = 0; i < (INDEX); i++) {                                            \
       const size_t index = utest_state.tests_length++;                         \
-      const char *name_part = #FIXTURE "." #NAME;                              \
+      const char name_part[] = #FIXTURE "." #NAME;                             \
       const size_t name_size = strlen(name_part) + 32;                         \
       char *name = UTEST_PTR_CAST(char *, malloc(name_size));                  \
       utest_state.tests = UTEST_PTR_CAST(                                      \
