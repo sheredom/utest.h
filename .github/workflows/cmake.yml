@@ -34,7 +34,7 @@ jobs:
 
     - name: Setup dependencies (MinGW)
       if: matrix.compiler == 'gcc' && startsWith(matrix.os, 'windows')
-      uses: egor-tensin/setup-mingw@v2
+      uses: e-t-l/setup-mingw@patch-1
 
     - name: Configure CMake
       shell: bash
