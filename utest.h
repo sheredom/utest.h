@@ -724,10 +724,12 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
                     UTEST_AUTO(x) xEval = (x);                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
     if (!((xEval)cond(yEval))) {                                               \
+      const char *const xAsString = #x;                                        \
+      const char *const yAsString = #y;                                        \
       _Pragma("clang diagnostic pop")                                          \
           UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                \
       UTEST_PRINTF("  Expected : (");                                          \
-      UTEST_PRINTF(#x ") " #cond " (" #y);                                     \
+      UTEST_PRINTF("%s) " #cond " (%s", xAsString, yAsString);                 \
       UTEST_PRINTF(")\n");                                                     \
       UTEST_PRINTF("    Actual : ");                                           \
       utest_type_printer(xEval);                                               \
@@ -751,9 +753,11 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
     UTEST_AUTO(x) xEval = (x);                                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
     if (!((xEval)cond(yEval))) {                                               \
+      const char *const xAsString = #x;                                        \
+      const char *const yAsString = #y;                                        \
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("  Expected : (");                                          \
-      UTEST_PRINTF(#x ") " #cond " (" #y);                                     \
+      UTEST_PRINTF("%s) " #cond " (%s", xAsString, yAsString);                 \
       UTEST_PRINTF(")\n");                                                     \
       UTEST_PRINTF("    Actual : ");                                           \
       utest_type_printer(xEval);                                               \

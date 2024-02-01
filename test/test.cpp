@@ -287,3 +287,10 @@ UTEST(cpp, Enum) {
   EXPECT_NE(SomeEnumFoo, SomeEnumBar);
   ASSERT_EQ(SomeEnumFoo, SomeEnumFoo);
 }
+
+UTEST(cpp, Modulo) {
+  int c = 42;
+  EXPECT_NE(c % 16, 0);
+  EXPECT_NE(0, c % 16);
+  ASSERT_EQ(10, c % 16);
+}
