@@ -1104,6 +1104,35 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   UTEST_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message, msg, 1)
 #endif
 
+#define UTEST_PRED(x, y, pred , msg, is_assert)                                \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
+    UTEST_AUTO(x) xEval = (x);                                                 \
+    UTEST_AUTO(y) yEval = (y);                                                 \
+    if (!pred(xEval, yEval)) {                                                 \
+      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_PRINTF("    Actual : ");                                           \
+      utest_type_printer(xEval);                                               \
+      UTEST_PRINTF(" vs ");                                                    \
+      utest_type_printer(yEval);                                               \
+      UTEST_PRINTF("\n");                                                      \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF("   Message : %s\n", msg);                                \
+      }                                                                        \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
+    }                                                                          \
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
+
+#define EXPECT_PRED(x, y, pred) UTEST_PRED(x, y, pred, "", 0)
+#define EXPECT_PRED_MSG(x, y, pred, msg) UTEST_PRED(x, y, pred, msg, 0)
+#define ASSERT_PRED(x, y, pred) UTEST_PRED(x, y, pred, "", 1)
+#define ASSERT_PRED_MSG(x, y, pred, msg) UTEST_PRED(x, y, pred, msg, 1)
+
+
 #if defined(__clang__)
 #if __has_warning("-Wunsafe-buffer-usage")
 #define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
