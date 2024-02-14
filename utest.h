@@ -1104,11 +1104,41 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   UTEST_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message, msg, 1)
 #endif
 
-#define UTEST_PRED(x, y, pred , msg, is_assert)                                \
+  
+#if defined(__clang__)
+#define UTEST_PRED(x, y, cond, msg, is_assert)                                 \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
+    _Pragma("clang diagnostic push")                                           \
+        _Pragma("clang diagnostic ignored \"-Wlanguage-extension-token\"")     \
+            _Pragma("clang diagnostic ignored \"-Wc++98-compat-pedantic\"")    \
+                _Pragma("clang diagnostic ignored \"-Wfloat-equal\"")          \
+                    UTEST_AUTO(x) xEval = (x);                                 \
+    UTEST_AUTO(y) yEval = (y);                                                 \
+    if (!(cond((xEval),(yEval)))) {                                            \
+      _Pragma("clang diagnostic pop")                                          \
+          UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                \
+      UTEST_PRINTF("    Actual : ");                                           \
+      utest_type_printer(xEval);                                               \
+      UTEST_PRINTF(" vs ");                                                    \
+      utest_type_printer(yEval);                                               \
+      UTEST_PRINTF("\n");                                                      \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF("   Message : %s\n", msg);                                \
+      }                                                                        \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
+    }                                                                          \
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
+#elif defined(__GNUC__) || defined(__TINYC__)
+#define UTEST_PRED(x, y, cond, msg, is_assert)                                 \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     UTEST_AUTO(x) xEval = (x);                                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
-    if (!pred(xEval, yEval)) {                                                 \
+    if (!(cond((xEval),(yEval)))) {                                            \
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
       UTEST_PRINTF("    Actual : ");                                           \
       utest_type_printer(xEval);                                               \
@@ -1126,6 +1156,24 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   }                                                                            \
   while (0)                                                                    \
   UTEST_SURPRESS_WARNING_END
+#else
+#define UTEST_PRED(x, y, cond, msg, is_assert)                                 \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
+    if (!(cond((x),(y)))) {                                                    \
+      UTEST_PRINTF("%s:%i: Failure", __FILE__, __LINE__);                      \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF(" Message : %s", msg);                                    \
+      }                                                                        \
+      UTEST_PRINTF("\n");                                                      \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
+    }                                                                          \
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
+#endif
 
 #define EXPECT_PRED(x, y, pred) UTEST_PRED(x, y, pred, "", 0)
 #define EXPECT_PRED_MSG(x, y, pred, msg) UTEST_PRED(x, y, pred, msg, 0)
