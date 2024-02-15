@@ -332,6 +332,6 @@ UTEST(cpp11, EnumClass) {
 
 UTEST(cpp, Predicate) {
   EXPECT_PRED(1, 2, [](int a, int b){return a<b;});
-  EXPECT_PRED(1.0f, 2.0f, [](float a, float b){float res = a-b; return res > -1.00001 && res < -0.99999 ;});
+  EXPECT_PRED(1.0f, 2.0f, [](float a, float b){float res = a-b; return res > -1.00001f && res < -0.99999f;});
   ASSERT_PRED(1, 2, [](int a, int b){return a<b;});
 }

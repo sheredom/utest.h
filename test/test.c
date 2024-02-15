@@ -260,7 +260,7 @@ UTEST(c, Near) {
 
 UTEST(c, Todo) { UTEST_SKIP("Not yet implemented!"); }
 
-int test_func_int(int a, int b)
+static int test_func_int(int a, int b)
 {
 	return a<b; 
 }
