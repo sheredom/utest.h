@@ -321,7 +321,7 @@ static UTEST_INLINE void *utest_realloc(void *const pointer, size_t new_size) {
   void *const new_pointer = realloc(pointer, new_size);
 
   if (UTEST_NULL == new_pointer) {
-    free(new_pointer);
+    free(pointer);
   }
 
   return new_pointer;
