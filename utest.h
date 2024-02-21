@@ -1142,13 +1142,19 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
         utest_realloc(UTEST_PTR_CAST(void *, utest_state.tests),               \
                       sizeof(struct utest_test_state_s) *                      \
                           utest_state.tests_length));                          \
-    if (utest_state.tests) {                                                   \
+    if (utest_state.tests && name) {                                           \
       utest_state.tests[index].func = &utest_##SET##_##NAME;                   \
       utest_state.tests[index].name = name;                                    \
       utest_state.tests[index].index = 0;                                      \
       UTEST_SNPRINTF(name, name_size, "%s", name_part);                        \
-    } else if (name) {                                                         \
-      free(name);                                                              \
+    } else {                                                                   \
+      if (utest_state.tests) {                                                 \
+        free(utest_state.tests);                                               \
+        utest_state.tests = NULL;                                              \
+      }                                                                        \
+      if (name) {                                                              \
+        free(name);                                                            \
+      }                                                                        \
     }                                                                          \
   }                                                                            \
   UTEST_SURPRESS_WARNINGS_END                                                  \
@@ -1190,12 +1196,18 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
         utest_realloc(UTEST_PTR_CAST(void *, utest_state.tests),               \
                       sizeof(struct utest_test_state_s) *                      \
                           utest_state.tests_length));                          \
-    if (utest_state.tests) {                                                   \
+    if (utest_state.tests && name) {                                           \
       utest_state.tests[index].func = &utest_f_##FIXTURE##_##NAME;             \
       utest_state.tests[index].name = name;                                    \
       UTEST_SNPRINTF(name, name_size, "%s", name_part);                        \
-    } else if (name) {                                                         \
-      free(name);                                                              \
+    } else {                                                                   \
+      if (utest_state.tests) {                                                 \
+        free(utest_state.tests);                                               \
+        utest_state.tests = NULL;                                              \
+      }                                                                        \
+      if (name) {                                                              \
+        free(name);                                                            \
+      }                                                                        \
     }                                                                          \
   }                                                                            \
   UTEST_SURPRESS_WARNINGS_END                                                  \
@@ -1238,14 +1250,20 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
           utest_realloc(UTEST_PTR_CAST(void *, utest_state.tests),             \
                         sizeof(struct utest_test_state_s) *                    \
                             utest_state.tests_length));                        \
-      if (utest_state.tests) {                                                 \
+      if (utest_state.tests && name) {                                         \
         utest_state.tests[index].func = &utest_i_##FIXTURE##_##NAME##_##INDEX; \
         utest_state.tests[index].index = i;                                    \
         utest_state.tests[index].name = name;                                  \
         iUp = UTEST_CAST(utest_uint64_t, i);                                   \
         UTEST_SNPRINTF(name, name_size, "%s/%" UTEST_PRIu64, name_part, iUp);  \
-      } else if (name) {                                                       \
-        free(name);                                                            \
+      } else {                                                                 \
+        if (utest_state.tests) {                                               \
+          free(utest_state.tests);                                             \
+          utest_state.tests = NULL;                                            \
+        }                                                                      \
+        if (name) {                                                            \
+          free(name);                                                          \
+        }                                                                      \
       }                                                                        \
     }                                                                          \
   }                                                                            \
