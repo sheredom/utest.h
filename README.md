@@ -48,7 +48,7 @@ googletest framework:
 In one C or C++ file, you must call the macro UTEST_MAIN:
 
 ```c
-UTEST_MAIN();
+UTEST_MAIN()
 ```
 
 This will call into utest.h, instantiate all the testcases and run the unit test
