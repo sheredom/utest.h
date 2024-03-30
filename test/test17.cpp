@@ -96,6 +96,13 @@ UTEST(cpp17, no_double_eval) {
   ASSERT_EQ(i, 1);
 }
 
+UTEST(cpp17, bool_eval) {
+  bool i = false;
+  ASSERT_EQ(i, false);
+  i = true;
+  ASSERT_EQ(i, true);
+}
+
 struct MyTestF {
   int foo;
 };
