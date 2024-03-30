@@ -512,6 +512,10 @@ template <> struct utest_type_deducer<unsigned long long, false> {
   static void _(const unsigned long long i) { UTEST_PRINTF("%llu", i); }
 };
 
+template <> struct utest_type_deducer<bool, false> {
+  static void _(const bool i) { UTEST_PRINTF(i ? "true" : "false"); }
+};
+
 template <typename T> struct utest_type_deducer<const T *, false> {
   static void _(const T *t) {
     UTEST_PRINTF("%p", static_cast<void *>(const_cast<T *>(t)));
