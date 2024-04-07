@@ -320,6 +320,7 @@ UTEST(cpp14, Enum) {
 }
 
 #if !defined(_MSC_VER) || (_MSC_VER >= 1900)
+
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
@@ -335,4 +336,10 @@ UTEST(cpp14, EnumClass) {
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
+
+UTEST(cpp14, Null) {
+  EXPECT_EQ(nullptr, nullptr);
+  ASSERT_EQ(nullptr, nullptr);
+}
+
 #endif
