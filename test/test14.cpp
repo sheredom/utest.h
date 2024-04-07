@@ -343,3 +343,20 @@ UTEST(cpp14, Null) {
 }
 
 #endif
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
+#endif
+
+struct Opaque;
+
+UTEST(cpp14, Opaque) {
+  struct Opaque *opaque = nullptr;
+  EXPECT_EQ(nullptr, opaque);
+  ASSERT_EQ(nullptr, opaque);
+}
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
