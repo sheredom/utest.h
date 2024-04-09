@@ -649,10 +649,9 @@ utest_type_printer(long long unsigned int i) {
                         : "%llu", float                                        \
                         : "%f", double                                         \
                         : "%f", long double                                    \
-                        : "%Lf", default                                       \
-                        : _Generic((val - val), ptrdiff_t                      \
-                                   : "%p", default                             \
-                                   : "undef")),                                \
+                        : "%Lf", void *                                        \
+                        : "%p", default                                        \
+                        : "undef"),                                            \
                (val))
 #else
 /*
@@ -674,9 +673,7 @@ utest_type_printer(long long unsigned int i) {
 
 #if defined(__cplusplus) && (__cplusplus >= 201103L)
 #define UTEST_AUTO(x) auto
-#elif !defined(__cplusplus)
-
-#if defined(__clang__)
+#elif defined(__clang__)
 /* clang-format off */
 /* had to disable clang-format here because it malforms the pragmas */
 #define UTEST_AUTO(x)                                                          \
@@ -684,12 +681,10 @@ utest_type_printer(long long unsigned int i) {
       _Pragma("clang diagnostic ignored \"-Wgnu-auto-type\"") __auto_type      \
           _Pragma("clang diagnostic pop")
 /* clang-format on */
+#elif !defined(__clang__) && defined(__GNUC__) && !defined(__cplusplus)
+#define UTEST_AUTO(x) __auto_type
 #else
 #define UTEST_AUTO(x) __typeof__(x + 0)
-#endif
-
-#else
-#define UTEST_AUTO(x) typeof(x + 0)
 #endif
 
 #if defined(__clang__)

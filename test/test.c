@@ -259,3 +259,14 @@ UTEST(c, Near) {
 }
 
 UTEST(c, Todo) { UTEST_SKIP("Not yet implemented!"); }
+
+// TODO: TCC cannot handle comparing null opaque structs at all.
+#if !defined(__TINYC__)
+struct Opaque;
+
+UTEST(c, Opaque) {
+  struct Opaque *opaque = NULL;
+  EXPECT_EQ(NULL, opaque);
+  ASSERT_EQ(NULL, opaque);
+}
+#endif
