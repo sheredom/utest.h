@@ -180,6 +180,10 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 */
 #include <limits.h>
 
+#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__)
+#include <sys/wait.h>
+#endif
+
 #if defined(__GLIBC__) && defined(__GLIBC_MINOR__)
 #include <time.h>
 
@@ -636,24 +640,23 @@ utest_type_printer(long long unsigned int i) {
         !(defined(__MINGW32__) || defined(__MINGW64__)) ||                     \
     defined(__TINYC__)
 #define utest_type_printer(val)                                                \
-  UTEST_PRINTF(_Generic((val), signed char                                     \
-                        : "%d", unsigned char                                  \
-                        : "%u", short                                          \
-                        : "%d", unsigned short                                 \
-                        : "%u", int                                            \
-                        : "%d", long                                           \
-                        : "%ld", long long                                     \
-                        : "%lld", unsigned                                     \
-                        : "%u", unsigned long                                  \
-                        : "%lu", unsigned long long                            \
-                        : "%llu", float                                        \
-                        : "%f", double                                         \
-                        : "%f", long double                                    \
-                        : "%Lf", default                                       \
-                        : _Generic((val - val), ptrdiff_t                      \
-                                   : "%p", default                             \
-                                   : "undef")),                                \
-               (val))
+  UTEST_PRINTF(                                                                \
+      _Generic((val),                                                          \
+      signed char: "%d",                                                       \
+      unsigned char: "%u",                                                     \
+      short: "%d",                                                             \
+      unsigned short: "%u",                                                    \
+      int: "%d",                                                               \
+      long: "%ld",                                                             \
+      long long: "%lld",                                                       \
+      unsigned: "%u",                                                          \
+      unsigned long: "%lu",                                                    \
+      unsigned long long: "%llu",                                              \
+      float: "%f",                                                             \
+      double: "%f",                                                            \
+      long double: "%Lf",                                                      \
+      default: _Generic((val - val), ptrdiff_t: "%p", default: "undef")),      \
+      (val))
 #else
 /*
    we don't have the ability to print the values we got, so we create a macro
@@ -1554,6 +1557,48 @@ int utest_main(int argc, const char *const argv[]) {
 
     ns = utest_ns();
     errno = 0;
+
+#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__)
+    {
+      int status;
+      pid_t pid;
+
+      pid = fork();
+      if (pid == -1) {
+        perror("Fork failed");
+        exit(EXIT_FAILURE);
+      } else if (pid == 0) {
+#if defined(UTEST_HAS_EXCEPTIONS)
+        UTEST_SURPRESS_WARNING_BEGIN
+        try {
+          utest_state.tests[index].func(&result,
+                                        utest_state.tests[index].index);
+        } catch (const std::exception &err) {
+          printf(" Exception : %s\n", err.what());
+          result = UTEST_TEST_FAILURE;
+        } catch (...) {
+          printf(" Exception : Unknown\n");
+          result = UTEST_TEST_FAILURE;
+        }
+        UTEST_SURPRESS_WARNING_END
+#else
+        utest_state.tests[index].func(&result, utest_state.tests[index].index);
+#endif
+        exit(result);
+      } else {
+        waitpid(pid, &status, 0);
+        if (WIFSIGNALED(status)) {
+          result = UTEST_TEST_FAILURE;
+          printf("Test terminated due to signal %i\n", WTERMSIG(status));
+        } else if (WIFEXITED(status)) {
+          result = WEXITSTATUS(status);
+        } else {
+          result = UTEST_TEST_FAILURE;
+          printf("Test terminated abnormally");
+        }
+      }
+    }
+#else
 #if defined(UTEST_HAS_EXCEPTIONS)
     UTEST_SURPRESS_WARNING_BEGIN
     try {
@@ -1569,6 +1614,8 @@ int utest_main(int argc, const char *const argv[]) {
 #else
     utest_state.tests[index].func(&result, utest_state.tests[index].index);
 #endif
+#endif
+
     ns = utest_ns() - ns;
 
     if (utest_state.output) {
