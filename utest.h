@@ -334,7 +334,7 @@ static UTEST_INLINE utest_int64_t utest_ns(void) {
   QueryPerformanceCounter(&counter);
   QueryPerformanceFrequency(&frequency);
   return UTEST_CAST(utest_int64_t,
-                    (UTEST_CAST(utest_uint64_t, counter.QuadPart) * 1000000000ULL) / frequency.QuadPart);
+                    (counter.QuadPart / frequency.QuadPart * 1000000000));
 #elif defined(__linux__) && defined(__STRICT_ANSI__)
   return UTEST_CAST(utest_int64_t, clock()) * 1000000000 / CLOCKS_PER_SEC;
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) ||    \
