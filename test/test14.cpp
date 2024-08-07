@@ -173,6 +173,13 @@ UTEST(cpp14, LongDouble) {
 }
 
 UTEST(cpp14, Char) {
+  char a = 1;
+  char b = 2;
+  EXPECT_NE(a, b);
+  ASSERT_NE(a, b);
+}
+
+UTEST(cpp14, SignedChar) {
   signed char a = 1;
   signed char b = 2;
   EXPECT_NE(a, b);

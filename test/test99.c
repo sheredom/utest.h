@@ -161,6 +161,13 @@ UTEST(c99, LongDouble) {
 }
 
 UTEST(c99, Char) {
+  char a = 1;
+  char b = 2;
+  EXPECT_NE(a, b);
+  ASSERT_NE(a, b);
+}
+
+UTEST(c99, SignedChar) {
   signed char a = 1;
   signed char b = 2;
   EXPECT_NE(a, b);
