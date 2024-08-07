@@ -447,6 +447,15 @@ struct utest_type_deducer final {
   static void _(const T t);
 };
 
+template <> struct utest_type_deducer<char, false> {
+  static void _(const char c) {
+    if (std::is_signed<decltype(c)>::value) {
+      UTEST_PRINTF("%d", static_cast<int>(c));
+    } else {
+      UTEST_PRINTF("%u", static_cast<unsigned int>(c));
+    }
+  }
+};
 template <> struct utest_type_deducer<signed char, false> {
   static void _(const signed char c) {
     UTEST_PRINTF("%d", static_cast<int>(c));
