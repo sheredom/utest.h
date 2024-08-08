@@ -301,3 +301,11 @@ UTEST(cpp, Modulo) {
   EXPECT_NE(0, c % 16);
   ASSERT_EQ(10, c % 16);
 }
+
+UTEST(cpp, String) {
+  std::string a = "foo";
+  std::string b = "bar";
+  EXPECT_NE(a, b);
+  ASSERT_NE(a, b);
+  EXPECT_EQ(a, "foo");
+}

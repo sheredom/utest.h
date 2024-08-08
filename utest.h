@@ -547,6 +547,12 @@ template <> struct utest_type_deducer<std::nullptr_t, false> {
   }
 };
 
+template <> struct utest_type_deducer<std::string, false> {
+  static void _(const std::string& s) {
+    UTEST_PRINTF("%s", s.c_str());
+  }
+};
+
 template <typename T>
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const T t) {
   utest_type_deducer<T>::_(t);
