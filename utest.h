@@ -255,8 +255,8 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
   static void __cdecl f(void);                                                 \
   UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS                                     \
   __pragma(comment(linker, "/include:" UTEST_SYMBOL_PREFIX #f "_"))            \
-      UTEST_C_FUNC __declspec(allocate(".CRT$XCU")) void(__cdecl *             \
-                                                         f##_)(void) = f;      \
+      UTEST_C_FUNC                                                             \
+      __declspec(allocate(".CRT$XCU")) void(__cdecl * f##_)(void) = f;         \
   UTEST_INITIALIZER_END_DISABLE_WARNINGS                                       \
   static void __cdecl f(void)
 #else
@@ -327,16 +327,26 @@ static UTEST_INLINE void *utest_realloc(void *const pointer, size_t new_size) {
   return new_pointer;
 }
 
+// Prevent 64-bit integer overflow when computing a timestamp by using a trick
+// from Sokol:
+// https://github.com/floooh/sokol/blob/189843bf4f86969ca4cc4b6d94e793a37c5128a7/sokol_time.h#L204
+static UTEST_INLINE utest_int64_t utest_mul_div(const utest_int64_t value,
+                                                const utest_int64_t numer,
+                                                const utest_int64_t denom) {
+  const utest_int64_t q = value / denom;
+  const utest_int64_t r = value % denom;
+  return q * numer + r * numer / denom;
+}
+
 static UTEST_INLINE utest_int64_t utest_ns(void) {
 #if defined(_MSC_VER) || defined(__MINGW64__) || defined(__MINGW32__)
   utest_large_integer counter;
   utest_large_integer frequency;
   QueryPerformanceCounter(&counter);
   QueryPerformanceFrequency(&frequency);
-  return UTEST_CAST(utest_int64_t,
-                    (counter.QuadPart * 1000000000) / frequency.QuadPart);
+  return utest_mul_div(counter.QuadPart, 1000000000, frequency.QuadPart);
 #elif defined(__linux__) && defined(__STRICT_ANSI__)
-  return UTEST_CAST(utest_int64_t, clock()) * 1000000000 / CLOCKS_PER_SEC;
+  return utest_mul_div(clock(), 1000000000, CLOCKS_PER_SEC);
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) ||    \
     defined(__NetBSD__) || defined(__DragonFly__) || defined(__sun__) ||       \
     defined(__HAIKU__)
@@ -645,24 +655,23 @@ utest_type_printer(long long unsigned int i) {
         !(defined(__MINGW32__) || defined(__MINGW64__)) ||                     \
     defined(__TINYC__)
 #define utest_type_printer(val)                                                \
-  UTEST_PRINTF(_Generic((val), signed char                                     \
-                        : "%d", unsigned char                                  \
-                        : "%u", short                                          \
-                        : "%d", unsigned short                                 \
-                        : "%u", int                                            \
-                        : "%d", long                                           \
-                        : "%ld", long long                                     \
-                        : "%lld", unsigned                                     \
-                        : "%u", unsigned long                                  \
-                        : "%lu", unsigned long long                            \
-                        : "%llu", float                                        \
-                        : "%f", double                                         \
-                        : "%f", long double                                    \
-                        : "%Lf", default                                       \
-                        : _Generic((val - val), ptrdiff_t                      \
-                                   : "%p", default                             \
-                                   : "undef")),                                \
-               (val))
+  UTEST_PRINTF(                                                                \
+      _Generic((val),                                                          \
+      signed char: "%d",                                                       \
+      unsigned char: "%u",                                                     \
+      short: "%d",                                                             \
+      unsigned short: "%u",                                                    \
+      int: "%d",                                                               \
+      long: "%ld",                                                             \
+      long long: "%lld",                                                       \
+      unsigned: "%u",                                                          \
+      unsigned long: "%lu",                                                    \
+      unsigned long long: "%llu",                                              \
+      float: "%f",                                                             \
+      double: "%f",                                                            \
+      long double: "%Lf",                                                      \
+      default: _Generic((val - val), ptrdiff_t: "%p", default: "undef")),      \
+      (val))
 #else
 /*
    we don't have the ability to print the values we got, so we create a macro
