@@ -16,6 +16,29 @@ The current supported compilers are gcc, clang, MSVC's cl.exe, and clang-cl.exe.
 
 It also works with tcc but with a caveat: the latest release of the tcc compiler (version 0.9.27) lacks a feature for UTEST to work. Make sure to use a tcc that is patched with the constructor attribute extension. Recent Ubuntu and Debian Linux distros ship tcc with that patch already included. If you compile tcc yourself, use the trunk version and it will work as expected.
 
+### Meson
+
+If you are using Meson, you can use the following snippet to include utest.h in your project:
+
+Put the following file into subprojects/utest.h.wrap:
+
+```ini
+[wrap-git]
+url = https://github.com/sheredom/utest.h.git
+revision = head
+depth = 1
+
+[provide]
+utest=utest_dep
+```
+
+Then in your meson.build file, you can use the following snippet to include utest.h in your project:
+```meson
+utest_dep = dependency('utest')
+
+executable('mytest', 'mytest.c', dependencies: [utest_dep])
+```
+
 ## Command Line Options
 
 utest.h supports some command line options:
