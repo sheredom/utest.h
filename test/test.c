@@ -266,3 +266,14 @@ UTEST(c, Near) {
 }
 
 UTEST(c, Todo) { UTEST_SKIP("Not yet implemented!"); }
+
+static int test_func_int(int a, int b)
+{
+	return a<b; 
+}
+
+UTEST(c, Predicate) {
+  EXPECT_PRED(1, 2, test_func_int);
+  ASSERT_PRED(1, 2, test_func_int);
+}
+
