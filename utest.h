@@ -695,13 +695,10 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #elif !defined(__cplusplus)
 
   #if defined(__clang__)
-    /* clang-format off */
-    /* had to disable clang-format here because it malforms the pragmas */
     #define UTEST_AUTO(x)                                                        \
       _Pragma("clang diagnostic push")                                           \
           _Pragma("clang diagnostic ignored \"-Wgnu-auto-type\"") __auto_type    \
               _Pragma("clang diagnostic pop")
-    /* clang-format on */
   #else
     #define UTEST_AUTO(x) __typeof__(x + 0)
   #endif
