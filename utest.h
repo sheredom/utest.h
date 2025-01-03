@@ -34,63 +34,63 @@
 #define SHEREDOM_UTEST_H_INCLUDED
 
 #ifdef _MSC_VER
-/*
-   Disable warning about not inlining 'inline' functions.
-*/
-#pragma warning(disable : 4710)
+  /*
+     Disable warning about not inlining 'inline' functions.
+  */
+  #pragma warning(disable : 4710)
+  
+  /*
+     Disable warning about inlining functions that are not marked 'inline'.
+  */
+  #pragma warning(disable : 4711)
+  
+  /*
+     Disable warning for alignment padding added
+  */
+  #pragma warning(disable : 4820)
+  
+  #if _MSC_VER > 1900
+    /*
+      Disable warning about preprocessor macros not being defined in MSVC headers.
+    */
+    #pragma warning(disable : 4668)
+    
+    /*
+      Disable warning about no function prototype given in MSVC headers.
+    */
+    #pragma warning(disable : 4255)
+    
+    /*
+      Disable warning about pointer or reference to potentially throwing function.
+    */
+    #pragma warning(disable : 5039)
+    
+    /*
+      Disable warning about macro expansion producing 'defined' has undefined
+      behavior.
+    */
+    #pragma warning(disable : 5105)
+  #endif
 
-/*
-   Disable warning about inlining functions that are not marked 'inline'.
-*/
-#pragma warning(disable : 4711)
+  #if _MSC_VER > 1930
+    /*
+      Disable warning about 'const' variable is not used.
+    */
+    #pragma warning(disable : 5264)
+  #endif
 
-/*
-   Disable warning for alignment padding added
-*/
-#pragma warning(disable : 4820)
-
-#if _MSC_VER > 1900
-/*
-  Disable warning about preprocessor macros not being defined in MSVC headers.
-*/
-#pragma warning(disable : 4668)
-
-/*
-  Disable warning about no function prototype given in MSVC headers.
-*/
-#pragma warning(disable : 4255)
-
-/*
-  Disable warning about pointer or reference to potentially throwing function.
-*/
-#pragma warning(disable : 5039)
-
-/*
-  Disable warning about macro expansion producing 'defined' has undefined
-  behavior.
-*/
-#pragma warning(disable : 5105)
-#endif
-
-#if _MSC_VER > 1930
-/*
-  Disable warning about 'const' variable is not used.
-*/
-#pragma warning(disable : 5264)
-#endif
-
-#pragma warning(push, 1)
+  #pragma warning(push, 1)
 #endif
 
 #if defined(_MSC_VER) && (_MSC_VER < 1920)
-typedef __int64 utest_int64_t;
-typedef unsigned __int64 utest_uint64_t;
-typedef unsigned __int32 utest_uint32_t;
+  typedef __int64 utest_int64_t;
+  typedef unsigned __int64 utest_uint64_t;
+  typedef unsigned __int32 utest_uint32_t;
 #else
-#include <stdint.h>
-typedef int64_t utest_int64_t;
-typedef uint64_t utest_uint64_t;
-typedef uint32_t utest_uint32_t;
+  #include <stdint.h>
+  typedef int64_t utest_int64_t;
+  typedef uint64_t utest_uint64_t;
+  typedef uint32_t utest_uint32_t;
 #endif
 
 #include <stddef.h>
@@ -100,27 +100,27 @@ typedef uint32_t utest_uint32_t;
 #include <errno.h>
 
 #if defined(__cplusplus)
-#if defined(_MSC_VER) && !defined(_CPPUNWIND)
-/* We're on MSVC and the compiler is compiling without exception support! */
-#elif !defined(_MSC_VER) && !defined(__EXCEPTIONS)
-/* We're on a GCC/Clang compiler that doesn't have exception support! */
-#else
-#define UTEST_HAS_EXCEPTIONS 1
-#endif
+  #if defined(_MSC_VER) && !defined(_CPPUNWIND)
+    /* We're on MSVC and the compiler is compiling without exception support! */
+  #elif !defined(_MSC_VER) && !defined(__EXCEPTIONS)
+    /* We're on a GCC/Clang compiler that doesn't have exception support! */
+  #else
+    #define UTEST_HAS_EXCEPTIONS 1
+  #endif
 #endif
 
 #if defined(UTEST_HAS_EXCEPTIONS)
-#include <stdexcept>
+  #include <stdexcept>
 #endif
 
 #if defined(_MSC_VER)
-#pragma warning(pop)
+  #pragma warning(pop)
 #endif
 
 #if defined(__cplusplus)
-#define UTEST_C_FUNC extern "C"
+  #define UTEST_C_FUNC extern "C"
 #else
-#define UTEST_C_FUNC
+  #define UTEST_C_FUNC
 #endif
 
 #define UTEST_TEST_PASSED (0)
@@ -128,193 +128,193 @@ typedef uint32_t utest_uint32_t;
 #define UTEST_TEST_SKIPPED (2)
 
 #if defined(__TINYC__)
-#define UTEST_ATTRIBUTE(a) __attribute((a))
+  #define UTEST_ATTRIBUTE(a) __attribute((a))
 #else
-#define UTEST_ATTRIBUTE(a) __attribute__((a))
+  #define UTEST_ATTRIBUTE(a) __attribute__((a))
 #endif
 
 #if defined(_MSC_VER) || defined(__MINGW64__) || defined(__MINGW32__)
 
-#if defined(__MINGW64__) || defined(__MINGW32__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-#endif
+  #if defined(__MINGW64__) || defined(__MINGW32__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wpragmas"
+    #pragma GCC diagnostic ignored "-Wunknown-pragmas"
+  #endif
 
-#if defined(_WINDOWS_) || defined(_WINDOWS_H)
-typedef LARGE_INTEGER utest_large_integer;
-#else
-// use old QueryPerformanceCounter definitions (not sure is this needed in some
-// edge cases or not) on Win7 with VS2015 these extern declaration cause "second
-// C linkage of overloaded function not allowed" error
-typedef union {
-  struct {
-    unsigned long LowPart;
-    long HighPart;
-  } DUMMYSTRUCTNAME;
-  struct {
-    unsigned long LowPart;
-    long HighPart;
-  } u;
-  utest_int64_t QuadPart;
-} utest_large_integer;
-
-UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceCounter(
-    utest_large_integer *);
-UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
-    utest_large_integer *);
-
-#if defined(__MINGW64__) || defined(__MINGW32__)
-#pragma GCC diagnostic pop
-#endif
-#endif
+  #if defined(_WINDOWS_) || defined(_WINDOWS_H)
+    typedef LARGE_INTEGER utest_large_integer;
+  #else
+  // use old QueryPerformanceCounter definitions (not sure is this needed in some
+  // edge cases or not) on Win7 with VS2015 these extern declaration cause "second
+  // C linkage of overloaded function not allowed" error
+  typedef union {
+    struct {
+      unsigned long LowPart;
+      long HighPart;
+    } DUMMYSTRUCTNAME;
+    struct {
+      unsigned long LowPart;
+      long HighPart;
+    } u;
+    utest_int64_t QuadPart;
+  } utest_large_integer;
+  
+  UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceCounter(
+      utest_large_integer *);
+  UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
+      utest_large_integer *);
+  
+  #if defined(__MINGW64__) || defined(__MINGW32__)
+  #pragma GCC diagnostic pop
+  #endif
+  #endif
 
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) ||    \
     defined(__NetBSD__) || defined(__DragonFly__) || defined(__sun__) ||       \
     defined(__HAIKU__)
-/*
-   slightly obscure include here - we need to include glibc's features.h, but
-   we don't want to just include a header that might not be defined for other
-   c libraries like musl. Instead we include limits.h, which we know on all
-   glibc distributions includes features.h
-*/
-#include <limits.h>
+  /*
+     slightly obscure include here - we need to include glibc's features.h, but
+     we don't want to just include a header that might not be defined for other
+     c libraries like musl. Instead we include limits.h, which we know on all
+     glibc distributions includes features.h
+  */
+  #include <limits.h>
 
-#if defined(__GLIBC__) && defined(__GLIBC_MINOR__)
-#include <time.h>
+  #if defined(__GLIBC__) && defined(__GLIBC_MINOR__)
+    #include <time.h>
 
-#if ((2 < __GLIBC__) || ((2 == __GLIBC__) && (17 <= __GLIBC_MINOR__)))
-/* glibc is version 2.17 or above, so we can just use clock_gettime */
-#define UTEST_USE_CLOCKGETTIME
-#else
-#include <sys/syscall.h>
-#include <unistd.h>
-#endif
-#else // Other libc implementations
-#include <time.h>
-#define UTEST_USE_CLOCKGETTIME
-#endif
+    #if ((2 < __GLIBC__) || ((2 == __GLIBC__) && (17 <= __GLIBC_MINOR__)))
+      /* glibc is version 2.17 or above, so we can just use clock_gettime */
+      #define UTEST_USE_CLOCKGETTIME
+    #else
+      #include <sys/syscall.h>
+      #include <unistd.h>
+    #endif
+  #else // Other libc implementations
+    #include <time.h>
+    #define UTEST_USE_CLOCKGETTIME
+  #endif
 
 #elif defined(__APPLE__)
-#include <time.h>
+  #include <time.h>
 #endif
 
 #if defined(_MSC_VER) && (_MSC_VER < 1920)
-#define UTEST_PRId64 "I64d"
-#define UTEST_PRIu64 "I64u"
+  #define UTEST_PRId64 "I64d"
+  #define UTEST_PRIu64 "I64u"
 #else
-#include <inttypes.h>
+  #include <inttypes.h>
 
-#define UTEST_PRId64 PRId64
-#define UTEST_PRIu64 PRIu64
+  #define UTEST_PRId64 PRId64
+  #define UTEST_PRIu64 PRIu64
 #endif
 
 #if defined(__cplusplus)
-#define UTEST_INLINE inline
+  #define UTEST_INLINE inline
 
-#if defined(__clang__)
-#define UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS                               \
-  _Pragma("clang diagnostic push")                                             \
-      _Pragma("clang diagnostic ignored \"-Wglobal-constructors\"")
+  #if defined(__clang__)
+    #define UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS                           \
+      _Pragma("clang diagnostic push")                                         \
+        _Pragma("clang diagnostic ignored \"-Wglobal-constructors\"")
 
-#define UTEST_INITIALIZER_END_DISABLE_WARNINGS _Pragma("clang diagnostic pop")
-#else
-#define UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS
-#define UTEST_INITIALIZER_END_DISABLE_WARNINGS
-#endif
+    #define UTEST_INITIALIZER_END_DISABLE_WARNINGS _Pragma("clang diagnostic pop")
+  #else
+    #define UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS
+    #define UTEST_INITIALIZER_END_DISABLE_WARNINGS
+  #endif
 
-#define UTEST_INITIALIZER(f)                                                   \
-  struct f##_cpp_struct {                                                      \
-    f##_cpp_struct();                                                          \
-  };                                                                           \
+  #define UTEST_INITIALIZER(f)                                                 \
+    struct f##_cpp_struct {                                                    \
+      f##_cpp_struct();                                                        \
+    };                                                                         \
   UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS static f##_cpp_struct               \
-      f##_cpp_global UTEST_INITIALIZER_END_DISABLE_WARNINGS;                   \
-  f##_cpp_struct::f##_cpp_struct()
+    f##_cpp_global UTEST_INITIALIZER_END_DISABLE_WARNINGS;                     \
+    f##_cpp_struct::f##_cpp_struct()
 #elif defined(_MSC_VER)
-#define UTEST_INLINE __forceinline
+  #define UTEST_INLINE __forceinline
 
-#if defined(_WIN64)
-#define UTEST_SYMBOL_PREFIX
+  #if defined(_WIN64)
+    #define UTEST_SYMBOL_PREFIX
+  #else
+    #define UTEST_SYMBOL_PREFIX "_"
+  #endif
+
+  #if defined(__clang__)
+    #define UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS                           \
+      _Pragma("clang diagnostic push")                                         \
+        _Pragma("clang diagnostic ignored \"-Wmissing-variable-declarations\"")
+
+    #define UTEST_INITIALIZER_END_DISABLE_WARNINGS _Pragma("clang diagnostic pop")
+  #else
+    #define UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS
+    #define UTEST_INITIALIZER_END_DISABLE_WARNINGS
+  #endif
+
+  #pragma section(".CRT$XCU", read)
+  #define UTEST_INITIALIZER(f)                                                 \
+    static void __cdecl f(void);                                               \
+    UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS                                   \
+    __pragma(comment(linker, "/include:" UTEST_SYMBOL_PREFIX #f "_"))          \
+        UTEST_C_FUNC                                                           \
+        __declspec(allocate(".CRT$XCU")) void(__cdecl * f##_)(void) = f;       \
+    UTEST_INITIALIZER_END_DISABLE_WARNINGS                                     \
+    static void __cdecl f(void)
 #else
-#define UTEST_SYMBOL_PREFIX "_"
-#endif
+  #if defined(__linux__)
+    #if defined(__clang__)
+      #if __has_warning("-Wreserved-id-macro")
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wreserved-id-macro"
+      #endif
+    #endif
 
-#if defined(__clang__)
-#define UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS                               \
-  _Pragma("clang diagnostic push")                                             \
-      _Pragma("clang diagnostic ignored \"-Wmissing-variable-declarations\"")
+    #define __STDC_FORMAT_MACROS 1
 
-#define UTEST_INITIALIZER_END_DISABLE_WARNINGS _Pragma("clang diagnostic pop")
-#else
-#define UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS
-#define UTEST_INITIALIZER_END_DISABLE_WARNINGS
-#endif
+    #if defined(__clang__)
+      #if __has_warning("-Wreserved-id-macro")
+        #pragma clang diagnostic pop
+      #endif
+    #endif
+  #endif
 
-#pragma section(".CRT$XCU", read)
-#define UTEST_INITIALIZER(f)                                                   \
-  static void __cdecl f(void);                                                 \
-  UTEST_INITIALIZER_BEGIN_DISABLE_WARNINGS                                     \
-  __pragma(comment(linker, "/include:" UTEST_SYMBOL_PREFIX #f "_"))            \
-      UTEST_C_FUNC                                                             \
-      __declspec(allocate(".CRT$XCU")) void(__cdecl * f##_)(void) = f;         \
-  UTEST_INITIALIZER_END_DISABLE_WARNINGS                                       \
-  static void __cdecl f(void)
-#else
-#if defined(__linux__)
-#if defined(__clang__)
-#if __has_warning("-Wreserved-id-macro")
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wreserved-id-macro"
-#endif
-#endif
+  #define UTEST_INLINE inline
 
-#define __STDC_FORMAT_MACROS 1
+  #define UTEST_INITIALIZER(f)                                                 \
+    static void f(void) UTEST_ATTRIBUTE(constructor);                          \
+    static void f(void)
+  #endif
 
-#if defined(__clang__)
-#if __has_warning("-Wreserved-id-macro")
-#pragma clang diagnostic pop
-#endif
-#endif
-#endif
+  #if defined(__cplusplus)
+    #define UTEST_CAST(type, x) static_cast<type>(x)
+    #define UTEST_PTR_CAST(type, x) reinterpret_cast<type>(x)
+    #define UTEST_EXTERN extern "C"
+    #define UTEST_NULL NULL
+  #else
+    #define UTEST_CAST(type, x) ((type)(x))
+    #define UTEST_PTR_CAST(type, x) ((type)(x))
+    #define UTEST_EXTERN extern
+    #define UTEST_NULL 0
+  #endif
 
-#define UTEST_INLINE inline
-
-#define UTEST_INITIALIZER(f)                                                   \
-  static void f(void) UTEST_ATTRIBUTE(constructor);                            \
-  static void f(void)
-#endif
-
-#if defined(__cplusplus)
-#define UTEST_CAST(type, x) static_cast<type>(x)
-#define UTEST_PTR_CAST(type, x) reinterpret_cast<type>(x)
-#define UTEST_EXTERN extern "C"
-#define UTEST_NULL NULL
-#else
-#define UTEST_CAST(type, x) ((type)(x))
-#define UTEST_PTR_CAST(type, x) ((type)(x))
-#define UTEST_EXTERN extern
-#define UTEST_NULL 0
-#endif
-
-#ifdef _MSC_VER
-/*
-    io.h contains definitions for some structures with natural padding. This is
-    uninteresting, but for some reason MSVC's behaviour is to warn about
-    including this system header. That *is* interesting
-*/
-#pragma warning(disable : 4820)
-#pragma warning(push, 1)
-#include <io.h>
-#pragma warning(pop)
-#define UTEST_COLOUR_OUTPUT() (_isatty(_fileno(stdout)))
-#else
-#if defined(__EMSCRIPTEN__)
-#include <emscripten/html5.h>
-#define UTEST_COLOUR_OUTPUT() false
-#else
-#include <unistd.h>
-#define UTEST_COLOUR_OUTPUT() (isatty(STDOUT_FILENO))
-#endif
+  #ifdef _MSC_VER
+  /*
+      io.h contains definitions for some structures with natural padding. This is
+      uninteresting, but for some reason MSVC's behaviour is to warn about
+      including this system header. That *is* interesting
+  */
+  #pragma warning(disable : 4820)
+  #pragma warning(push, 1)
+  #include <io.h>
+  #pragma warning(pop)
+  #define UTEST_COLOUR_OUTPUT() (_isatty(_fileno(stdout)))
+  #else
+    #if defined(__EMSCRIPTEN__)
+    #include <emscripten/html5.h>
+    #define UTEST_COLOUR_OUTPUT() false
+  #else
+    #include <unistd.h>
+    #define UTEST_COLOUR_OUTPUT() (isatty(STDOUT_FILENO))
+  #endif
 #endif
 
 static UTEST_INLINE void *utest_realloc(void *const pointer, size_t new_size) {
@@ -356,11 +356,11 @@ static UTEST_INLINE utest_int64_t utest_ns(void) {
   timespec_get(&ts, TIME_UTC);
 #else
   const clockid_t cid = CLOCK_REALTIME;
-#if defined(UTEST_USE_CLOCKGETTIME)
-  clock_gettime(cid, &ts);
-#else
-  syscall(SYS_clock_gettime, cid, &ts);
-#endif
+  #if defined(UTEST_USE_CLOCKGETTIME)
+    clock_gettime(cid, &ts);
+  #else
+    syscall(SYS_clock_gettime, cid, &ts);
+  #endif
 #endif
   return UTEST_CAST(utest_int64_t, ts.tv_sec) * 1000 * 1000 * 1000 + ts.tv_nsec;
 #elif __APPLE__
@@ -390,25 +390,25 @@ struct utest_state_s {
 UTEST_EXTERN struct utest_state_s utest_state;
 
 #if defined(_MSC_VER)
-#define UTEST_WEAK __forceinline
+  #define UTEST_WEAK __forceinline
 #elif defined(__MINGW32__) || defined(__MINGW64__)
-#define UTEST_WEAK static UTEST_ATTRIBUTE(used)
+  #define UTEST_WEAK static UTEST_ATTRIBUTE(used)
 #elif defined(__clang__) || defined(__GNUC__) || defined(__TINYC__)
-#define UTEST_WEAK UTEST_ATTRIBUTE(weak)
+  #define UTEST_WEAK UTEST_ATTRIBUTE(weak)
 #else
-#error Non clang, non gcc, non MSVC, non tcc compiler found!
+  #error Non clang, non gcc, non MSVC, non tcc compiler found!
 #endif
 
 #if defined(_MSC_VER)
-#define UTEST_UNUSED
+  #define UTEST_UNUSED
 #else
-#define UTEST_UNUSED UTEST_ATTRIBUTE(unused)
+  #define UTEST_UNUSED UTEST_ATTRIBUTE(unused)
 #endif
 
 #ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wvariadic-macros"
-#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wvariadic-macros"
+  #pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
 #endif
 #define UTEST_PRINTF(...)                                                      \
   if (utest_state.output) {                                                    \
@@ -416,323 +416,323 @@ UTEST_EXTERN struct utest_state_s utest_state;
   }                                                                            \
   printf(__VA_ARGS__)
 #ifdef __clang__
-#pragma clang diagnostic pop
+  #pragma clang diagnostic pop
 #endif
 
 #ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wvariadic-macros"
-#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wvariadic-macros"
+  #pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
 #endif
 
 #ifdef _MSC_VER
-#define UTEST_SNPRINTF(BUFFER, N, ...) _snprintf_s(BUFFER, N, N, __VA_ARGS__)
+  #define UTEST_SNPRINTF(BUFFER, N, ...) _snprintf_s(BUFFER, N, N, __VA_ARGS__)
 #else
-#define UTEST_SNPRINTF(...) snprintf(__VA_ARGS__)
+  #define UTEST_SNPRINTF(...) snprintf(__VA_ARGS__)
 #endif
 
 #ifdef __clang__
-#pragma clang diagnostic pop
+  #pragma clang diagnostic pop
 #endif
 
 #if defined(__cplusplus)
-/* if we are using c++ we can use overloaded methods (its in the language) */
-#define UTEST_OVERLOADABLE
+  /* if we are using c++ we can use overloaded methods (its in the language) */
+  #define UTEST_OVERLOADABLE
 #elif defined(__clang__)
-/* otherwise, if we are using clang with c - use the overloadable attribute */
-#define UTEST_OVERLOADABLE UTEST_ATTRIBUTE(overloadable)
+  /* otherwise, if we are using clang with c - use the overloadable attribute */
+  #define UTEST_OVERLOADABLE UTEST_ATTRIBUTE(overloadable)
 #endif
 
 #if defined(__cplusplus) && (__cplusplus >= 201103L)
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
-#endif
+  #ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
+  #endif
 
-#include <type_traits>
+  #include <type_traits>
 
-template <typename T, bool is_enum = std::is_enum<T>::value>
-struct utest_type_deducer final {
-  static void _(const T t);
-};
+  template <typename T, bool is_enum = std::is_enum<T>::value>
+  struct utest_type_deducer final {
+    static void _(const T t);
+  };
 
-template <> struct utest_type_deducer<char, false> {
-  static void _(const char c) {
-    if (std::is_signed<decltype(c)>::value) {
+  template <> struct utest_type_deducer<char, false> {
+    static void _(const char c) {
+      if (std::is_signed<decltype(c)>::value) {
+        UTEST_PRINTF("%d", static_cast<int>(c));
+      } else {
+        UTEST_PRINTF("%u", static_cast<unsigned int>(c));
+      }
+    }
+  };
+  template <> struct utest_type_deducer<signed char, false> {
+    static void _(const signed char c) {
       UTEST_PRINTF("%d", static_cast<int>(c));
-    } else {
+    }
+  };
+  
+  template <> struct utest_type_deducer<unsigned char, false> {
+    static void _(const unsigned char c) {
       UTEST_PRINTF("%u", static_cast<unsigned int>(c));
     }
+  };
+  
+  template <> struct utest_type_deducer<short, false> {
+    static void _(const short s) { UTEST_PRINTF("%d", static_cast<int>(s)); }
+  };
+  
+  template <> struct utest_type_deducer<unsigned short, false> {
+    static void _(const unsigned short s) {
+      UTEST_PRINTF("%u", static_cast<int>(s));
+    }
+  };
+  
+  template <> struct utest_type_deducer<float, false> {
+    static void _(const float f) { UTEST_PRINTF("%f", static_cast<double>(f)); }
+  };
+  
+  template <> struct utest_type_deducer<double, false> {
+    static void _(const double d) { UTEST_PRINTF("%f", d); }
+  };
+  
+  template <> struct utest_type_deducer<long double, false> {
+    static void _(const long double d) {
+  #if defined(__MINGW32__) || defined(__MINGW64__)
+      /* MINGW is weird - doesn't like LF at all?! */
+      UTEST_PRINTF("%f", (double)d);
+  #else
+      UTEST_PRINTF("%Lf", d);
+  #endif
+    }
+  };
+  
+  template <> struct utest_type_deducer<int, false> {
+    static void _(const int i) { UTEST_PRINTF("%d", i); }
+  };
+  
+  template <> struct utest_type_deducer<unsigned int, false> {
+    static void _(const unsigned int i) { UTEST_PRINTF("%u", i); }
+  };
+  
+  template <> struct utest_type_deducer<long, false> {
+    static void _(const long i) { UTEST_PRINTF("%ld", i); }
+  };
+  
+  template <> struct utest_type_deducer<unsigned long, false> {
+    static void _(const unsigned long i) { UTEST_PRINTF("%lu", i); }
+  };
+  
+  template <> struct utest_type_deducer<long long, false> {
+    static void _(const long long i) { UTEST_PRINTF("%lld", i); }
+  };
+  
+  template <> struct utest_type_deducer<unsigned long long, false> {
+    static void _(const unsigned long long i) { UTEST_PRINTF("%llu", i); }
+  };
+  
+  template <> struct utest_type_deducer<bool, false> {
+    static void _(const bool i) { UTEST_PRINTF(i ? "true" : "false"); }
+  };
+  
+  template <typename T> struct utest_type_deducer<const T *, false> {
+    static void _(const T *t) {
+      UTEST_PRINTF("%p", static_cast<void *>(const_cast<T *>(t)));
+    }
+  };
+  
+  template <typename T> struct utest_type_deducer<T *, false> {
+    static void _(T *t) { UTEST_PRINTF("%p", static_cast<void *>(t)); }
+  };
+  
+  template <typename T> struct utest_type_deducer<T, true> {
+    static void _(const T t) {
+      UTEST_PRINTF("%llu", static_cast<unsigned long long>(t));
+    }
+  };
+  
+  template <> struct utest_type_deducer<std::nullptr_t, false> {
+    static void _(std::nullptr_t t) {
+      UTEST_PRINTF("%p", static_cast<void *>(t));
+    }
+  };
+  
+  template <typename T>
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const T t) {
+    utest_type_deducer<T>::_(t);
   }
-};
-template <> struct utest_type_deducer<signed char, false> {
-  static void _(const signed char c) {
-    UTEST_PRINTF("%d", static_cast<int>(c));
+  
+  #ifdef __clang__
+  #pragma clang diagnostic pop
+  #endif
+  
+  #elif defined(UTEST_OVERLOADABLE)
+  
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(signed char c);
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(signed char c) {
+    UTEST_PRINTF("%d", UTEST_CAST(int, c));
   }
-};
-
-template <> struct utest_type_deducer<unsigned char, false> {
-  static void _(const unsigned char c) {
-    UTEST_PRINTF("%u", static_cast<unsigned int>(c));
+  
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned char c);
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned char c) {
+    UTEST_PRINTF("%u", UTEST_CAST(unsigned int, c));
   }
-};
-
-template <> struct utest_type_deducer<short, false> {
-  static void _(const short s) { UTEST_PRINTF("%d", static_cast<int>(s)); }
-};
-
-template <> struct utest_type_deducer<unsigned short, false> {
-  static void _(const unsigned short s) {
-    UTEST_PRINTF("%u", static_cast<int>(s));
+  
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(float f);
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(float f) {
+    UTEST_PRINTF("%f", UTEST_CAST(double, f));
   }
-};
-
-template <> struct utest_type_deducer<float, false> {
-  static void _(const float f) { UTEST_PRINTF("%f", static_cast<double>(f)); }
-};
-
-template <> struct utest_type_deducer<double, false> {
-  static void _(const double d) { UTEST_PRINTF("%f", d); }
-};
-
-template <> struct utest_type_deducer<long double, false> {
-  static void _(const long double d) {
-#if defined(__MINGW32__) || defined(__MINGW64__)
+  
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(double d);
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(double d) {
+    UTEST_PRINTF("%f", d);
+  }
+  
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long double d);
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long double d) {
+  #if defined(__MINGW32__) || defined(__MINGW64__)
     /* MINGW is weird - doesn't like LF at all?! */
     UTEST_PRINTF("%f", (double)d);
-#else
+  #else
     UTEST_PRINTF("%Lf", d);
-#endif
+  #endif
   }
-};
-
-template <> struct utest_type_deducer<int, false> {
-  static void _(const int i) { UTEST_PRINTF("%d", i); }
-};
-
-template <> struct utest_type_deducer<unsigned int, false> {
-  static void _(const unsigned int i) { UTEST_PRINTF("%u", i); }
-};
-
-template <> struct utest_type_deducer<long, false> {
-  static void _(const long i) { UTEST_PRINTF("%ld", i); }
-};
-
-template <> struct utest_type_deducer<unsigned long, false> {
-  static void _(const unsigned long i) { UTEST_PRINTF("%lu", i); }
-};
-
-template <> struct utest_type_deducer<long long, false> {
-  static void _(const long long i) { UTEST_PRINTF("%lld", i); }
-};
-
-template <> struct utest_type_deducer<unsigned long long, false> {
-  static void _(const unsigned long long i) { UTEST_PRINTF("%llu", i); }
-};
-
-template <> struct utest_type_deducer<bool, false> {
-  static void _(const bool i) { UTEST_PRINTF(i ? "true" : "false"); }
-};
-
-template <typename T> struct utest_type_deducer<const T *, false> {
-  static void _(const T *t) {
-    UTEST_PRINTF("%p", static_cast<void *>(const_cast<T *>(t)));
+  
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(int i);
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(int i) {
+    UTEST_PRINTF("%d", i);
   }
-};
-
-template <typename T> struct utest_type_deducer<T *, false> {
-  static void _(T *t) { UTEST_PRINTF("%p", static_cast<void *>(t)); }
-};
-
-template <typename T> struct utest_type_deducer<T, true> {
-  static void _(const T t) {
-    UTEST_PRINTF("%llu", static_cast<unsigned long long>(t));
+  
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned int i);
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned int i) {
+    UTEST_PRINTF("%u", i);
   }
-};
-
-template <> struct utest_type_deducer<std::nullptr_t, false> {
-  static void _(std::nullptr_t t) {
-    UTEST_PRINTF("%p", static_cast<void *>(t));
+  
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long int i);
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long int i) {
+    UTEST_PRINTF("%ld", i);
   }
-};
+  
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long unsigned int i);
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long unsigned int i) {
+    UTEST_PRINTF("%lu", i);
+  }
+  
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const void *p);
+  UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const void *p) {
+    UTEST_PRINTF("%p", p);
+  }
 
-template <typename T>
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const T t) {
-  utest_type_deducer<T>::_(t);
-}
+  /*
+     long long is a c++11 extension
+  */
+  #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) ||              \
+      defined(__cplusplus) && (__cplusplus >= 201103L) ||                        \
+      (defined(__MINGW32__) || defined(__MINGW64__))
+  
+    #ifdef __clang__
+      #pragma clang diagnostic push
+      #pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
+    #endif
+  
+    UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i);
+    UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i) {
+      UTEST_PRINTF("%lld", i);
+    }
+    
+    UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long unsigned int i);
+    UTEST_WEAK UTEST_OVERLOADABLE void
+    utest_type_printer(long long unsigned int i) {
+      UTEST_PRINTF("%llu", i);
+    }
+    
+    #ifdef __clang__
+      #pragma clang diagnostic pop
+    #endif
 
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
-#elif defined(UTEST_OVERLOADABLE)
-
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(signed char c);
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(signed char c) {
-  UTEST_PRINTF("%d", UTEST_CAST(int, c));
-}
-
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned char c);
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned char c) {
-  UTEST_PRINTF("%u", UTEST_CAST(unsigned int, c));
-}
-
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(float f);
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(float f) {
-  UTEST_PRINTF("%f", UTEST_CAST(double, f));
-}
-
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(double d);
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(double d) {
-  UTEST_PRINTF("%f", d);
-}
-
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long double d);
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long double d) {
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  /* MINGW is weird - doesn't like LF at all?! */
-  UTEST_PRINTF("%f", (double)d);
-#else
-  UTEST_PRINTF("%Lf", d);
-#endif
-}
-
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(int i);
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(int i) {
-  UTEST_PRINTF("%d", i);
-}
-
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned int i);
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned int i) {
-  UTEST_PRINTF("%u", i);
-}
-
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long int i);
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long int i) {
-  UTEST_PRINTF("%ld", i);
-}
-
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long unsigned int i);
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long unsigned int i) {
-  UTEST_PRINTF("%lu", i);
-}
-
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const void *p);
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const void *p) {
-  UTEST_PRINTF("%p", p);
-}
-
-/*
-   long long is a c++11 extension
-*/
-#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) ||              \
-    defined(__cplusplus) && (__cplusplus >= 201103L) ||                        \
-    (defined(__MINGW32__) || defined(__MINGW64__))
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
-#endif
-
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i);
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i) {
-  UTEST_PRINTF("%lld", i);
-}
-
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long unsigned int i);
-UTEST_WEAK UTEST_OVERLOADABLE void
-utest_type_printer(long long unsigned int i) {
-  UTEST_PRINTF("%llu", i);
-}
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
-#endif
+  #endif
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) &&            \
         !(defined(__MINGW32__) || defined(__MINGW64__)) ||                     \
     defined(__TINYC__)
-#define utest_type_printer(val)                                                \
-  UTEST_PRINTF(                                                                \
-      _Generic((val),                                                          \
-      signed char: "%d",                                                       \
-      unsigned char: "%u",                                                     \
-      short: "%d",                                                             \
-      unsigned short: "%u",                                                    \
-      int: "%d",                                                               \
-      long: "%ld",                                                             \
-      long long: "%lld",                                                       \
-      unsigned: "%u",                                                          \
-      unsigned long: "%lu",                                                    \
-      unsigned long long: "%llu",                                              \
-      float: "%f",                                                             \
-      double: "%f",                                                            \
-      long double: "%Lf",                                                      \
-      default: _Generic((val - val), ptrdiff_t: "%p", default: "undef")),      \
-      (val))
+  #define utest_type_printer(val)                                              \
+    UTEST_PRINTF(                                                              \
+        _Generic((val),                                                        \
+        signed char: "%d",                                                     \
+        unsigned char: "%u",                                                   \
+        short: "%d",                                                           \
+        unsigned short: "%u",                                                  \
+        int: "%d",                                                             \
+        long: "%ld",                                                           \
+        long long: "%lld",                                                     \
+        unsigned: "%u",                                                        \
+        unsigned long: "%lu",                                                  \
+        unsigned long long: "%llu",                                            \
+        float: "%f",                                                           \
+        double: "%f",                                                          \
+        long double: "%Lf",                                                    \
+        default: _Generic((val - val), ptrdiff_t: "%p", default: "undef")),    \
+        (val))
 #else
-/*
-   we don't have the ability to print the values we got, so we create a macro
-   to tell our users we can't do anything fancy
-*/
-#define utest_type_printer(...) UTEST_PRINTF("undef")
+  /*
+     we don't have the ability to print the values we got, so we create a macro
+     to tell our users we can't do anything fancy
+  */
+  #define utest_type_printer(...) UTEST_PRINTF("undef")
 #endif
 
 #if defined(_MSC_VER)
-#define UTEST_SURPRESS_WARNING_BEGIN                                           \
-  __pragma(warning(push)) __pragma(warning(disable : 4127))                    \
-      __pragma(warning(disable : 4571)) __pragma(warning(disable : 4130))
-#define UTEST_SURPRESS_WARNING_END __pragma(warning(pop))
+  #define UTEST_SURPRESS_WARNING_BEGIN                                         \
+    __pragma(warning(push)) __pragma(warning(disable : 4127))                  \
+        __pragma(warning(disable : 4571)) __pragma(warning(disable : 4130))
+  #define UTEST_SURPRESS_WARNING_END __pragma(warning(pop))
 #else
-#define UTEST_SURPRESS_WARNING_BEGIN
-#define UTEST_SURPRESS_WARNING_END
+  #define UTEST_SURPRESS_WARNING_BEGIN
+  #define UTEST_SURPRESS_WARNING_END
 #endif
 
 #if defined(__cplusplus) && (__cplusplus >= 201103L)
-#define UTEST_AUTO(x) auto
+  #define UTEST_AUTO(x) auto
 #elif !defined(__cplusplus)
 
-#if defined(__clang__)
-/* clang-format off */
-/* had to disable clang-format here because it malforms the pragmas */
-#define UTEST_AUTO(x)                                                          \
-  _Pragma("clang diagnostic push")                                             \
-      _Pragma("clang diagnostic ignored \"-Wgnu-auto-type\"") __auto_type      \
-          _Pragma("clang diagnostic pop")
-/* clang-format on */
-#else
-#define UTEST_AUTO(x) __typeof__(x + 0)
-#endif
+  #if defined(__clang__)
+    /* clang-format off */
+    /* had to disable clang-format here because it malforms the pragmas */
+    #define UTEST_AUTO(x)                                                        \
+      _Pragma("clang diagnostic push")                                           \
+          _Pragma("clang diagnostic ignored \"-Wgnu-auto-type\"") __auto_type    \
+              _Pragma("clang diagnostic pop")
+    /* clang-format on */
+  #else
+    #define UTEST_AUTO(x) __typeof__(x + 0)
+  #endif
 
 #else
-#define UTEST_AUTO(x) typeof(x + 0)
+  #define UTEST_AUTO(x) typeof(x + 0)
 #endif
 
 #if defined(__clang__)
-#define UTEST_STRNCMP(x, y, size)                                              \
-  _Pragma("clang diagnostic push")                                             \
-      _Pragma("clang diagnostic ignored \"-Wdisabled-macro-expansion\"")       \
-          strncmp(x, y, size) _Pragma("clang diagnostic pop")
+  #define UTEST_STRNCMP(x, y, size)                                            \
+    _Pragma("clang diagnostic push")                                           \
+        _Pragma("clang diagnostic ignored \"-Wdisabled-macro-expansion\"")     \
+            strncmp(x, y, size) _Pragma("clang diagnostic pop")
 #else
-#define UTEST_STRNCMP(x, y, size) strncmp(x, y, size)
+  #define UTEST_STRNCMP(x, y, size) strncmp(x, y, size)
 #endif
 
 #if defined(_MSC_VER)
-#define UTEST_STRNCPY(x, y, size) strcpy_s(x, size, y)
+  #define UTEST_STRNCPY(x, y, size) strcpy_s(x, size, y)
 #elif !defined(__clang__) && defined(__GNUC__)
-static UTEST_INLINE char *
-utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstringop-overflow"
-  return strncpy(dst, src, size);
-#pragma GCC diagnostic pop
-}
-
-#define UTEST_STRNCPY(x, y, size) utest_strncpy_gcc(x, y, size)
+  static UTEST_INLINE char *
+  utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wstringop-overflow"
+    return strncpy(dst, src, size);
+  #pragma GCC diagnostic pop
+  }
+  
+  #define UTEST_STRNCPY(x, y, size) utest_strncpy_gcc(x, y, size)
 #else
-#define UTEST_STRNCPY(x, y, size) strncpy(x, y, size)
+  #define UTEST_STRNCPY(x, y, size) strncpy(x, y, size)
 #endif
 
 #define UTEST_SKIP(msg)                                                        \
@@ -743,66 +743,66 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   } while (0)
 
 #if defined(__clang__)
-#define UTEST_COND(x, y, cond, msg, is_assert)                                 \
-  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    _Pragma("clang diagnostic push")                                           \
-        _Pragma("clang diagnostic ignored \"-Wlanguage-extension-token\"")     \
-            _Pragma("clang diagnostic ignored \"-Wc++98-compat-pedantic\"")    \
-                _Pragma("clang diagnostic ignored \"-Wfloat-equal\"")          \
-                    UTEST_AUTO(x) xEval = (x);                                 \
-    UTEST_AUTO(y) yEval = (y);                                                 \
-    if (!((xEval)cond(yEval))) {                                               \
-      const char *const xAsString = #x;                                        \
-      const char *const yAsString = #y;                                        \
-      _Pragma("clang diagnostic pop")                                          \
-          UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                \
-      UTEST_PRINTF("  Expected : (");                                          \
-      UTEST_PRINTF("%s) " #cond " (%s", xAsString, yAsString);                 \
-      UTEST_PRINTF(")\n");                                                     \
-      UTEST_PRINTF("    Actual : ");                                           \
-      utest_type_printer(xEval);                                               \
-      UTEST_PRINTF(" vs ");                                                    \
-      utest_type_printer(yEval);                                               \
-      UTEST_PRINTF("\n");                                                      \
-      if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
-      }                                                                        \
-      *utest_result = UTEST_TEST_FAILURE;                                      \
-      if (is_assert) {                                                         \
-        return;                                                                \
+  #define UTEST_COND(x, y, cond, msg, is_assert)                               \
+    UTEST_SURPRESS_WARNING_BEGIN do {                                          \
+      _Pragma("clang diagnostic push")                                         \
+          _Pragma("clang diagnostic ignored \"-Wlanguage-extension-token\"")   \
+              _Pragma("clang diagnostic ignored \"-Wc++98-compat-pedantic\"")  \
+                  _Pragma("clang diagnostic ignored \"-Wfloat-equal\"")        \
+                      UTEST_AUTO(x) xEval = (x);                               \
+      UTEST_AUTO(y) yEval = (y);                                               \
+      if (!((xEval)cond(yEval))) {                                             \
+        const char *const xAsString = #x;                                      \
+        const char *const yAsString = #y;                                      \
+        _Pragma("clang diagnostic pop")                                        \
+            UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);              \
+        UTEST_PRINTF("  Expected : (");                                        \
+        UTEST_PRINTF("%s) " #cond " (%s", xAsString, yAsString);               \
+        UTEST_PRINTF(")\n");                                                   \
+        UTEST_PRINTF("    Actual : ");                                         \
+        utest_type_printer(xEval);                                             \
+        UTEST_PRINTF(" vs ");                                                  \
+        utest_type_printer(yEval);                                             \
+        UTEST_PRINTF("\n");                                                    \
+        if (strlen(msg) > 0) {                                                 \
+          UTEST_PRINTF("   Message : %s\n", msg);                              \
+        }                                                                      \
+        *utest_result = UTEST_TEST_FAILURE;                                    \
+        if (is_assert) {                                                       \
+          return;                                                              \
+        }                                                                      \
       }                                                                        \
     }                                                                          \
-  }                                                                            \
-  while (0)                                                                    \
-  UTEST_SURPRESS_WARNING_END
+    while (0)                                                                  \
+    UTEST_SURPRESS_WARNING_END
 #elif defined(__GNUC__) || defined(__TINYC__)
-#define UTEST_COND(x, y, cond, msg, is_assert)                                 \
-  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    UTEST_AUTO(x) xEval = (x);                                                 \
-    UTEST_AUTO(y) yEval = (y);                                                 \
-    if (!((xEval)cond(yEval))) {                                               \
-      const char *const xAsString = #x;                                        \
-      const char *const yAsString = #y;                                        \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : (");                                          \
-      UTEST_PRINTF("%s) " #cond " (%s", xAsString, yAsString);                 \
-      UTEST_PRINTF(")\n");                                                     \
-      UTEST_PRINTF("    Actual : ");                                           \
-      utest_type_printer(xEval);                                               \
-      UTEST_PRINTF(" vs ");                                                    \
-      utest_type_printer(yEval);                                               \
-      UTEST_PRINTF("\n");                                                      \
-      if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
-      }                                                                        \
-      *utest_result = UTEST_TEST_FAILURE;                                      \
-      if (is_assert) {                                                         \
-        return;                                                                \
+  #define UTEST_COND(x, y, cond, msg, is_assert)                               \
+    UTEST_SURPRESS_WARNING_BEGIN do {                                          \
+      UTEST_AUTO(x) xEval = (x);                                               \
+      UTEST_AUTO(y) yEval = (y);                                               \
+      if (!((xEval)cond(yEval))) {                                             \
+        const char *const xAsString = #x;                                      \
+        const char *const yAsString = #y;                                      \
+        UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                  \
+        UTEST_PRINTF("  Expected : (");                                        \
+        UTEST_PRINTF("%s) " #cond " (%s", xAsString, yAsString);               \
+        UTEST_PRINTF(")\n");                                                   \
+        UTEST_PRINTF("    Actual : ");                                         \
+        utest_type_printer(xEval);                                             \
+        UTEST_PRINTF(" vs ");                                                  \
+        utest_type_printer(yEval);                                             \
+        UTEST_PRINTF("\n");                                                    \
+        if (strlen(msg) > 0) {                                                 \
+          UTEST_PRINTF("   Message : %s\n", msg);                              \
+        }                                                                      \
+        *utest_result = UTEST_TEST_FAILURE;                                    \
+        if (is_assert) {                                                       \
+          return;                                                              \
+        }                                                                      \
       }                                                                        \
     }                                                                          \
-  }                                                                            \
-  while (0)                                                                    \
-  UTEST_SURPRESS_WARNING_END
+    while (0)                                                                  \
+    UTEST_SURPRESS_WARNING_END
 #else
 #define UTEST_COND(x, y, cond, msg, is_assert)                                 \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
@@ -1033,123 +1033,123 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
 #define ASSERT_NEAR_MSG(x, y, epsilon, msg) UTEST_NEAR(x, y, epsilon, msg, 1)
 
 #if defined(UTEST_HAS_EXCEPTIONS)
-#define UTEST_EXCEPTION(x, exception_type, msg, is_assert)                     \
-  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    int exception_caught = 0;                                                  \
-    try {                                                                      \
-      x;                                                                       \
-    } catch (const exception_type &) {                                         \
-      exception_caught = 1;                                                    \
-    } catch (...) {                                                            \
-      exception_caught = 2;                                                    \
-    }                                                                          \
-    if (1 != exception_caught) {                                               \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : %s exception\n", #exception_type);            \
-      UTEST_PRINTF("    Actual : %s\n", (2 == exception_caught)                \
-                                            ? "Unexpected exception"           \
-                                            : "No exception");                 \
-      if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
+  #define UTEST_EXCEPTION(x, exception_type, msg, is_assert)                   \
+    UTEST_SURPRESS_WARNING_BEGIN do {                                          \
+      int exception_caught = 0;                                                \
+      try {                                                                    \
+        x;                                                                     \
+      } catch (const exception_type &) {                                       \
+        exception_caught = 1;                                                  \
+      } catch (...) {                                                          \
+        exception_caught = 2;                                                  \
       }                                                                        \
-      *utest_result = UTEST_TEST_FAILURE;                                      \
-      if (is_assert) {                                                         \
-        return;                                                                \
-      }                                                                        \
-    }                                                                          \
-  }                                                                            \
-  while (0)                                                                    \
-  UTEST_SURPRESS_WARNING_END
-
-#define EXPECT_EXCEPTION(x, exception_type)                                    \
-  UTEST_EXCEPTION(x, exception_type, "", 0)
-#define EXPECT_EXCEPTION_MSG(x, exception_type, msg)                           \
-  UTEST_EXCEPTION(x, exception_type, msg, 0)
-#define ASSERT_EXCEPTION(x, exception_type)                                    \
-  UTEST_EXCEPTION(x, exception_type, "", 1)
-#define ASSERT_EXCEPTION_MSG(x, exception_type, msg)                           \
-  UTEST_EXCEPTION(x, exception_type, msg, 1)
-
-#define UTEST_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message,     \
-                                     msg, is_assert)                           \
-  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    int exception_caught = 0;                                                  \
-    char *message_caught = UTEST_NULL;                                         \
-    try {                                                                      \
-      x;                                                                       \
-    } catch (const exception_type &e) {                                        \
-      const char *const what = e.what();                                       \
-      exception_caught = 1;                                                    \
-      if (0 !=                                                                 \
-          UTEST_STRNCMP(what, exception_message, strlen(exception_message))) { \
-        const size_t message_size = strlen(what) + 1;                          \
-        message_caught = UTEST_PTR_CAST(char *, malloc(message_size));         \
-        UTEST_STRNCPY(message_caught, what, message_size);                     \
-      }                                                                        \
-    } catch (...) {                                                            \
-      exception_caught = 2;                                                    \
-    }                                                                          \
-    if (1 != exception_caught) {                                               \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : %s exception\n", #exception_type);            \
-      UTEST_PRINTF("    Actual : %s\n", (2 == exception_caught)                \
-                                            ? "Unexpected exception"           \
-                                            : "No exception");                 \
-      if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
-      }                                                                        \
-      *utest_result = UTEST_TEST_FAILURE;                                      \
-      if (is_assert) {                                                         \
-        return;                                                                \
-      }                                                                        \
-    } else if (UTEST_NULL != message_caught) {                                 \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : %s exception with message %s\n",              \
-                   #exception_type, exception_message);                        \
-      UTEST_PRINTF("    Actual message : %s\n", message_caught);               \
-      if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
-      }                                                                        \
-      *utest_result = UTEST_TEST_FAILURE;                                      \
-      free(message_caught);                                                    \
-      if (is_assert) {                                                         \
-        return;                                                                \
+      if (1 != exception_caught) {                                             \
+        UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                  \
+        UTEST_PRINTF("  Expected : %s exception\n", #exception_type);          \
+        UTEST_PRINTF("    Actual : %s\n", (2 == exception_caught)              \
+                                              ? "Unexpected exception"         \
+                                              : "No exception");               \
+        if (strlen(msg) > 0) {                                                 \
+          UTEST_PRINTF("   Message : %s\n", msg);                              \
+        }                                                                      \
+        *utest_result = UTEST_TEST_FAILURE;                                    \
+        if (is_assert) {                                                       \
+          return;                                                              \
+        }                                                                      \
       }                                                                        \
     }                                                                          \
-  }                                                                            \
-  while (0)                                                                    \
-  UTEST_SURPRESS_WARNING_END
-
-#define EXPECT_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message)    \
-  UTEST_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message, "", 0)
-#define EXPECT_EXCEPTION_WITH_MESSAGE_MSG(x, exception_type,                   \
-                                          exception_message, msg)              \
-  UTEST_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message, msg, 0)
-#define ASSERT_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message)    \
-  UTEST_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message, "", 1)
-#define ASSERT_EXCEPTION_WITH_MESSAGE_MSG(x, exception_type,                   \
-                                          exception_message, msg)              \
-  UTEST_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message, msg, 1)
+    while (0)                                                                  \
+    UTEST_SURPRESS_WARNING_END
+  
+  #define EXPECT_EXCEPTION(x, exception_type)                                  \
+    UTEST_EXCEPTION(x, exception_type, "", 0)
+  #define EXPECT_EXCEPTION_MSG(x, exception_type, msg)                         \
+    UTEST_EXCEPTION(x, exception_type, msg, 0)
+  #define ASSERT_EXCEPTION(x, exception_type)                                  \
+    UTEST_EXCEPTION(x, exception_type, "", 1)
+  #define ASSERT_EXCEPTION_MSG(x, exception_type, msg)                         \
+    UTEST_EXCEPTION(x, exception_type, msg, 1)
+  
+  #define UTEST_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message,   \
+                                       msg, is_assert)                         \
+    UTEST_SURPRESS_WARNING_BEGIN do {                                          \
+      int exception_caught = 0;                                                \
+      char *message_caught = UTEST_NULL;                                       \
+      try {                                                                    \
+        x;                                                                     \
+      } catch (const exception_type &e) {                                      \
+        const char *const what = e.what();                                     \
+        exception_caught = 1;                                                  \
+        if (0 !=                                                               \
+            UTEST_STRNCMP(what, exception_message, strlen(exception_message))) \
+          const size_t message_size = strlen(what) + 1;                        \
+          message_caught = UTEST_PTR_CAST(char *, malloc(message_size));       \
+          UTEST_STRNCPY(message_caught, what, message_size);                   \
+        }                                                                      \
+      } catch (...) {                                                          \
+        exception_caught = 2;                                                  \
+      }                                                                        \
+      if (1 != exception_caught) {                                             \
+        UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                  \
+        UTEST_PRINTF("  Expected : %s exception\n", #exception_type);          \
+        UTEST_PRINTF("    Actual : %s\n", (2 == exception_caught)              \
+                                              ? "Unexpected exception"         \
+                                              : "No exception");               \
+        if (strlen(msg) > 0) {                                                 \
+          UTEST_PRINTF("   Message : %s\n", msg);                              \
+        }                                                                      \
+        *utest_result = UTEST_TEST_FAILURE;                                    \
+        if (is_assert) {                                                       \
+          return;                                                              \
+        }                                                                      \
+      } else if (UTEST_NULL != message_caught) {                               \
+        UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                  \
+        UTEST_PRINTF("  Expected : %s exception with message %s\n",            \
+                     #exception_type, exception_message);                      \
+        UTEST_PRINTF("    Actual message : %s\n", message_caught);             \
+        if (strlen(msg) > 0) {                                                 \
+          UTEST_PRINTF("   Message : %s\n", msg);                              \
+        }                                                                      \
+        *utest_result = UTEST_TEST_FAILURE;                                    \
+        free(message_caught);                                                  \
+        if (is_assert) {                                                       \
+          return;                                                              \
+        }                                                                      \
+      }                                                                        \
+    }                                                                          \
+    while (0)                                                                  \
+    UTEST_SURPRESS_WARNING_END
+  
+  #define EXPECT_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message)  \
+    UTEST_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message, "", 0)
+  #define EXPECT_EXCEPTION_WITH_MESSAGE_MSG(x, exception_type,                 \
+                                            exception_message, msg)            \
+    UTEST_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message, msg, 0)
+  #define ASSERT_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message)  \
+    UTEST_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message, "", 1)
+  #define ASSERT_EXCEPTION_WITH_MESSAGE_MSG(x, exception_type,                 \
+                                            exception_message, msg)            \
+    UTEST_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message, msg, 1)
 #endif
 
 #if defined(__clang__)
-#if __has_warning("-Wunsafe-buffer-usage")
-#define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
-  _Pragma("clang diagnostic push")                                             \
-      _Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage\"")
-#define UTEST_SURPRESS_WARNINGS_END _Pragma("clang diagnostic pop")
-#else
-#define UTEST_SURPRESS_WARNINGS_BEGIN
-#define UTEST_SURPRESS_WARNINGS_END
-#endif
+  #if __has_warning("-Wunsafe-buffer-usage")
+    #define UTEST_SURPRESS_WARNINGS_BEGIN                                      \
+      _Pragma("clang diagnostic push")                                         \
+          _Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage\"")
+    #define UTEST_SURPRESS_WARNINGS_END _Pragma("clang diagnostic pop")
+  #else
+    #define UTEST_SURPRESS_WARNINGS_BEGIN
+    #define UTEST_SURPRESS_WARNINGS_END
+  #endif
 #elif defined(__GNUC__) && __GNUC__ >= 8 && defined(__cplusplus)
-#define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
-  _Pragma("GCC diagnostic push")                                               \
-      _Pragma("GCC diagnostic ignored \"-Wclass-memaccess\"")
-#define UTEST_SURPRESS_WARNINGS_END _Pragma("GCC diagnostic pop")
+  #define UTEST_SURPRESS_WARNINGS_BEGIN                                        \
+    _Pragma("GCC diagnostic push")                                             \
+        _Pragma("GCC diagnostic ignored \"-Wclass-memaccess\"")
+  #define UTEST_SURPRESS_WARNINGS_END _Pragma("GCC diagnostic pop")
 #else
-#define UTEST_SURPRESS_WARNINGS_BEGIN
-#define UTEST_SURPRESS_WARNINGS_END
+  #define UTEST_SURPRESS_WARNINGS_BEGIN
+  #define UTEST_SURPRESS_WARNINGS_END
 #endif
 
 #define UTEST(SET, NAME)                                                       \
@@ -1300,8 +1300,8 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
                                               struct FIXTURE *utest_fixture)
 
 #ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
 #endif
 
 UTEST_WEAK
@@ -1331,14 +1331,14 @@ int utest_isnan(double d) {
 }
 
 #ifdef __clang__
-#pragma clang diagnostic pop
+  #pragma clang diagnostic pop
 #endif
 
 #if defined(__clang__)
-#if __has_warning("-Wunsafe-buffer-usage")
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
-#endif
+  #if __has_warning("-Wunsafe-buffer-usage")
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+  #endif
 #endif
 
 UTEST_WEAK
@@ -1689,9 +1689,9 @@ cleanup:
 }
 
 #if defined(__clang__)
-#if __has_warning("-Wunsafe-buffer-usage")
-#pragma clang diagnostic pop
-#endif
+  #if __has_warning("-Wunsafe-buffer-usage")
+    #pragma clang diagnostic pop
+  #endif
 #endif
 
 /*
