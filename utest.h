@@ -484,7 +484,7 @@ template <> struct utest_type_deducer<short, false> {
 
 template <> struct utest_type_deducer<unsigned short, false> {
   static void _(const unsigned short s) {
-    UTEST_PRINTF("%u", static_cast<int>(s));
+    UTEST_PRINTF("%u", static_cast<unsigned>(s));
   }
 };
 
@@ -1227,6 +1227,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
     if (utest_state.tests && name) {                                           \
       utest_state.tests[index].func = &utest_f_##FIXTURE##_##NAME;             \
       utest_state.tests[index].name = name;                                    \
+      utest_state.tests[index].index = 0;                                      \
       UTEST_SNPRINTF(name, name_size, "%s", name_part);                        \
     } else {                                                                   \
       if (utest_state.tests) {                                                 \
