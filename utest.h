@@ -698,7 +698,7 @@ utest_type_printer(long long unsigned int i) {
 #endif
 
 #if defined(__cplusplus) && (__cplusplus >= 201103L)
-#define UTEST_AUTO(x) auto
+#define UTEST_AUTO(x) const auto&
 #elif !defined(__cplusplus)
 
 #if defined(__clang__)
