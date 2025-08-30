@@ -537,7 +537,7 @@ template <> struct utest_type_deducer<bool, false> {
 
 template <typename T> struct utest_type_deducer<const T *, false> {
   static void _(const T *t) {
-    UTEST_PRINTF("%p", static_cast<void *>(const_cast<T *>(t)));
+    UTEST_PRINTF("%p", static_cast<const void *>(t));
   }
 };
 
@@ -551,6 +551,13 @@ template <typename T> struct utest_type_deducer<T, true> {
   }
 };
 
+// default printer for all other objects (specialize for custom printing)
+template <typename T> struct utest_type_deducer<T, false> {
+  static void _(const T& t) {
+    UTEST_PRINTF("(object %p)", static_cast<const void*>(&t));
+  }
+};
+
 template <> struct utest_type_deducer<std::nullptr_t, false> {
   static void _(std::nullptr_t t) {
     UTEST_PRINTF("%p", static_cast<void *>(t));
@@ -558,7 +565,7 @@ template <> struct utest_type_deducer<std::nullptr_t, false> {
 };
 
 template <typename T>
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const T t) {
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const T& t) {
   utest_type_deducer<T>::_(t);
 }
 

@@ -350,3 +350,16 @@ UTEST(cpp11, Null) {
 }
 
 #endif
+
+struct SomeStruct {
+  int a;
+  constexpr bool operator<(const SomeStruct &other) const {
+    return a < other.a;
+  }
+};
+
+UTEST(cpp11, CustomType) {
+  SomeStruct s1{3};
+  SomeStruct s2{4};
+  EXPECT_LT(s1, s2);
+}
