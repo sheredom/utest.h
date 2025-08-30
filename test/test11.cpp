@@ -353,7 +353,7 @@ UTEST(cpp11, Null) {
 
 struct SomeStruct {
   int a;
-  constexpr bool operator<(const SomeStruct &other) const {
+  bool operator<(const SomeStruct &other) const {
     return a < other.a;
   }
 };
