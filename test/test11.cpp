@@ -359,7 +359,7 @@ struct SomeStruct {
 };
 
 UTEST(cpp11, CustomType) {
-  SomeStruct s1{3};
-  SomeStruct s2{4};
+  SomeStruct s1 = {3};
+  SomeStruct s2 = {4};
   EXPECT_LT(s1, s2);
 }
