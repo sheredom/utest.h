@@ -908,6 +908,47 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
 #define ASSERT_FALSE(x) UTEST_FALSE(x, "", 1)
 #define ASSERT_FALSE_MSG(x, msg) UTEST_FALSE(x, msg, 1)
 
+#define UTEST_MEMEQ(x, y, size, msg, is_assert)                                \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
+    UTEST_SURPRESS_WARNINGS_BEGIN                                              \
+    size_t i = 0;                                                              \
+    const void *xEval = (x);                                                   \
+    const void *yEval = (y);                                                   \
+    const size_t sizeEval = UTEST_CAST(size_t, size);                          \
+    if (0 != memcmp(xEval, yEval, sizeEval)) {                                 \
+      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_PRINTF("  Expected : ");                                           \
+      for (i = 0; i < sizeEval; ++i) {                                         \
+        const unsigned char b =                                                \
+            UTEST_PTR_CAST(const unsigned char *, xEval)[i];                   \
+        UTEST_PRINTF("%02X ", b);                                              \
+      }                                                                        \
+      UTEST_PRINTF("\n");                                                      \
+      UTEST_PRINTF("    Actual : ");                                           \
+      for (i = 0; i < sizeEval; ++i) {                                         \
+        const unsigned char b =                                                \
+            UTEST_PTR_CAST(const unsigned char *, yEval)[i];                   \
+        UTEST_PRINTF("%02X ", b);                                              \
+      }                                                                        \
+      UTEST_PRINTF("\n");                                                      \
+      if (strlen(msg) > 0) {                                                   \
+        UTEST_PRINTF("   Message : %s\n", msg);                                \
+      }                                                                        \
+      *utest_result = UTEST_TEST_FAILURE;                                      \
+      if (is_assert) {                                                         \
+        return;                                                                \
+      }                                                                        \
+    }                                                                          \
+    UTEST_SURPRESS_WARNINGS_END                                                \
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
+
+#define EXPECT_MEMEQ(x, y, s) UTEST_MEMEQ(x, y, s, "", 0)
+#define EXPECT_MEMEQ_MSG(x, y, s, msg) UTEST_MEMEQ(x, y, s, msg, 0)
+#define ASSERT_MEMEQ(x, y, s) UTEST_MEMEQ(x, y, s, "", 1)
+#define ASSERT_MEMEQ_MSG(x, y, s, msg) UTEST_STREQ(x, y, s, msg, 1)
+
 #define UTEST_STREQ(x, y, msg, is_assert)                                      \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     const char *xEval = (x);                                                   \

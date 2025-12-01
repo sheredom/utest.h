@@ -315,6 +315,21 @@ UTEST(foo, bar) {
 }
 ```
 
+### ASSERT_MEMEQ(x, y, len)
+
+Asserts that the memory region x and y are equal.
+
+```c
+UTEST(foo, bar) { 
+  const char foo[4] = {1, 2, 3, 5};
+  const char bar[4] = {1, 2, 3, 4}; 
+  ASSERT_MEMEQ(foo, foo, 4); // pass! 
+  ASSERT_MEMEQ(bar, bar, 4); // pass! 
+  ASSERT_MEMEQ(foo, bar, 4); // fail!
+}
+```
+
+
 ### ASSERT_STREQ(x, y)
 
 Asserts that the strings x and y are equal.
@@ -526,6 +541,21 @@ UTEST(foo, bar) {
   EXPECT_GE(b, a);   // fail!
 }
 ```
+
+### EXPECT_MEMEQ(x, y, len)
+
+Expected that the memory region x and y are equal.
+
+```c
+UTEST(foo, bar) { 
+  const char foo[4] = {1, 2, 3, 5};
+  const char bar[4] = {1, 2, 3, 4}; 
+  EXPECT_MEMEQ(foo, foo, 4); // pass! 
+  EXPECT_MEMEQ(bar, bar, 4); // pass! 
+  EXPECT_MEMEQ(foo, bar, 4); // fail!
+}
+```
+
 
 ### EXPECT_STREQ(x, y)
 
