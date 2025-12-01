@@ -52,6 +52,18 @@ UTEST(cpp14, ASSERT_GE) {
   ASSERT_GE(2, 1);
 }
 
+UTEST(cpp14, ASSERT_MEMEQ) { 
+  const char a1[4] = {1, 2, 3, 4};
+  const char a2[4] = {1, 2, 3, 4}; 
+  ASSERT_MEMEQ(a1, a2, 4);
+}
+
+UTEST(cpp14, EXPECT_MEMEQ) { 
+  const char a1[4] = {1, 2, 3, 4};
+  const char a2[4] = {1, 2, 3, 4}; 
+  EXPECT_MEMEQ(a1, a2, 4);
+}
+
 UTEST(cpp14, ASSERT_STREQ) { ASSERT_STREQ("foo", "foo"); }
 
 UTEST(cpp14, ASSERT_STRNE) { ASSERT_STRNE("foo", "bar"); }
