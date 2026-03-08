@@ -347,10 +347,12 @@ static UTEST_INLINE utest_int64_t utest_ns(void) {
   return utest_mul_div(counter.QuadPart, 1000000000, frequency.QuadPart);
 #elif defined(__linux__) && defined(__STRICT_ANSI__)
   return utest_mul_div(clock(), 1000000000, CLOCKS_PER_SEC);
+#elif defined(__APPLE__)
+  return UTEST_CAST(utest_int64_t, clock_gettime_nsec_np(CLOCK_UPTIME_RAW));
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) ||    \
     defined(__NetBSD__) || defined(__DragonFly__) || defined(__sun__) ||       \
     defined(__HAIKU__)
-  struct timespec ts;
+  struct timespec ts = {0, 0};
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) &&              \
     !defined(__HAIKU__)
   timespec_get(&ts, TIME_UTC);
@@ -363,8 +365,6 @@ static UTEST_INLINE utest_int64_t utest_ns(void) {
 #endif
 #endif
   return UTEST_CAST(utest_int64_t, ts.tv_sec) * 1000 * 1000 * 1000 + ts.tv_nsec;
-#elif __APPLE__
-  return UTEST_CAST(utest_int64_t, clock_gettime_nsec_np(CLOCK_UPTIME_RAW));
 #elif __EMSCRIPTEN__
   return emscripten_performance_now() * 1000000.0;
 #else
@@ -553,8 +553,8 @@ template <typename T> struct utest_type_deducer<T, true> {
 
 // default printer for all other objects (specialize for custom printing)
 template <typename T> struct utest_type_deducer<T, false> {
-  static void _(const T& t) {
-    UTEST_PRINTF("(object %p)", static_cast<const void*>(&t));
+  static void _(const T &t) {
+    UTEST_PRINTF("(object %p)", static_cast<const void *>(&t));
   }
 };
 
@@ -565,7 +565,7 @@ template <> struct utest_type_deducer<std::nullptr_t, false> {
 };
 
 template <typename T>
-UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const T& t) {
+UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const T &t) {
   utest_type_deducer<T>::_(t);
 }
 
@@ -698,7 +698,7 @@ utest_type_printer(long long unsigned int i) {
 #endif
 
 #if defined(__cplusplus) && (__cplusplus >= 201103L)
-#define UTEST_AUTO(x) const auto&
+#define UTEST_AUTO(x) const auto &
 #elif !defined(__cplusplus)
 
 #if defined(__clang__)
