@@ -1799,13 +1799,28 @@ cleanup:
    their own main() function.
 */
 #if defined(_MSC_VER)
-#define UTEST_DEFINE_OUTPUT_HELPERS_BEGIN                                      \
+#define UTEST_DEFINE_OUTPUT_HELPERS_MSVC_BEGIN                                 \
   __pragma(warning(push)) __pragma(warning(disable : 4710))
-#define UTEST_DEFINE_OUTPUT_HELPERS_END __pragma(warning(pop))
+#define UTEST_DEFINE_OUTPUT_HELPERS_MSVC_END __pragma(warning(pop))
 #else
-#define UTEST_DEFINE_OUTPUT_HELPERS_BEGIN
-#define UTEST_DEFINE_OUTPUT_HELPERS_END
+#define UTEST_DEFINE_OUTPUT_HELPERS_MSVC_BEGIN
+#define UTEST_DEFINE_OUTPUT_HELPERS_MSVC_END
 #endif
+
+#if defined(__clang__)
+#define UTEST_DEFINE_OUTPUT_HELPERS_CLANG_BEGIN                                \
+  _Pragma("clang diagnostic push")                                             \
+      _Pragma("clang diagnostic ignored \"-Wformat-nonliteral\"")
+#define UTEST_DEFINE_OUTPUT_HELPERS_CLANG_END _Pragma("clang diagnostic pop")
+#else
+#define UTEST_DEFINE_OUTPUT_HELPERS_CLANG_BEGIN
+#define UTEST_DEFINE_OUTPUT_HELPERS_CLANG_END
+#endif
+
+#define UTEST_DEFINE_OUTPUT_HELPERS_BEGIN                                      \
+  UTEST_DEFINE_OUTPUT_HELPERS_MSVC_BEGIN UTEST_DEFINE_OUTPUT_HELPERS_CLANG_BEGIN
+#define UTEST_DEFINE_OUTPUT_HELPERS_END                                        \
+  UTEST_DEFINE_OUTPUT_HELPERS_CLANG_END UTEST_DEFINE_OUTPUT_HELPERS_MSVC_END
 
 #define UTEST_DEFINE_OUTPUT_HELPERS()                                          \
   UTEST_DEFINE_OUTPUT_HELPERS_BEGIN                                            \
@@ -1834,7 +1849,8 @@ cleanup:
 
 #define UTEST_STATE()                                                          \
   struct utest_state_s utest_state = {0, 0, 0};                                \
-  UTEST_DEFINE_OUTPUT_HELPERS()
+  UTEST_DEFINE_OUTPUT_HELPERS()                                                \
+  extern int utest_state_requires_trailing_semicolon
 
 /*
    define a main() function to call into utest.h and start executing tests! A
