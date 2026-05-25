@@ -421,6 +421,8 @@ UTEST_EXTERN struct utest_state_s utest_state;
 UTEST_C_FUNC UTEST_NOINLINE int utest_printf(const char *format, ...);
 UTEST_C_FUNC UTEST_NOINLINE int utest_fprintf(FILE *stream, const char *format,
                                              ...);
+UTEST_C_FUNC UTEST_NOINLINE int utest_snprintf(char *buffer, size_t n,
+                                              const char *format, ...);
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -471,12 +473,16 @@ UTEST_C_FUNC UTEST_NOINLINE int utest_fprintf(FILE *stream, const char *format,
 #endif
 
 #ifdef _MSC_VER
-#define UTEST_SNPRINTF(BUFFER, N, ...)                                         \
-  UTEST_SURPRESS_WARNING_BEGIN _snprintf_s(BUFFER, N, N, __VA_ARGS__)          \
-      UTEST_SURPRESS_WARNING_END
+#define UTEST_VSNPRINTF(BUFFER, N, FORMAT, ARGS)                               \
+  _vsnprintf_s(BUFFER, N, N, FORMAT, ARGS)
 #else
-#define UTEST_SNPRINTF(...) snprintf(__VA_ARGS__)
+#define UTEST_VSNPRINTF(BUFFER, N, FORMAT, ARGS)                               \
+  vsnprintf(BUFFER, N, FORMAT, ARGS)
 #endif
+
+#define UTEST_SNPRINTF(BUFFER, N, ...)                                         \
+  UTEST_SURPRESS_WARNING_BEGIN utest_snprintf(BUFFER, N, __VA_ARGS__)          \
+      UTEST_SURPRESS_WARNING_END
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -1856,6 +1862,15 @@ cleanup:
     va_list args;                                                              \
     va_start(args, format);                                                    \
     result = utest_vfprintf(stream, format, args);                             \
+    va_end(args);                                                              \
+    return result;                                                             \
+  }                                                                            \
+  UTEST_C_FUNC UTEST_NOINLINE int utest_snprintf(                              \
+      char *buffer, size_t n, const char *format, ...) {                       \
+    int result;                                                                \
+    va_list args;                                                              \
+    va_start(args, format);                                                    \
+    result = UTEST_VSNPRINTF(buffer, n, format, args);                         \
     va_end(args);                                                              \
     return result;                                                             \
   }                                                                            \
