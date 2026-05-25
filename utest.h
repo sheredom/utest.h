@@ -1225,7 +1225,11 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   UTEST_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message, msg, 1)
 #endif
 
-#if defined(__clang__)
+#if defined(_MSC_VER)
+#define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
+  __pragma(warning(push)) __pragma(warning(disable : 4711))
+#define UTEST_SURPRESS_WARNINGS_END __pragma(warning(pop))
+#elif defined(__clang__)
 #if __has_warning("-Wunsafe-buffer-usage")
 #define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
   _Pragma("clang diagnostic push")                                             \
