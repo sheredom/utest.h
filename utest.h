@@ -95,6 +95,7 @@ typedef uint32_t utest_uint32_t;
 
 #include <stddef.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -408,13 +409,18 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #if defined(_MSC_VER)
 #define UTEST_SURPRESS_WARNING_BEGIN                                           \
   __pragma(warning(push)) __pragma(warning(disable : 4127))                    \
-      __pragma(warning(disable : 4571)) __pragma(warning(disable : 4130))      \
-          __pragma(warning(disable : 4710))
+      __pragma(warning(disable : 4571)) __pragma(warning(disable : 4130))
 #define UTEST_SURPRESS_WARNING_END __pragma(warning(pop))
+#define UTEST_NOINLINE __declspec(noinline)
 #else
 #define UTEST_SURPRESS_WARNING_BEGIN
 #define UTEST_SURPRESS_WARNING_END
+#define UTEST_NOINLINE
 #endif
+
+UTEST_C_FUNC UTEST_NOINLINE int utest_printf(const char *format, ...);
+UTEST_C_FUNC UTEST_NOINLINE int utest_fprintf(FILE *stream, const char *format,
+                                             ...);
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -422,7 +428,8 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
 #endif
 #define UTEST_PRINTF(...)                                                      \
-  UTEST_SURPRESS_WARNING_BEGIN printf(__VA_ARGS__) UTEST_SURPRESS_WARNING_END
+  UTEST_SURPRESS_WARNING_BEGIN (void)utest_printf(__VA_ARGS__)                 \
+      UTEST_SURPRESS_WARNING_END
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
@@ -433,7 +440,8 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
 #endif
 #define UTEST_FPRINTF(...)                                                     \
-  UTEST_SURPRESS_WARNING_BEGIN fprintf(__VA_ARGS__) UTEST_SURPRESS_WARNING_END
+  UTEST_SURPRESS_WARNING_BEGIN (void)utest_fprintf(__VA_ARGS__)                \
+      UTEST_SURPRESS_WARNING_END
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
@@ -444,10 +452,14 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
 #endif
 #define UTEST_OUTPUT(...)                                                      \
-  if (utest_state.output) {                                                    \
-    UTEST_FPRINTF(utest_state.output, __VA_ARGS__);                            \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
+    if (utest_state.output) {                                                  \
+      UTEST_FPRINTF(utest_state.output, __VA_ARGS__);                          \
+    }                                                                          \
+    UTEST_PRINTF(__VA_ARGS__);                                                 \
   }                                                                            \
-  UTEST_PRINTF(__VA_ARGS__)
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
@@ -1786,7 +1798,43 @@ cleanup:
    data without having to use the UTEST_MAIN macro, thus allowing them to write
    their own main() function.
 */
-#define UTEST_STATE() struct utest_state_s utest_state = {0, 0, 0}
+#if defined(_MSC_VER)
+#define UTEST_DEFINE_OUTPUT_HELPERS_BEGIN                                      \
+  __pragma(warning(push)) __pragma(warning(disable : 4710))
+#define UTEST_DEFINE_OUTPUT_HELPERS_END __pragma(warning(pop))
+#else
+#define UTEST_DEFINE_OUTPUT_HELPERS_BEGIN
+#define UTEST_DEFINE_OUTPUT_HELPERS_END
+#endif
+
+#define UTEST_DEFINE_OUTPUT_HELPERS()                                          \
+  UTEST_DEFINE_OUTPUT_HELPERS_BEGIN                                            \
+  static UTEST_NOINLINE int utest_vfprintf(FILE *stream, const char *format,   \
+                                           va_list args) {                     \
+    return vfprintf(stream, format, args);                                     \
+  }                                                                            \
+  UTEST_C_FUNC UTEST_NOINLINE int utest_printf(const char *format, ...) {      \
+    int result;                                                                \
+    va_list args;                                                              \
+    va_start(args, format);                                                    \
+    result = utest_vfprintf(stdout, format, args);                             \
+    va_end(args);                                                              \
+    return result;                                                             \
+  }                                                                            \
+  UTEST_C_FUNC UTEST_NOINLINE int utest_fprintf(FILE *stream,                  \
+                                                const char *format, ...) {     \
+    int result;                                                                \
+    va_list args;                                                              \
+    va_start(args, format);                                                    \
+    result = utest_vfprintf(stream, format, args);                             \
+    va_end(args);                                                              \
+    return result;                                                             \
+  }                                                                            \
+  UTEST_DEFINE_OUTPUT_HELPERS_END
+
+#define UTEST_STATE()                                                          \
+  struct utest_state_s utest_state = {0, 0, 0};                                \
+  UTEST_DEFINE_OUTPUT_HELPERS()
 
 /*
    define a main() function to call into utest.h and start executing tests! A
