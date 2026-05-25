@@ -1226,28 +1226,38 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
 #endif
 
 #if defined(_MSC_VER)
-#define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
+#define UTEST_SURPRESS_WARNINGS_MSVC_BEGIN                                     \
   __pragma(warning(push)) __pragma(warning(disable : 4711))
-#define UTEST_SURPRESS_WARNINGS_END __pragma(warning(pop))
-#elif defined(__clang__)
+#define UTEST_SURPRESS_WARNINGS_MSVC_END __pragma(warning(pop))
+#else
+#define UTEST_SURPRESS_WARNINGS_MSVC_BEGIN
+#define UTEST_SURPRESS_WARNINGS_MSVC_END
+#endif
+
+#if defined(__clang__)
 #if __has_warning("-Wunsafe-buffer-usage")
-#define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
+#define UTEST_SURPRESS_WARNINGS_COMPILER_BEGIN                                 \
   _Pragma("clang diagnostic push")                                             \
       _Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage\"")
-#define UTEST_SURPRESS_WARNINGS_END _Pragma("clang diagnostic pop")
+#define UTEST_SURPRESS_WARNINGS_COMPILER_END _Pragma("clang diagnostic pop")
 #else
-#define UTEST_SURPRESS_WARNINGS_BEGIN
-#define UTEST_SURPRESS_WARNINGS_END
+#define UTEST_SURPRESS_WARNINGS_COMPILER_BEGIN
+#define UTEST_SURPRESS_WARNINGS_COMPILER_END
 #endif
 #elif defined(__GNUC__) && __GNUC__ >= 8 && defined(__cplusplus)
-#define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
+#define UTEST_SURPRESS_WARNINGS_COMPILER_BEGIN                                 \
   _Pragma("GCC diagnostic push")                                               \
       _Pragma("GCC diagnostic ignored \"-Wclass-memaccess\"")
-#define UTEST_SURPRESS_WARNINGS_END _Pragma("GCC diagnostic pop")
+#define UTEST_SURPRESS_WARNINGS_COMPILER_END _Pragma("GCC diagnostic pop")
 #else
-#define UTEST_SURPRESS_WARNINGS_BEGIN
-#define UTEST_SURPRESS_WARNINGS_END
+#define UTEST_SURPRESS_WARNINGS_COMPILER_BEGIN
+#define UTEST_SURPRESS_WARNINGS_COMPILER_END
 #endif
+
+#define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
+  UTEST_SURPRESS_WARNINGS_MSVC_BEGIN UTEST_SURPRESS_WARNINGS_COMPILER_BEGIN
+#define UTEST_SURPRESS_WARNINGS_END                                            \
+  UTEST_SURPRESS_WARNINGS_COMPILER_END UTEST_SURPRESS_WARNINGS_MSVC_END
 
 #define UTEST(SET, NAME)                                                       \
   UTEST_SURPRESS_WARNINGS_BEGIN                                                \
