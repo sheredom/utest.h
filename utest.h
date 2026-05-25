@@ -405,16 +405,27 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #define UTEST_UNUSED UTEST_ATTRIBUTE(unused)
 #endif
 
+#if defined(_MSC_VER)
+#define UTEST_SURPRESS_WARNING_BEGIN                                           \
+  __pragma(warning(push)) __pragma(warning(disable : 4127))                    \
+      __pragma(warning(disable : 4571)) __pragma(warning(disable : 4130))      \
+          __pragma(warning(disable : 4710))
+#define UTEST_SURPRESS_WARNING_END __pragma(warning(pop))
+#else
+#define UTEST_SURPRESS_WARNING_BEGIN
+#define UTEST_SURPRESS_WARNING_END
+#endif
+
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wvariadic-macros"
 #pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
 #endif
 #define UTEST_PRINTF(...)                                                      \
-  if (utest_state.output) {                                                    \
+  UTEST_SURPRESS_WARNING_BEGIN if (utest_state.output) {                       \
     fprintf(utest_state.output, __VA_ARGS__);                                  \
   }                                                                            \
-  printf(__VA_ARGS__)
+  printf(__VA_ARGS__) UTEST_SURPRESS_WARNING_END
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
@@ -693,16 +704,6 @@ utest_type_printer(long long unsigned int i) {
 #define utest_type_printer(...) UTEST_PRINTF("undef")
 #endif
 
-#if defined(_MSC_VER)
-#define UTEST_SURPRESS_WARNING_BEGIN                                           \
-  __pragma(warning(push)) __pragma(warning(disable : 4127))                    \
-      __pragma(warning(disable : 4571)) __pragma(warning(disable : 4130)) __pragma(warning(disable : 4710))
-#define UTEST_SURPRESS_WARNING_END __pragma(warning(pop))
-#else
-#define UTEST_SURPRESS_WARNING_BEGIN
-#define UTEST_SURPRESS_WARNING_END
-#endif
-
 #if defined(__cplusplus) && (__cplusplus >= 201103L)
 #define UTEST_AUTO(x) const auto &
 #elif !defined(__cplusplus)
@@ -749,11 +750,13 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
 #endif
 
 #define UTEST_SKIP(msg)                                                        \
-  do {                                                                         \
+  UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     UTEST_PRINTF("   Skipped : '%s'\n", (msg));                                \
     *utest_result = UTEST_TEST_SKIPPED;                                        \
     return;                                                                    \
-  } while (0)
+  }                                                                            \
+  while (0)                                                                    \
+  UTEST_SURPRESS_WARNING_END
 
 #if defined(__clang__)
 #define UTEST_COND(x, y, cond, msg, is_assert)                                 \
