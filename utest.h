@@ -422,10 +422,32 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
 #endif
 #define UTEST_PRINTF(...)                                                      \
-  UTEST_SURPRESS_WARNING_BEGIN if (utest_state.output) {                       \
-    fprintf(utest_state.output, __VA_ARGS__);                                  \
+  UTEST_SURPRESS_WARNING_BEGIN printf(__VA_ARGS__) UTEST_SURPRESS_WARNING_END
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wvariadic-macros"
+#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
+#endif
+#define UTEST_FPRINTF(...)                                                     \
+  UTEST_SURPRESS_WARNING_BEGIN fprintf(__VA_ARGS__) UTEST_SURPRESS_WARNING_END
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wvariadic-macros"
+#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
+#endif
+#define UTEST_OUTPUT(...)                                                      \
+  if (utest_state.output) {                                                    \
+    UTEST_FPRINTF(utest_state.output, __VA_ARGS__);                            \
   }                                                                            \
-  printf(__VA_ARGS__) UTEST_SURPRESS_WARNING_END
+  UTEST_PRINTF(__VA_ARGS__)
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
@@ -437,7 +459,9 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #endif
 
 #ifdef _MSC_VER
-#define UTEST_SNPRINTF(BUFFER, N, ...) UTEST_SURPRESS_WARNING_BEGIN _snprintf_s(BUFFER, N, N, __VA_ARGS__) UTEST_SURPRESS_WARNING_END
+#define UTEST_SNPRINTF(BUFFER, N, ...)                                         \
+  UTEST_SURPRESS_WARNING_BEGIN _snprintf_s(BUFFER, N, N, __VA_ARGS__)          \
+      UTEST_SURPRESS_WARNING_END
 #else
 #define UTEST_SNPRINTF(...) snprintf(__VA_ARGS__)
 #endif
@@ -471,113 +495,113 @@ struct utest_type_deducer final {
 template <> struct utest_type_deducer<char, false> {
   static void _(const char c) {
     if (std::is_signed<decltype(c)>::value) {
-      UTEST_PRINTF("%d", static_cast<int>(c));
+      UTEST_OUTPUT("%d", static_cast<int>(c));
     } else {
-      UTEST_PRINTF("%u", static_cast<unsigned int>(c));
+      UTEST_OUTPUT("%u", static_cast<unsigned int>(c));
     }
   }
 };
 template <> struct utest_type_deducer<signed char, false> {
   static void _(const signed char c) {
-    UTEST_PRINTF("%d", static_cast<int>(c));
+    UTEST_OUTPUT("%d", static_cast<int>(c));
   }
 };
 
 template <> struct utest_type_deducer<unsigned char, false> {
   static void _(const unsigned char c) {
-    UTEST_PRINTF("%u", static_cast<unsigned int>(c));
+    UTEST_OUTPUT("%u", static_cast<unsigned int>(c));
   }
 };
 
 template <> struct utest_type_deducer<short, false> {
-  static void _(const short s) { UTEST_PRINTF("%d", static_cast<int>(s)); }
+  static void _(const short s) { UTEST_OUTPUT("%d", static_cast<int>(s)); }
 };
 
 template <> struct utest_type_deducer<unsigned short, false> {
   static void _(const unsigned short s) {
-    UTEST_PRINTF("%u", static_cast<unsigned>(s));
+    UTEST_OUTPUT("%u", static_cast<unsigned>(s));
   }
 };
 
 template <> struct utest_type_deducer<float, false> {
-  static void _(const float f) { UTEST_PRINTF("%f", static_cast<double>(f)); }
+  static void _(const float f) { UTEST_OUTPUT("%f", static_cast<double>(f)); }
 };
 
 template <> struct utest_type_deducer<double, false> {
-  static void _(const double d) { UTEST_PRINTF("%f", d); }
+  static void _(const double d) { UTEST_OUTPUT("%f", d); }
 };
 
 template <> struct utest_type_deducer<long double, false> {
   static void _(const long double d) {
 #if defined(__MINGW32__) || defined(__MINGW64__)
     /* MINGW is weird - doesn't like LF at all?! */
-    UTEST_PRINTF("%f", (double)d);
+    UTEST_OUTPUT("%f", (double)d);
 #else
-    UTEST_PRINTF("%Lf", d);
+    UTEST_OUTPUT("%Lf", d);
 #endif
   }
 };
 
 template <> struct utest_type_deducer<int, false> {
-  static void _(const int i) { UTEST_PRINTF("%d", i); }
+  static void _(const int i) { UTEST_OUTPUT("%d", i); }
 };
 
 template <> struct utest_type_deducer<unsigned int, false> {
-  static void _(const unsigned int i) { UTEST_PRINTF("%u", i); }
+  static void _(const unsigned int i) { UTEST_OUTPUT("%u", i); }
 };
 
 template <> struct utest_type_deducer<long, false> {
-  static void _(const long i) { UTEST_PRINTF("%ld", i); }
+  static void _(const long i) { UTEST_OUTPUT("%ld", i); }
 };
 
 template <> struct utest_type_deducer<unsigned long, false> {
-  static void _(const unsigned long i) { UTEST_PRINTF("%lu", i); }
+  static void _(const unsigned long i) { UTEST_OUTPUT("%lu", i); }
 };
 
 template <> struct utest_type_deducer<long long, false> {
-  static void _(const long long i) { UTEST_PRINTF("%lld", i); }
+  static void _(const long long i) { UTEST_OUTPUT("%lld", i); }
 };
 
 template <> struct utest_type_deducer<unsigned long long, false> {
-  static void _(const unsigned long long i) { UTEST_PRINTF("%llu", i); }
+  static void _(const unsigned long long i) { UTEST_OUTPUT("%llu", i); }
 };
 
 template <> struct utest_type_deducer<bool, false> {
   static void _(const bool i) {
     if (i) {
-      UTEST_PRINTF("true");
+      UTEST_OUTPUT("true");
     } else {
-      UTEST_PRINTF("false");
+      UTEST_OUTPUT("false");
     }
   }
 };
 
 template <typename T> struct utest_type_deducer<const T *, false> {
   static void _(const T *t) {
-    UTEST_PRINTF("%p", static_cast<const void *>(t));
+    UTEST_OUTPUT("%p", static_cast<const void *>(t));
   }
 };
 
 template <typename T> struct utest_type_deducer<T *, false> {
-  static void _(T *t) { UTEST_PRINTF("%p", static_cast<void *>(t)); }
+  static void _(T *t) { UTEST_OUTPUT("%p", static_cast<void *>(t)); }
 };
 
 template <typename T> struct utest_type_deducer<T, true> {
   static void _(const T t) {
-    UTEST_PRINTF("%llu", static_cast<unsigned long long>(t));
+    UTEST_OUTPUT("%llu", static_cast<unsigned long long>(t));
   }
 };
 
 // default printer for all other objects (specialize for custom printing)
 template <typename T> struct utest_type_deducer<T, false> {
   static void _(const T &t) {
-    UTEST_PRINTF("(object %p)", static_cast<const void *>(&t));
+    UTEST_OUTPUT("(object %p)", static_cast<const void *>(&t));
   }
 };
 
 template <> struct utest_type_deducer<std::nullptr_t, false> {
   static void _(std::nullptr_t t) {
-    UTEST_PRINTF("%p", static_cast<void *>(t));
+    UTEST_OUTPUT("%p", static_cast<void *>(t));
   }
 };
 
@@ -594,57 +618,57 @@ UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const T &t) {
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(signed char c);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(signed char c) {
-  UTEST_PRINTF("%d", UTEST_CAST(int, c));
+  UTEST_OUTPUT("%d", UTEST_CAST(int, c));
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned char c);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned char c) {
-  UTEST_PRINTF("%u", UTEST_CAST(unsigned int, c));
+  UTEST_OUTPUT("%u", UTEST_CAST(unsigned int, c));
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(float f);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(float f) {
-  UTEST_PRINTF("%f", UTEST_CAST(double, f));
+  UTEST_OUTPUT("%f", UTEST_CAST(double, f));
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(double d);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(double d) {
-  UTEST_PRINTF("%f", d);
+  UTEST_OUTPUT("%f", d);
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long double d);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long double d) {
 #if defined(__MINGW32__) || defined(__MINGW64__)
   /* MINGW is weird - doesn't like LF at all?! */
-  UTEST_PRINTF("%f", (double)d);
+  UTEST_OUTPUT("%f", (double)d);
 #else
-  UTEST_PRINTF("%Lf", d);
+  UTEST_OUTPUT("%Lf", d);
 #endif
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(int i);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(int i) {
-  UTEST_PRINTF("%d", i);
+  UTEST_OUTPUT("%d", i);
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned int i);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(unsigned int i) {
-  UTEST_PRINTF("%u", i);
+  UTEST_OUTPUT("%u", i);
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long int i);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long int i) {
-  UTEST_PRINTF("%ld", i);
+  UTEST_OUTPUT("%ld", i);
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long unsigned int i);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long unsigned int i) {
-  UTEST_PRINTF("%lu", i);
+  UTEST_OUTPUT("%lu", i);
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const void *p);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const void *p) {
-  UTEST_PRINTF("%p", p);
+  UTEST_OUTPUT("%p", p);
 }
 
 /*
@@ -661,13 +685,13 @@ UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(const void *p) {
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i);
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long int i) {
-  UTEST_PRINTF("%lld", i);
+  UTEST_OUTPUT("%lld", i);
 }
 
 UTEST_WEAK UTEST_OVERLOADABLE void utest_type_printer(long long unsigned int i);
 UTEST_WEAK UTEST_OVERLOADABLE void
 utest_type_printer(long long unsigned int i) {
-  UTEST_PRINTF("%llu", i);
+  UTEST_OUTPUT("%llu", i);
 }
 
 #ifdef __clang__
@@ -679,7 +703,7 @@ utest_type_printer(long long unsigned int i) {
         !(defined(__MINGW32__) || defined(__MINGW64__)) ||                     \
     defined(__TINYC__)
 #define utest_type_printer(val)                                                \
-  UTEST_PRINTF(                                                                \
+  UTEST_OUTPUT(                                                                \
       _Generic((val),                                                          \
           signed char: "%d",                                                   \
           unsigned char: "%u",                                                 \
@@ -701,7 +725,7 @@ utest_type_printer(long long unsigned int i) {
    we don't have the ability to print the values we got, so we create a macro
    to tell our users we can't do anything fancy
 */
-#define utest_type_printer(...) UTEST_PRINTF("undef")
+#define utest_type_printer(...) UTEST_OUTPUT("undef")
 #endif
 
 #if defined(__cplusplus) && (__cplusplus >= 201103L)
@@ -751,7 +775,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
 
 #define UTEST_SKIP(msg)                                                        \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
-    UTEST_PRINTF("   Skipped : '%s'\n", (msg));                                \
+    UTEST_OUTPUT("   Skipped : '%s'\n", (msg));                                \
     *utest_result = UTEST_TEST_SKIPPED;                                        \
     return;                                                                    \
   }                                                                            \
@@ -771,17 +795,17 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       const char *const xAsString = #x;                                        \
       const char *const yAsString = #y;                                        \
       _Pragma("clang diagnostic pop")                                          \
-          UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                \
-      UTEST_PRINTF("  Expected : (");                                          \
-      UTEST_PRINTF("%s) " #cond " (%s", xAsString, yAsString);                 \
-      UTEST_PRINTF(")\n");                                                     \
-      UTEST_PRINTF("    Actual : ");                                           \
+          UTEST_OUTPUT("%s:%i: Failure\n", __FILE__, __LINE__);                \
+      UTEST_OUTPUT("  Expected : (");                                          \
+      UTEST_OUTPUT("%s) " #cond " (%s", xAsString, yAsString);                 \
+      UTEST_OUTPUT(")\n");                                                     \
+      UTEST_OUTPUT("    Actual : ");                                           \
       utest_type_printer(xEval);                                               \
-      UTEST_PRINTF(" vs ");                                                    \
+      UTEST_OUTPUT(" vs ");                                                    \
       utest_type_printer(yEval);                                               \
-      UTEST_PRINTF("\n");                                                      \
+      UTEST_OUTPUT("\n");                                                      \
       if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
+        UTEST_OUTPUT("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       if (is_assert) {                                                         \
@@ -799,17 +823,17 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
     if (!((xEval)cond(yEval))) {                                               \
       const char *const xAsString = #x;                                        \
       const char *const yAsString = #y;                                        \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : (");                                          \
-      UTEST_PRINTF("%s) " #cond " (%s", xAsString, yAsString);                 \
-      UTEST_PRINTF(")\n");                                                     \
-      UTEST_PRINTF("    Actual : ");                                           \
+      UTEST_OUTPUT("%s:%i: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_OUTPUT("  Expected : (");                                          \
+      UTEST_OUTPUT("%s) " #cond " (%s", xAsString, yAsString);                 \
+      UTEST_OUTPUT(")\n");                                                     \
+      UTEST_OUTPUT("    Actual : ");                                           \
       utest_type_printer(xEval);                                               \
-      UTEST_PRINTF(" vs ");                                                    \
+      UTEST_OUTPUT(" vs ");                                                    \
       utest_type_printer(yEval);                                               \
-      UTEST_PRINTF("\n");                                                      \
+      UTEST_OUTPUT("\n");                                                      \
       if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
+        UTEST_OUTPUT("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       if (is_assert) {                                                         \
@@ -823,12 +847,12 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
 #define UTEST_COND(x, y, cond, msg, is_assert)                                 \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     if (!((x)cond(y))) {                                                       \
-      UTEST_PRINTF("%s:%i: Failure (Expected " #cond " Actual)", __FILE__,     \
+      UTEST_OUTPUT("%s:%i: Failure (Expected " #cond " Actual)", __FILE__,     \
                    __LINE__);                                                  \
       if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF(" Message : %s", msg);                                    \
+        UTEST_OUTPUT(" Message : %s", msg);                                    \
       }                                                                        \
-      UTEST_PRINTF("\n");                                                      \
+      UTEST_OUTPUT("\n");                                                      \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       if (is_assert) {                                                         \
         return;                                                                \
@@ -873,11 +897,11 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     const int xEval = !!(x);                                                   \
     if (!(xEval)) {                                                            \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : true\n");                                     \
-      UTEST_PRINTF("    Actual : %s\n", (xEval) ? "true" : "false");           \
+      UTEST_OUTPUT("%s:%i: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_OUTPUT("  Expected : true\n");                                     \
+      UTEST_OUTPUT("    Actual : %s\n", (xEval) ? "true" : "false");           \
       if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
+        UTEST_OUTPUT("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       if (is_assert) {                                                         \
@@ -897,11 +921,11 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     const int xEval = !!(x);                                                   \
     if (xEval) {                                                               \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : false\n");                                    \
-      UTEST_PRINTF("    Actual : %s\n", (xEval) ? "true" : "false");           \
+      UTEST_OUTPUT("%s:%i: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_OUTPUT("  Expected : false\n");                                    \
+      UTEST_OUTPUT("    Actual : %s\n", (xEval) ? "true" : "false");           \
       if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
+        UTEST_OUTPUT("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       if (is_assert) {                                                         \
@@ -925,23 +949,23 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
     const void *yEval = (y);                                                   \
     const size_t sizeEval = UTEST_CAST(size_t, size);                          \
     if (0 != memcmp(xEval, yEval, sizeEval)) {                                 \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : ");                                           \
+      UTEST_OUTPUT("%s:%i: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_OUTPUT("  Expected : ");                                           \
       for (i = 0; i < sizeEval; ++i) {                                         \
         const unsigned char b =                                                \
             UTEST_PTR_CAST(const unsigned char *, xEval)[i];                   \
-        UTEST_PRINTF("%02X ", b);                                              \
+        UTEST_OUTPUT("%02X ", b);                                              \
       }                                                                        \
-      UTEST_PRINTF("\n");                                                      \
-      UTEST_PRINTF("    Actual : ");                                           \
+      UTEST_OUTPUT("\n");                                                      \
+      UTEST_OUTPUT("    Actual : ");                                           \
       for (i = 0; i < sizeEval; ++i) {                                         \
         const unsigned char b =                                                \
             UTEST_PTR_CAST(const unsigned char *, yEval)[i];                   \
-        UTEST_PRINTF("%02X ", b);                                              \
+        UTEST_OUTPUT("%02X ", b);                                              \
       }                                                                        \
-      UTEST_PRINTF("\n");                                                      \
+      UTEST_OUTPUT("\n");                                                      \
       if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
+        UTEST_OUTPUT("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       if (is_assert) {                                                         \
@@ -964,11 +988,11 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
     const char *yEval = (y);                                                   \
     if (UTEST_NULL == xEval || UTEST_NULL == yEval ||                          \
         0 != strcmp(xEval, yEval)) {                                           \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : \"%s\"\n", xEval);                            \
-      UTEST_PRINTF("    Actual : \"%s\"\n", yEval);                            \
+      UTEST_OUTPUT("%s:%i: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_OUTPUT("  Expected : \"%s\"\n", xEval);                            \
+      UTEST_OUTPUT("    Actual : \"%s\"\n", yEval);                            \
       if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
+        UTEST_OUTPUT("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       if (is_assert) {                                                         \
@@ -990,11 +1014,11 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
     const char *yEval = (y);                                                   \
     if (UTEST_NULL == xEval || UTEST_NULL == yEval ||                          \
         0 == strcmp(xEval, yEval)) {                                           \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : \"%s\"\n", xEval);                            \
-      UTEST_PRINTF("    Actual : \"%s\"\n", yEval);                            \
+      UTEST_OUTPUT("%s:%i: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_OUTPUT("  Expected : \"%s\"\n", xEval);                            \
+      UTEST_OUTPUT("    Actual : \"%s\"\n", yEval);                            \
       if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
+        UTEST_OUTPUT("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       if (is_assert) {                                                         \
@@ -1017,11 +1041,11 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
     const size_t nEval = UTEST_CAST(size_t, n);                                \
     if (UTEST_NULL == xEval || UTEST_NULL == yEval ||                          \
         0 != UTEST_STRNCMP(xEval, yEval, nEval)) {                             \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, nEval), xEval);  \
-      UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, nEval), yEval);  \
+      UTEST_OUTPUT("%s:%i: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_OUTPUT("  Expected : \"%.*s\"\n", UTEST_CAST(int, nEval), xEval);  \
+      UTEST_OUTPUT("    Actual : \"%.*s\"\n", UTEST_CAST(int, nEval), yEval);  \
       if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
+        UTEST_OUTPUT("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       if (is_assert) {                                                         \
@@ -1044,11 +1068,11 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
     const size_t nEval = UTEST_CAST(size_t, n);                                \
     if (UTEST_NULL == xEval || UTEST_NULL == yEval ||                          \
         0 == UTEST_STRNCMP(xEval, yEval, nEval)) {                             \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : \"%.*s\"\n", UTEST_CAST(int, nEval), xEval);  \
-      UTEST_PRINTF("    Actual : \"%.*s\"\n", UTEST_CAST(int, nEval), yEval);  \
+      UTEST_OUTPUT("%s:%i: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_OUTPUT("  Expected : \"%.*s\"\n", UTEST_CAST(int, nEval), xEval);  \
+      UTEST_OUTPUT("    Actual : \"%.*s\"\n", UTEST_CAST(int, nEval), yEval);  \
       if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
+        UTEST_OUTPUT("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       if (is_assert) {                                                         \
@@ -1069,11 +1093,11 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
     const double diff =                                                        \
         utest_fabs(UTEST_CAST(double, x) - UTEST_CAST(double, y));             \
     if (diff > UTEST_CAST(double, epsilon) || utest_isnan(diff)) {             \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : %f\n", UTEST_CAST(double, x));                \
-      UTEST_PRINTF("    Actual : %f\n", UTEST_CAST(double, y));                \
+      UTEST_OUTPUT("%s:%i: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_OUTPUT("  Expected : %f\n", UTEST_CAST(double, x));                \
+      UTEST_OUTPUT("    Actual : %f\n", UTEST_CAST(double, y));                \
       if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
+        UTEST_OUTPUT("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       if (is_assert) {                                                         \
@@ -1101,13 +1125,13 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       exception_caught = 2;                                                    \
     }                                                                          \
     if (1 != exception_caught) {                                               \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : %s exception\n", #exception_type);            \
-      UTEST_PRINTF("    Actual : %s\n", (2 == exception_caught)                \
+      UTEST_OUTPUT("%s:%i: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_OUTPUT("  Expected : %s exception\n", #exception_type);            \
+      UTEST_OUTPUT("    Actual : %s\n", (2 == exception_caught)                \
                                             ? "Unexpected exception"           \
                                             : "No exception");                 \
       if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
+        UTEST_OUTPUT("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       if (is_assert) {                                                         \
@@ -1147,25 +1171,25 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       exception_caught = 2;                                                    \
     }                                                                          \
     if (1 != exception_caught) {                                               \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : %s exception\n", #exception_type);            \
-      UTEST_PRINTF("    Actual : %s\n", (2 == exception_caught)                \
+      UTEST_OUTPUT("%s:%i: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_OUTPUT("  Expected : %s exception\n", #exception_type);            \
+      UTEST_OUTPUT("    Actual : %s\n", (2 == exception_caught)                \
                                             ? "Unexpected exception"           \
                                             : "No exception");                 \
       if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
+        UTEST_OUTPUT("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       if (is_assert) {                                                         \
         return;                                                                \
       }                                                                        \
     } else if (UTEST_NULL != message_caught) {                                 \
-      UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \
-      UTEST_PRINTF("  Expected : %s exception with message %s\n",              \
+      UTEST_OUTPUT("%s:%i: Failure\n", __FILE__, __LINE__);                    \
+      UTEST_OUTPUT("  Expected : %s exception with message %s\n",              \
                    #exception_type, exception_message);                        \
-      UTEST_PRINTF("    Actual message : %s\n", message_caught);               \
+      UTEST_OUTPUT("    Actual message : %s\n", message_caught);               \
       if (strlen(msg) > 0) {                                                   \
-        UTEST_PRINTF("   Message : %s\n", msg);                                \
+        UTEST_OUTPUT("   Message : %s\n", msg);                                \
       }                                                                        \
       *utest_result = UTEST_TEST_FAILURE;                                      \
       free(message_caught);                                                    \
@@ -1518,20 +1542,22 @@ int utest_main(int argc, const char *const argv[]) {
     const char random_order_with_seed_str[] = "--random-order=";
 
     if (0 == UTEST_STRNCMP(argv[index], help_str, strlen(help_str))) {
-      printf("utest.h - the single file unit testing solution for C/C++!\n"
-             "Command line Options:\n"
-             "  --help                  Show this message and exit.\n"
-             "  --filter=<filter>       Filter the test cases to run (EG. "
-             "MyTest*.a would run MyTestCase.a but not MyTestCase.b).\n"
-             "  --list-tests            List testnames, one per line. Output "
-             "names can be passed to --filter.\n");
-      printf("  --output=<output>       Output an xunit XML file to the file "
-             "specified in <output>.\n"
-             "  --enable-mixed-units    Enable the per-test output to contain "
-             "mixed units (s/ms/us/ns).\n"
-             "  --random-order[=<seed>] Randomize the order that the tests are "
-             "ran in. If the optional <seed> argument is not provided, then a "
-             "random starting seed is used.\n");
+      UTEST_PRINTF(
+          "utest.h - the single file unit testing solution for C/C++!\n"
+          "Command line Options:\n"
+          "  --help                  Show this message and exit.\n"
+          "  --filter=<filter>       Filter the test cases to run (EG. "
+          "MyTest*.a would run MyTestCase.a but not MyTestCase.b).\n"
+          "  --list-tests            List testnames, one per line. Output "
+          "names can be passed to --filter.\n");
+      UTEST_PRINTF(
+          "  --output=<output>       Output an xunit XML file to the file "
+          "specified in <output>.\n"
+          "  --enable-mixed-units    Enable the per-test output to contain "
+          "mixed units (s/ms/us/ns).\n"
+          "  --random-order[=<seed>] Randomize the order that the tests are "
+          "ran in. If the optional <seed> argument is not provided, then a "
+          "random starting seed is used.\n");
       goto cleanup;
     } else if (0 ==
                UTEST_STRNCMP(argv[index], filter_str, strlen(filter_str))) {
@@ -1542,7 +1568,7 @@ int utest_main(int argc, const char *const argv[]) {
       utest_state.output = utest_fopen(argv[index] + strlen(output_str), "w+");
     } else if (0 == UTEST_STRNCMP(argv[index], list_str, strlen(list_str))) {
       for (index = 0; index < utest_state.tests_length; index++) {
-        UTEST_PRINTF("%s\n", utest_state.tests[index].name);
+        UTEST_OUTPUT("%s\n", utest_state.tests[index].name);
       }
       /* when printing the test list, don't actually run the tests */
       return 0;
@@ -1599,17 +1625,19 @@ int utest_main(int argc, const char *const argv[]) {
     ran_tests++;
   }
 
-  printf("%s[==========]%s Running %" UTEST_PRIu64 " test cases.\n",
-         colours[GREEN], colours[RESET], UTEST_CAST(utest_uint64_t, ran_tests));
+  UTEST_PRINTF("%s[==========]%s Running %" UTEST_PRIu64 " test cases.\n",
+               colours[GREEN], colours[RESET],
+               UTEST_CAST(utest_uint64_t, ran_tests));
 
   if (utest_state.output) {
-    fprintf(utest_state.output, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-    fprintf(utest_state.output,
-            "<testsuites tests=\"%" UTEST_PRIu64 "\" name=\"All\">\n",
-            UTEST_CAST(utest_uint64_t, ran_tests));
-    fprintf(utest_state.output,
-            "<testsuite name=\"Tests\" tests=\"%" UTEST_PRIu64 "\">\n",
-            UTEST_CAST(utest_uint64_t, ran_tests));
+    UTEST_FPRINTF(utest_state.output,
+                  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+    UTEST_FPRINTF(utest_state.output,
+                  "<testsuites tests=\"%" UTEST_PRIu64 "\" name=\"All\">\n",
+                  UTEST_CAST(utest_uint64_t, ran_tests));
+    UTEST_FPRINTF(utest_state.output,
+                  "<testsuite name=\"Tests\" tests=\"%" UTEST_PRIu64 "\">\n",
+                  UTEST_CAST(utest_uint64_t, ran_tests));
   }
 
   for (index = 0; index < utest_state.tests_length; index++) {
@@ -1620,12 +1648,12 @@ int utest_main(int argc, const char *const argv[]) {
       continue;
     }
 
-    printf("%s[ RUN      ]%s %s\n", colours[GREEN], colours[RESET],
-           utest_state.tests[index].name);
+    UTEST_PRINTF("%s[ RUN      ]%s %s\n", colours[GREEN], colours[RESET],
+                 utest_state.tests[index].name);
 
     if (utest_state.output) {
-      fprintf(utest_state.output, "<testcase name=\"%s\">",
-              utest_state.tests[index].name);
+      UTEST_FPRINTF(utest_state.output, "<testcase name=\"%s\">",
+                    utest_state.tests[index].name);
     }
 
     ns = utest_ns();
@@ -1635,10 +1663,10 @@ int utest_main(int argc, const char *const argv[]) {
     try {
       utest_state.tests[index].func(&result, utest_state.tests[index].index);
     } catch (const std::exception &err) {
-      printf(" Exception : %s\n", err.what());
+      UTEST_PRINTF(" Exception : %s\n", err.what());
       result = UTEST_TEST_FAILURE;
     } catch (...) {
-      printf(" Exception : Unknown\n");
+      UTEST_PRINTF(" Exception : Unknown\n");
       result = UTEST_TEST_FAILURE;
     }
     UTEST_SURPRESS_WARNING_END
@@ -1648,7 +1676,7 @@ int utest_main(int argc, const char *const argv[]) {
     ns = utest_ns() - ns;
 
     if (utest_state.output) {
-      fprintf(utest_state.output, "</testcase>\n");
+      UTEST_FPRINTF(utest_state.output, "</testcase>\n");
     }
 
     // Record the failing test.
@@ -1688,46 +1716,46 @@ int utest_main(int argc, const char *const argv[]) {
       }
 
       if (UTEST_TEST_FAILURE == result) {
-        printf("%s[  FAILED  ]%s %s (%" UTEST_PRId64 "%s)\n", colours[RED],
-               colours[RESET], utest_state.tests[index].name, time,
-               units[unit_index]);
+        UTEST_PRINTF("%s[  FAILED  ]%s %s (%" UTEST_PRId64 "%s)\n",
+                     colours[RED], colours[RESET],
+                     utest_state.tests[index].name, time, units[unit_index]);
       } else if (UTEST_TEST_SKIPPED == result) {
-        printf("%s[  SKIPPED ]%s %s (%" UTEST_PRId64 "%s)\n", colours[YELLOW],
-               colours[RESET], utest_state.tests[index].name, time,
-               units[unit_index]);
+        UTEST_PRINTF("%s[  SKIPPED ]%s %s (%" UTEST_PRId64 "%s)\n",
+                     colours[YELLOW], colours[RESET],
+                     utest_state.tests[index].name, time, units[unit_index]);
       } else {
-        printf("%s[       OK ]%s %s (%" UTEST_PRId64 "%s)\n", colours[GREEN],
-               colours[RESET], utest_state.tests[index].name, time,
-               units[unit_index]);
+        UTEST_PRINTF("%s[       OK ]%s %s (%" UTEST_PRId64 "%s)\n",
+                     colours[GREEN], colours[RESET],
+                     utest_state.tests[index].name, time, units[unit_index]);
       }
     }
   }
 
-  printf("%s[==========]%s %" UTEST_PRIu64 " test cases ran.\n", colours[GREEN],
-         colours[RESET], ran_tests);
-  printf("%s[  PASSED  ]%s %" UTEST_PRIu64 " tests.\n", colours[GREEN],
-         colours[RESET], ran_tests - failed - skipped);
+  UTEST_PRINTF("%s[==========]%s %" UTEST_PRIu64 " test cases ran.\n",
+               colours[GREEN], colours[RESET], ran_tests);
+  UTEST_PRINTF("%s[  PASSED  ]%s %" UTEST_PRIu64 " tests.\n", colours[GREEN],
+               colours[RESET], ran_tests - failed - skipped);
 
   if (0 != skipped) {
-    printf("%s[  SKIPPED ]%s %" UTEST_PRIu64 " tests, listed below:\n",
-           colours[YELLOW], colours[RESET], skipped);
+    UTEST_PRINTF("%s[  SKIPPED ]%s %" UTEST_PRIu64 " tests, listed below:\n",
+                 colours[YELLOW], colours[RESET], skipped);
     for (index = 0; index < skipped_testcases_length; index++) {
-      printf("%s[  SKIPPED ]%s %s\n", colours[YELLOW], colours[RESET],
-             utest_state.tests[skipped_testcases[index]].name);
+      UTEST_PRINTF("%s[  SKIPPED ]%s %s\n", colours[YELLOW], colours[RESET],
+                   utest_state.tests[skipped_testcases[index]].name);
     }
   }
 
   if (0 != failed) {
-    printf("%s[  FAILED  ]%s %" UTEST_PRIu64 " tests, listed below:\n",
-           colours[RED], colours[RESET], failed);
+    UTEST_PRINTF("%s[  FAILED  ]%s %" UTEST_PRIu64 " tests, listed below:\n",
+                 colours[RED], colours[RESET], failed);
     for (index = 0; index < failed_testcases_length; index++) {
-      printf("%s[  FAILED  ]%s %s\n", colours[RED], colours[RESET],
-             utest_state.tests[failed_testcases[index]].name);
+      UTEST_PRINTF("%s[  FAILED  ]%s %s\n", colours[RED], colours[RESET],
+                   utest_state.tests[failed_testcases[index]].name);
     }
   }
 
   if (utest_state.output) {
-    fprintf(utest_state.output, "</testsuite>\n</testsuites>\n");
+    UTEST_FPRINTF(utest_state.output, "</testsuite>\n</testsuites>\n");
   }
 
 cleanup:
