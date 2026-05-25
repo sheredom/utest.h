@@ -34,6 +34,8 @@
 #define SHEREDOM_UTEST_H_INCLUDED
 
 #ifdef _MSC_VER
+#pragma warning(push, 1)
+
 /*
    Disable warning about not inlining 'inline' functions.
 */
@@ -78,8 +80,6 @@
 */
 #pragma warning(disable : 5264)
 #endif
-
-#pragma warning(push, 1)
 #endif
 
 #if defined(_MSC_VER) && (_MSC_VER < 1920)
@@ -532,7 +532,13 @@ template <> struct utest_type_deducer<unsigned long long, false> {
 };
 
 template <> struct utest_type_deducer<bool, false> {
-  static void _(const bool i) { UTEST_PRINTF(i ? "true" : "false"); }
+  static void _(const bool i) {
+    if (i) {
+      UTEST_PRINTF("true");
+    } else {
+      UTEST_PRINTF("false");
+    }
+  }
 };
 
 template <typename T> struct utest_type_deducer<const T *, false> {
@@ -664,20 +670,20 @@ utest_type_printer(long long unsigned int i) {
 #define utest_type_printer(val)                                                \
   UTEST_PRINTF(                                                                \
       _Generic((val),                                                          \
-      signed char: "%d",                                                       \
-      unsigned char: "%u",                                                     \
-      short: "%d",                                                             \
-      unsigned short: "%u",                                                    \
-      int: "%d",                                                               \
-      long: "%ld",                                                             \
-      long long: "%lld",                                                       \
-      unsigned: "%u",                                                          \
-      unsigned long: "%lu",                                                    \
-      unsigned long long: "%llu",                                              \
-      float: "%f",                                                             \
-      double: "%f",                                                            \
-      long double: "%Lf",                                                      \
-      default: _Generic((val - val), ptrdiff_t: "%p", default: "undef")),      \
+          signed char: "%d",                                                   \
+          unsigned char: "%u",                                                 \
+          short: "%d",                                                         \
+          unsigned short: "%u",                                                \
+          int: "%d",                                                           \
+          long: "%ld",                                                         \
+          long long: "%lld",                                                   \
+          unsigned: "%u",                                                      \
+          unsigned long: "%lu",                                                \
+          unsigned long long: "%llu",                                          \
+          float: "%f",                                                         \
+          double: "%f",                                                        \
+          long double: "%Lf",                                                  \
+          default: _Generic((val - val), ptrdiff_t: "%p", default: "undef")),  \
       (val))
 #else
 /*
