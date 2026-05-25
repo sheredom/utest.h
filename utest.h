@@ -696,7 +696,7 @@ utest_type_printer(long long unsigned int i) {
 #if defined(_MSC_VER)
 #define UTEST_SURPRESS_WARNING_BEGIN                                           \
   __pragma(warning(push)) __pragma(warning(disable : 4127))                    \
-      __pragma(warning(disable : 4571)) __pragma(warning(disable : 4130))
+      __pragma(warning(disable : 4571)) __pragma(warning(disable : 4130)) __pragma(warning(disable : 4710))
 #define UTEST_SURPRESS_WARNING_END __pragma(warning(pop))
 #else
 #define UTEST_SURPRESS_WARNING_BEGIN
