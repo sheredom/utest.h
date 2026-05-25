@@ -437,7 +437,7 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #endif
 
 #ifdef _MSC_VER
-#define UTEST_SNPRINTF(BUFFER, N, ...) _snprintf_s(BUFFER, N, N, __VA_ARGS__)
+#define UTEST_SNPRINTF(BUFFER, N, ...) UTEST_SURPRESS_WARNING_BEGIN _snprintf_s(BUFFER, N, N, __VA_ARGS__) UTEST_SURPRESS_WARNING_END
 #else
 #define UTEST_SNPRINTF(...) snprintf(__VA_ARGS__)
 #endif
