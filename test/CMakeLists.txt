@@ -23,77 +23,121 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-project(utest)
 cmake_minimum_required(VERSION 3.15)
+project(utest)
 
-set(UTEST_USE_SANITIZER "" CACHE STRING "Set which Clang Sanitizer to use")
+include(CTest)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 
-function(set_flags file msvc gcc clang_extra)
-  if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-    set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${gcc}")
-  elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
-    if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-      set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${msvc}")
-    else()
-      set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${gcc} ${clang_extra}")
-    endif()
-  elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
-    set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${msvc}")
-  elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "TinyCC")
-    set_source_files_properties("${file}" PROPERTIES COMPILE_FLAGS "${gcc}")
+# Base warning flags and whether -std= flags are supported.
+# MSVC and clang-cl use /std: and don't accept -std=, so we skip
+# the standard flag for those compilers.
+set(UTEST_MSVC_WARNINGS "/Wall /WX /wd4514 /wd5045")
+if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+  set(UTEST_C_WARNINGS "-Wall -Wextra -Werror")
+  set(UTEST_C_USE_STD_FLAG TRUE)
+elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_C_COMPILER_ID}" STREQUAL "AppleClang")
+  if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    set(UTEST_C_WARNINGS "${UTEST_MSVC_WARNINGS}")
+    set(UTEST_C_USE_STD_FLAG FALSE)
   else()
-    message(WARNING "Unknown compiler '${CMAKE_C_COMPILER_ID}'!")
+    set(UTEST_C_WARNINGS "-Wall -Wextra -Weverything -Werror -Wno-poison-system-directories")
+    set(UTEST_C_USE_STD_FLAG TRUE)
+  endif()
+elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
+  set(UTEST_C_WARNINGS "${UTEST_MSVC_WARNINGS}")
+  set(UTEST_C_USE_STD_FLAG FALSE)
+else()
+  message(WARNING "Unknown C compiler '${CMAKE_C_COMPILER_ID}'!")
+  set(UTEST_C_WARNINGS "")
+  set(UTEST_C_USE_STD_FLAG FALSE)
+endif()
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  set(UTEST_CXX_WARNINGS "-Wall -Wextra -Werror")
+  set(UTEST_CXX_USE_STD_FLAG TRUE)
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+  if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    set(UTEST_CXX_WARNINGS "${UTEST_MSVC_WARNINGS}")
+    set(UTEST_CXX_USE_STD_FLAG FALSE)
+  else()
+    set(UTEST_CXX_WARNINGS "-Wall -Wextra -Weverything -Werror -Wno-poison-system-directories")
+    set(UTEST_CXX_USE_STD_FLAG TRUE)
+  endif()
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  set(UTEST_CXX_WARNINGS "${UTEST_MSVC_WARNINGS}")
+  set(UTEST_CXX_USE_STD_FLAG FALSE)
+else()
+  message(WARNING "Unknown C++ compiler '${CMAKE_CXX_COMPILER_ID}'!")
+  set(UTEST_CXX_WARNINGS "")
+  set(UTEST_CXX_USE_STD_FLAG FALSE)
+endif()
+
+# Helper: set compile flags for a C source file (warnings + standard).
+function(utest_set_c_flags FILE STANDARD)
+  if(UTEST_C_USE_STD_FLAG)
+    set_source_files_properties(${FILE} PROPERTIES
+      COMPILE_FLAGS "${UTEST_C_WARNINGS} ${STANDARD}")
+  else()
+    set_source_files_properties(${FILE} PROPERTIES
+      COMPILE_FLAGS "${UTEST_C_WARNINGS}")
   endif()
 endfunction()
 
-set(MSVC_WARNINGS "/Wall /WX /wd4514 /wd5045")
-set(GCC_WARNINGS "-Wall -Wextra -Werror")
-set(CLANG_WARNINGS "-Weverything")
+# Helper: set compile flags for a C++ source file (warnings + standard + extras).
+function(utest_set_cxx_flags FILE STANDARD)
+  set(EXTRA_FLAGS ${ARGN})
+  if(UTEST_CXX_USE_STD_FLAG)
+    set_source_files_properties(${FILE} PROPERTIES
+      COMPILE_FLAGS "${UTEST_CXX_WARNINGS} ${STANDARD} ${EXTRA_FLAGS}")
+  else()
+    set_source_files_properties(${FILE} PROPERTIES
+      COMPILE_FLAGS "${UTEST_CXX_WARNINGS} ${EXTRA_FLAGS}")
+  endif()
+endfunction()
 
-set_flags(main.c "${MSVC_WARNINGS}" "${GCC_WARNINGS} -std=gnu89" "${CLANG_WARNINGS}")
-set_flags(test.c "${MSVC_WARNINGS}" "${GCC_WARNINGS} -std=gnu89" "${CLANG_WARNINGS}")
-set_flags(test99.c "${MSVC_WARNINGS}" "${GCC_WARNINGS} -std=c99" "${CLANG_WARNINGS}")
+# C files — each compiled under a specific C standard.
+utest_set_c_flags(main.c  "-std=gnu89")
+utest_set_c_flags(test.c  "-std=gnu89")
+utest_set_c_flags(test99.c "-std=c99")
 
 list(FIND CMAKE_C_COMPILE_FEATURES c_std_11 IDX)
-if (${IDX} GREATER -1)
-  set_flags(test11.c "${MSVC_WARNINGS} /std:c11" "${GCC_WARNINGS} -std=c11" "${CLANG_WARNINGS}")
+if(${IDX} GREATER -1)
+  utest_set_c_flags(test11.c "-std=c11")
 
   if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-      set_source_files_properties(type_printers.c PROPERTIES
-        COMPILE_FLAGS "-std=gnu11")
+    set_source_files_properties(type_printers.c PROPERTIES
+      COMPILE_FLAGS "-std=gnu11")
   endif()
 endif()
 
-set_flags(test.cpp "${MSVC_WARNINGS}" "${GCC_WARNINGS} -std=gnu++98" "${CLANG_WARNINGS}")
-set_flags(test_no_exceptions.cpp "${MSVC_WARNINGS} /EHs-c-" "${GCC_WARNINGS} -fno-exceptions -std=gnu++98" "${CLANG_WARNINGS}")
-
-list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 IDX)
-if (${IDX} GREATER -1)
-  set_flags(test11.cpp "${MSVC_WARNINGS}" "${GCC_WARNINGS} -std=c++11" "${CLANG_WARNINGS}")
+# C++ files — each compiled under a specific C++ standard.
+utest_set_cxx_flags(test.cpp   "" "-Wno-c++98-compat")
+utest_set_cxx_flags(test98.cpp "-std=gnu++98")
+utest_set_cxx_flags(test11.cpp "-std=c++11" "-Wno-c++98-compat")
+utest_set_cxx_flags(test14.cpp "-std=c++14" "-Wno-c++98-compat")
+utest_set_cxx_flags(test17.cpp "-std=c++17" "-Wno-c++98-compat")
+utest_set_cxx_flags(test20.cpp "-std=c++20" "-Wno-c++98-compat")
+if(MSVC OR CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+  utest_set_cxx_flags(test_no_exceptions.cpp "" "/EHs-c-")
+else()
+  utest_set_cxx_flags(test_no_exceptions.cpp "-std=gnu++98" "-fno-exceptions")
 endif()
 
-list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_14 IDX)
-if (${IDX} GREATER -1)
-  set_flags(test14.cpp "${MSVC_WARNINGS} /std:c++14" "${GCC_WARNINGS} -std=c++14" "${CLANG_WARNINGS}")
-endif()
-
-list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_17 IDX)
-if (${IDX} GREATER -1)
-  set_flags(test17.cpp "${MSVC_WARNINGS} /std:c++17" "${GCC_WARNINGS} -std=c++17" "${CLANG_WARNINGS}")
-endif()
-
-set(SOURCES
+set(UTEST_TEST_SOURCES
   ../utest.h
+  test_shared.h
   main.c
   test.c
-  test11.c
   test99.c
+  test11.c
   test.cpp
+  test98.cpp
   test11.cpp
   test14.cpp
   test17.cpp
+  test20.cpp
   test_no_exceptions.cpp
   stdint_include.c
   type_printers.c
@@ -102,31 +146,112 @@ set(SOURCES
   side_effects.cpp
 )
 
-add_executable(utest_test ${SOURCES})
+function(utest_register_test NAME)
+  add_test(NAME ${NAME} COMMAND $<TARGET_FILE:${NAME}>)
+  set_tests_properties(${NAME} PROPERTIES
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:${NAME}>)
+endfunction()
 
-if(NOT "${UTEST_USE_SANITIZER}" STREQUAL "")
-  target_compile_options(utest_test PUBLIC -fno-omit-frame-pointer -fsanitize=${UTEST_USE_SANITIZER})
-  target_link_options(utest_test PUBLIC -fno-omit-frame-pointer -fsanitize=${UTEST_USE_SANITIZER})
-endif()
+function(utest_add_random_order_tests NAME)
+  add_test(NAME ${NAME}_random_order
+    COMMAND $<TARGET_FILE:${NAME}> --random-order)
+  add_test(NAME ${NAME}_random_order_seed
+    COMMAND $<TARGET_FILE:${NAME}> --random-order=42)
+  set_tests_properties(${NAME}_random_order ${NAME}_random_order_seed PROPERTIES
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:${NAME}>)
+endfunction()
 
-add_executable(utest_test_wpo ${SOURCES})
+# Helper: add a test executable and register it with CTest.
+function(utest_add_test NAME)
+  add_executable(${NAME} ${UTEST_TEST_SOURCES})
+  utest_register_test(${NAME})
+endfunction()
 
-if(NOT "${UTEST_USE_SANITIZER}" STREQUAL "")
-  target_compile_options(utest_test_wpo PUBLIC -fno-omit-frame-pointer -fsanitize=${UTEST_USE_SANITIZER})
-  target_link_options(utest_test_wpo PUBLIC -fno-omit-frame-pointer -fsanitize=${UTEST_USE_SANITIZER})
-endif()
+utest_add_test(utest_test)
+utest_add_random_order_tests(utest_test)
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+# Whole-program-optimization variant.
+utest_add_test(utest_test_wpo)
+if(MSVC)
   target_compile_options(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:/GL>")
   target_link_options(utest_test_wpo PRIVATE "$<$<CONFIG:RELEASE>:/LTCG>")
 endif()
 
-add_executable(utest_test_mt ${SOURCES})
+if(MSVC)
+  # Build a second test binary linked against the static CRT (/MT)
+  # to ensure we work with both static and dynamic libc linkage.
+  set_property(TARGET utest_test PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+  utest_add_test(utest_test_mt)
+  set_property(TARGET utest_test_mt PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-    target_compile_options(utest_test_mt PUBLIC "/MT")
+# Some sanitizer runtimes can't initialise on every host even when
+# the toolchain links them fine — e.g. clang's TSan and MSan on
+# aarch64 only ship shadow-memory layouts for 39-, 42- and 48-bit
+# user VMAs, but Raspberry Pi OS' kernel is configured with
+# CONFIG_ARM64_VA_BITS=47. The binary builds, but aborts before
+# main with "FATAL: ThreadSanitizer: unsupported VMA range". Probe
+# each candidate sanitizer with try_run and skip the ones whose
+# runtime can't start. Result is cached so reconfigure is cheap;
+# delete CMakeCache.txt to re-probe (e.g. after changing kernels).
+function(utest_check_sanitizer_runs SAN OUT_VAR)
+  set(CACHE_VAR "UTEST_SAN_${SAN}_RUNS")
+  if(DEFINED ${CACHE_VAR})
+    set(${OUT_VAR} ${${CACHE_VAR}} PARENT_SCOPE)
+    return()
   endif()
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-  target_compile_options(utest_test_mt PUBLIC "/MT")
+
+  set(PROBE_SRC "${CMAKE_BINARY_DIR}/utest_san_probe_${SAN}.c")
+  file(WRITE "${PROBE_SRC}" "int main(void) { return 0; }\n")
+
+  try_run(RUN_RESULT COMPILE_RESULT
+    "${CMAKE_BINARY_DIR}/utest_san_probe_${SAN}"
+    "${PROBE_SRC}"
+    COMPILE_DEFINITIONS "-fsanitize=${SAN}" "-fno-omit-frame-pointer"
+    LINK_OPTIONS "-fsanitize=${SAN}"
+  )
+
+  if(COMPILE_RESULT AND "${RUN_RESULT}" STREQUAL "0")
+    set(RESULT TRUE)
+    message(STATUS "Sanitizer ${SAN}: usable")
+  else()
+    set(RESULT FALSE)
+    message(STATUS "Sanitizer ${SAN}: skipping "
+                   "(compile=${COMPILE_RESULT}, run=${RUN_RESULT})")
+  endif()
+
+  set(${CACHE_VAR} ${RESULT} CACHE INTERNAL
+      "Whether the ${SAN} sanitizer runtime starts on this host")
+  set(${OUT_VAR} ${RESULT} PARENT_SCOPE)
+endfunction()
+
+if(("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_C_COMPILER_ID}" STREQUAL "AppleClang") AND NOT "${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC")
+  set(UTEST_SANITIZER_CANDIDATES
+    address
+    undefined
+    thread
+  )
+
+  if(NOT "${CMAKE_C_COMPILER_ID}" STREQUAL "AppleClang")
+    set(UTEST_SANITIZER_CANDIDATES ${UTEST_SANITIZER_CANDIDATES} memory)
+  endif()
+
+  set(UTEST_SANITIZERS)
+  foreach(UTEST_SANITIZER ${UTEST_SANITIZER_CANDIDATES})
+    if(CMAKE_CROSSCOMPILING)
+      list(APPEND UTEST_SANITIZERS ${UTEST_SANITIZER})
+    else()
+      utest_check_sanitizer_runs(${UTEST_SANITIZER} UTEST_SAN_RUNS)
+      if(UTEST_SAN_RUNS)
+        list(APPEND UTEST_SANITIZERS ${UTEST_SANITIZER})
+      endif()
+    endif()
+  endforeach()
+
+  foreach(UTEST_SANITIZER ${UTEST_SANITIZERS})
+    utest_add_test(utest_${UTEST_SANITIZER}_test)
+    utest_add_random_order_tests(utest_${UTEST_SANITIZER}_test)
+    target_compile_options(utest_${UTEST_SANITIZER}_test PRIVATE -fsanitize=${UTEST_SANITIZER} -fno-omit-frame-pointer)
+    target_link_options(utest_${UTEST_SANITIZER}_test PRIVATE -fsanitize=${UTEST_SANITIZER})
+  endforeach()
 endif()
