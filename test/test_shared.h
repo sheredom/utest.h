@@ -16,7 +16,7 @@
 #pragma warning(disable : 4127)
 #endif
 
-#if defined(__cplusplus)
+#if defined(__cplusplus) && !defined(UTEST_TEST_NO_EXCEPTIONS)
 #include <stdexcept>
 #endif
 
