@@ -108,6 +108,7 @@ endfunction()
 # C files — each compiled under a specific C standard.
 utest_set_c_flags(main.c  "-std=gnu89")
 utest_set_c_flags(test.c  "-std=gnu89")
+utest_set_c_flags(order.c "-std=gnu89")
 utest_set_c_flags(test99.c "-std=c99")
 
 list(FIND CMAKE_C_COMPILE_FEATURES c_std_11 IDX)
@@ -138,6 +139,7 @@ set(UTEST_TEST_SOURCES
   test_shared.h
   main.c
   test.c
+  order.c
   test99.c
   test11.c
   test.cpp

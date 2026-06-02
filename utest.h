@@ -378,6 +378,8 @@ struct utest_test_state_s {
   utest_testcase_t func;
   size_t index;
   char *name;
+  const char *file;
+  size_t line;
 };
 
 struct utest_state_s {
@@ -1222,6 +1224,8 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       utest_state.tests[index].func = &utest_##SET##_##NAME;                   \
       utest_state.tests[index].name = name;                                    \
       utest_state.tests[index].index = 0;                                      \
+      utest_state.tests[index].file = __FILE__;                                \
+      utest_state.tests[index].line = __LINE__;                                \
       UTEST_SNPRINTF(name, name_size, "%s", name_part);                        \
     } else {                                                                   \
       if (utest_state.tests) {                                                 \
@@ -1276,6 +1280,8 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
       utest_state.tests[index].func = &utest_f_##FIXTURE##_##NAME;             \
       utest_state.tests[index].name = name;                                    \
       utest_state.tests[index].index = 0;                                      \
+      utest_state.tests[index].file = __FILE__;                                \
+      utest_state.tests[index].line = __LINE__;                                \
       UTEST_SNPRINTF(name, name_size, "%s", name_part);                        \
     } else {                                                                   \
       if (utest_state.tests) {                                                 \
@@ -1331,6 +1337,8 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
         utest_state.tests[index].func = &utest_i_##FIXTURE##_##NAME##_##INDEX; \
         utest_state.tests[index].index = i;                                    \
         utest_state.tests[index].name = name;                                  \
+        utest_state.tests[index].file = __FILE__;                              \
+        utest_state.tests[index].line = __LINE__;                              \
         iUp = UTEST_CAST(utest_uint64_t, i);                                   \
         UTEST_SNPRINTF(name, name_size, "%s/%" UTEST_PRIu64, name_part, iUp);  \
       } else {                                                                 \
@@ -1458,6 +1466,57 @@ UTEST_WEAK int utest_should_filter_test(const char *filter,
   return 0;
 }
 
+/* Sort tests by definition location to avoid translation unit registration
+   order. The index/name tie-breakers make same-line tests deterministic. */
+UTEST_WEAK
+int utest_test_state_cmp(const void *lhs, const void *rhs);
+UTEST_WEAK int utest_test_state_cmp(const void *lhs, const void *rhs) {
+  const struct utest_test_state_s *const lhs_test =
+      UTEST_PTR_CAST(const struct utest_test_state_s *, lhs);
+  const struct utest_test_state_s *const rhs_test =
+      UTEST_PTR_CAST(const struct utest_test_state_s *, rhs);
+  int result = 0;
+
+  if (lhs_test->file != rhs_test->file) {
+    result = strcmp(lhs_test->file, rhs_test->file);
+    if (0 != result) {
+      return result;
+    }
+  }
+
+  if (lhs_test->line < rhs_test->line) {
+    return -1;
+  }
+
+  if (lhs_test->line > rhs_test->line) {
+    return 1;
+  }
+
+  if (lhs_test->index < rhs_test->index) {
+    return -1;
+  }
+
+  if (lhs_test->index > rhs_test->index) {
+    return 1;
+  }
+
+  if (lhs_test->name != rhs_test->name) {
+    result = strcmp(lhs_test->name, rhs_test->name);
+    if (0 != result) {
+      return result;
+    }
+  }
+
+  return 0;
+}
+
+static UTEST_INLINE void utest_sort_tests(void) {
+  if (utest_state.tests && (utest_state.tests_length > 1)) {
+    qsort(UTEST_PTR_CAST(void *, utest_state.tests), utest_state.tests_length,
+          sizeof(utest_state.tests[0]), utest_test_state_cmp);
+  }
+}
+
 static UTEST_INLINE FILE *utest_fopen(const char *filename, const char *mode) {
 #ifdef _MSC_VER
   FILE *file;
@@ -1532,6 +1591,7 @@ int utest_main(int argc, const char *const argv[]) {
                UTEST_STRNCMP(argv[index], output_str, strlen(output_str))) {
       utest_state.output = utest_fopen(argv[index] + strlen(output_str), "w+");
     } else if (0 == UTEST_STRNCMP(argv[index], list_str, strlen(list_str))) {
+      utest_sort_tests();
       for (index = 0; index < utest_state.tests_length; index++) {
         UTEST_PRINTF("%s\n", utest_state.tests[index].name);
       }
@@ -1560,6 +1620,8 @@ int utest_main(int argc, const char *const argv[]) {
       random_order = 1;
     }
   }
+
+  utest_sort_tests();
 
   if (random_order) {
     // Use Fisher-Yates with the Durstenfield's version to randomly re-order the
