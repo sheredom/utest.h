@@ -92,8 +92,16 @@ function(utest_set_cxx_flags FILE STANDARD)
     set_source_files_properties(${FILE} PROPERTIES
       COMPILE_FLAGS "${UTEST_CXX_WARNINGS} ${STANDARD} ${EXTRA_FLAGS}")
   else()
+    # MSVC and clang-cl reject GCC/Clang-style -W/-f extras.
+    # Keep only MSVC-style per-file extras (currently /EHs-c-).
+    set(MSVC_EXTRA_FLAGS)
+    foreach(EXTRA_FLAG ${EXTRA_FLAGS})
+      if(EXTRA_FLAG MATCHES "^/")
+        list(APPEND MSVC_EXTRA_FLAGS "${EXTRA_FLAG}")
+      endif()
+    endforeach()
     set_source_files_properties(${FILE} PROPERTIES
-      COMPILE_FLAGS "${UTEST_CXX_WARNINGS} ${EXTRA_FLAGS}")
+      COMPILE_FLAGS "${UTEST_CXX_WARNINGS} ${MSVC_EXTRA_FLAGS}")
   endif()
 endfunction()
 
