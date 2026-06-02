@@ -42,7 +42,7 @@ UTEST(utest_cmdline, filter_with_list) {
   const char *command[3] = {"utest_test", "--list-tests", 0};
   int return_code;
   FILE *stdout_file;
-  size_t index, kndex;
+  size_t kndex;
   char *hits;
 
 // 64k should be enough for anyone
@@ -58,10 +58,7 @@ UTEST(utest_cmdline, filter_with_list) {
 
   stdout_file = subprocess_stdout(&process);
 
-  for (index = 0; index < utest_state.tests_length; index++) {
-    if (buffer != fgets(buffer, MAX_CHARS, stdout_file)) {
-      break;
-    }
+  while (buffer == fgets(buffer, MAX_CHARS, stdout_file)) {
 
 #if defined(__clang__)
 #if __has_warning("-Wdisabled-macro-expansion")
