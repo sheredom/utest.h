@@ -37,6 +37,70 @@
 
 // TODO: Broken under MINGW for some reason.
 #if !(defined(__MINGW32__) || defined(__MINGW64__))
+
+// 64k should be enough for anyone
+#define MAX_CHARS (64 * 1024)
+
+static size_t utest_cmdline_not_found(void) { return UTEST_CAST(size_t, -1); }
+
+static void utest_cmdline_strip_newline(char *buffer) {
+  size_t index;
+
+  for (index = 0; '\0' != buffer[index]; index++) {
+    if ((buffer[index] == '\r') || (buffer[index] == '\n')) {
+      buffer[index] = '\0';
+      break;
+    }
+  }
+}
+
+static int utest_cmdline_list_positions(const char *const *names,
+                                        size_t names_length,
+                                        size_t *positions) {
+  struct subprocess_s process;
+  const char *command[3] = {"utest_test", "--list-tests", 0};
+  int return_code;
+  FILE *stdout_file;
+  size_t index;
+  size_t line;
+  char buffer[MAX_CHARS] = {0};
+
+  for (index = 0; index < names_length; index++) {
+    positions[index] = utest_cmdline_not_found();
+  }
+
+  if (0 != subprocess_create(command, subprocess_option_combined_stdout_stderr,
+                             &process)) {
+    return 1;
+  }
+
+  stdout_file = subprocess_stdout(&process);
+  line = 0;
+
+  while (buffer == fgets(buffer, MAX_CHARS, stdout_file)) {
+    utest_cmdline_strip_newline(buffer);
+
+    for (index = 0; index < names_length; index++) {
+      if (0 == strcmp(buffer, names[index])) {
+        positions[index] = line;
+      }
+    }
+
+    line++;
+  }
+
+  if (0 != subprocess_join(&process, &return_code)) {
+    (void)subprocess_destroy(&process);
+    return 1;
+  }
+
+  if (0 != subprocess_destroy(&process)) {
+    return 1;
+  }
+
+  return return_code;
+}
+
 UTEST(utest_cmdline, filter_with_list) {
   struct subprocess_s process;
   const char *command[3] = {"utest_test", "--list-tests", 0};
@@ -45,8 +109,6 @@ UTEST(utest_cmdline, filter_with_list) {
   size_t kndex;
   char *hits;
 
-// 64k should be enough for anyone
-#define MAX_CHARS (64 * 1024)
   char buffer[MAX_CHARS] = {0};
 
   hits = (char *)malloc(utest_state.tests_length);
@@ -68,12 +130,7 @@ UTEST(utest_cmdline, filter_with_list) {
 #endif
 
     // First wipe out the newlines from the fgets.
-    for (kndex = 0;; kndex++) {
-      if ((buffer[kndex] == '\r') || (buffer[kndex] == '\n')) {
-        buffer[kndex] = '\0';
-        break;
-      }
-    }
+    utest_cmdline_strip_newline(buffer);
 
     // Record the hit for listed test.
     for (kndex = 0; kndex < utest_state.tests_length; kndex++) {
@@ -102,6 +159,46 @@ UTEST(utest_cmdline, filter_with_list) {
   }
 
   free(hits);
+}
+
+UTEST(utest_cmdline, list_tests_same_line_sorted_by_name) {
+  const char *const names[2] = {"utest_order_same_line.a",
+                                "utest_order_same_line.b"};
+  size_t positions[2];
+
+  ASSERT_EQ(0, utest_cmdline_list_positions(
+                   names, sizeof names / sizeof names[0], positions));
+  ASSERT_NE(utest_cmdline_not_found(), positions[0]);
+  ASSERT_NE(utest_cmdline_not_found(), positions[1]);
+  ASSERT_LT(positions[0], positions[1]);
+}
+
+UTEST(utest_cmdline, list_tests_same_line_sorted_by_index) {
+  const char *const names[12] = {"utest_order_indexed_fixture.many/0",
+                                 "utest_order_indexed_fixture.many/1",
+                                 "utest_order_indexed_fixture.many/2",
+                                 "utest_order_indexed_fixture.many/3",
+                                 "utest_order_indexed_fixture.many/4",
+                                 "utest_order_indexed_fixture.many/5",
+                                 "utest_order_indexed_fixture.many/6",
+                                 "utest_order_indexed_fixture.many/7",
+                                 "utest_order_indexed_fixture.many/8",
+                                 "utest_order_indexed_fixture.many/9",
+                                 "utest_order_indexed_fixture.many/10",
+                                 "utest_order_indexed_fixture.many/11"};
+  size_t positions[12];
+  size_t index;
+
+  ASSERT_EQ(0, utest_cmdline_list_positions(
+                   names, sizeof names / sizeof names[0], positions));
+
+  for (index = 0; index < sizeof positions / sizeof positions[0]; index++) {
+    ASSERT_NE(utest_cmdline_not_found(), positions[index]);
+  }
+
+  for (index = 1; index < sizeof positions / sizeof positions[0]; index++) {
+    ASSERT_LT(positions[index - 1], positions[index]);
+  }
 }
 #endif
 
