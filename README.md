@@ -1,7 +1,6 @@
 # 🧪 utest.h
 
 [![Actions Status](https://github.com/sheredom/utest.h/workflows/CMake/badge.svg)](https://github.com/sheredom/utest.h/actions)
-[![Build status](https://ci.appveyor.com/api/projects/status/i2u3a0pw4pxprrcv?svg=true)](https://ci.appveyor.com/project/sheredom/utest-h)
 [![Sponsor](https://img.shields.io/badge/💜-sponsor-blueviolet)](https://github.com/sponsors/sheredom)
 
 A simple one header solution to unit testing for C/C++.
@@ -703,6 +702,12 @@ test.cpp:42: Failure
 
 The library supports asserting on any builtin integer, floating-point, or
 pointer type.
+
+## AI Usage
+
+AI tool use is explicitly permitted in commits to this repository. There is a
+tagged release [pre-ai](https://github.com/sheredom/utest.h/releases/tag/pre-ai)
+that denotes the last release where AI tooling was not used.
 
 ## License
 
