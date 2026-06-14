@@ -532,7 +532,13 @@ template <> struct utest_type_deducer<unsigned long long, false> {
 };
 
 template <> struct utest_type_deducer<bool, false> {
-  static void _(const bool i) { UTEST_PRINTF(i ? "true" : "false"); }
+  static void _(const bool i) {
+    if (i) {
+      UTEST_PRINTF("true");
+    } else {
+      UTEST_PRINTF("false");
+    }
+  }
 };
 
 template <typename T> struct utest_type_deducer<const T *, false> {
@@ -687,7 +693,34 @@ utest_type_printer(long long unsigned int i) {
 #define utest_type_printer(...) UTEST_PRINTF("undef")
 #endif
 
+#if defined(__clang__)
+#if __has_warning("-Wunsafe-buffer-usage-in-libc-call")
 #if defined(_MSC_VER)
+#define UTEST_SURPRESS_WARNING_BEGIN                                           \
+  __pragma(warning(push)) __pragma(warning(disable : 4127))                    \
+      __pragma(warning(disable : 4571)) __pragma(warning(disable : 4130))      \
+          _Pragma("clang diagnostic push")                                     \
+              _Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage-in-libc-call\"")
+#define UTEST_SURPRESS_WARNING_END                                             \
+  _Pragma("clang diagnostic pop") __pragma(warning(pop))
+#else
+#define UTEST_SURPRESS_WARNING_BEGIN                                           \
+  _Pragma("clang diagnostic push")                                             \
+      _Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage-in-libc-call\"")
+#define UTEST_SURPRESS_WARNING_END _Pragma("clang diagnostic pop")
+#endif
+#else
+#if defined(_MSC_VER)
+#define UTEST_SURPRESS_WARNING_BEGIN                                           \
+  __pragma(warning(push)) __pragma(warning(disable : 4127))                    \
+      __pragma(warning(disable : 4571)) __pragma(warning(disable : 4130))
+#define UTEST_SURPRESS_WARNING_END __pragma(warning(pop))
+#else
+#define UTEST_SURPRESS_WARNING_BEGIN
+#define UTEST_SURPRESS_WARNING_END
+#endif
+#endif
+#elif defined(_MSC_VER)
 #define UTEST_SURPRESS_WARNING_BEGIN                                           \
   __pragma(warning(push)) __pragma(warning(disable : 4127))                    \
       __pragma(warning(disable : 4571)) __pragma(warning(disable : 4130))
@@ -1181,7 +1214,13 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
 #endif
 
 #if defined(__clang__)
-#if __has_warning("-Wunsafe-buffer-usage")
+#if __has_warning("-Wunsafe-buffer-usage-in-libc-call")
+#define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
+  _Pragma("clang diagnostic push")                                             \
+      _Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage\"")           \
+          _Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage-in-libc-call\"")
+#define UTEST_SURPRESS_WARNINGS_END _Pragma("clang diagnostic pop")
+#elif __has_warning("-Wunsafe-buffer-usage")
 #define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
   _Pragma("clang diagnostic push")                                             \
       _Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage\"")
@@ -1387,6 +1426,9 @@ int utest_isnan(double d) {
 #if __has_warning("-Wunsafe-buffer-usage")
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#if __has_warning("-Wunsafe-buffer-usage-in-libc-call")
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage-in-libc-call"
+#endif
 #endif
 #endif
 
