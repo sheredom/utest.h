@@ -982,7 +982,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
 #define EXPECT_MEMEQ(x, y, s) UTEST_MEMEQ(x, y, s, "", 0)
 #define EXPECT_MEMEQ_MSG(x, y, s, msg) UTEST_MEMEQ(x, y, s, msg, 0)
 #define ASSERT_MEMEQ(x, y, s) UTEST_MEMEQ(x, y, s, "", 1)
-#define ASSERT_MEMEQ_MSG(x, y, s, msg) UTEST_STREQ(x, y, s, msg, 1)
+#define ASSERT_MEMEQ_MSG(x, y, s, msg) UTEST_MEMEQ(x, y, s, msg, 1)
 
 #define UTEST_STREQ(x, y, msg, is_assert)                                      \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
