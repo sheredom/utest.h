@@ -34,6 +34,8 @@
 #define SHEREDOM_UTEST_H_INCLUDED
 
 #ifdef _MSC_VER
+#pragma warning(push)
+
 /*
    Disable warning about not inlining 'inline' functions.
 */
@@ -94,6 +96,7 @@ typedef uint32_t utest_uint32_t;
 #endif
 
 #include <stddef.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -302,8 +305,8 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
     uninteresting, but for some reason MSVC's behaviour is to warn about
     including this system header. That *is* interesting
 */
-#pragma warning(disable : 4820)
 #pragma warning(push, 1)
+#pragma warning(disable : 4820)
 #include <io.h>
 #pragma warning(pop)
 #define UTEST_COLOUR_OUTPUT() (_isatty(_fileno(stdout)))
@@ -411,12 +414,21 @@ UTEST_EXTERN struct utest_state_s utest_state;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wvariadic-macros"
 #pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
+#if __has_warning("-Wformat-nonliteral")
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
 #endif
+#endif
+#if defined(_MSC_VER)
+UTEST_C_FUNC __declspec(noinline) int utest_printf_msvc(const char *format,
+                                                       ...);
+#define UTEST_PRINTF(...) ((void)utest_printf_msvc(__VA_ARGS__))
+#else
 #define UTEST_PRINTF(...)                                                      \
   if (utest_state.output) {                                                    \
     fprintf(utest_state.output, __VA_ARGS__);                                  \
   }                                                                            \
   printf(__VA_ARGS__)
+#endif
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
@@ -1215,6 +1227,15 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   UTEST_EXCEPTION_WITH_MESSAGE(x, exception_type, exception_message, msg, 1)
 #endif
 
+#if defined(_MSC_VER)
+#define UTEST_SURPRESS_MSVC_WARNINGS_BEGIN                                     \
+  __pragma(warning(push)) __pragma(warning(disable : 4711))
+#define UTEST_SURPRESS_MSVC_WARNINGS_END __pragma(warning(pop))
+#else
+#define UTEST_SURPRESS_MSVC_WARNINGS_BEGIN
+#define UTEST_SURPRESS_MSVC_WARNINGS_END
+#endif
+
 #if defined(__clang__)
 #if __has_warning("-Wunsafe-buffer-usage-in-libc-call")
 #define UTEST_SURPRESS_UNSAFE_BUFFER_USAGE                                     \
@@ -1234,20 +1255,25 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
 #define UTEST_SURPRESS_GLOBAL_CONSTRUCTORS
 #endif
 
-#define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
+#define UTEST_SURPRESS_COMPILER_WARNINGS_BEGIN                                 \
   _Pragma("clang diagnostic push")                                             \
       UTEST_SURPRESS_UNSAFE_BUFFER_USAGE                                       \
           UTEST_SURPRESS_GLOBAL_CONSTRUCTORS
-#define UTEST_SURPRESS_WARNINGS_END _Pragma("clang diagnostic pop")
+#define UTEST_SURPRESS_COMPILER_WARNINGS_END _Pragma("clang diagnostic pop")
 #elif defined(__GNUC__) && __GNUC__ >= 8 && defined(__cplusplus)
-#define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
+#define UTEST_SURPRESS_COMPILER_WARNINGS_BEGIN                                 \
   _Pragma("GCC diagnostic push")                                               \
       _Pragma("GCC diagnostic ignored \"-Wclass-memaccess\"")
-#define UTEST_SURPRESS_WARNINGS_END _Pragma("GCC diagnostic pop")
+#define UTEST_SURPRESS_COMPILER_WARNINGS_END _Pragma("GCC diagnostic pop")
 #else
-#define UTEST_SURPRESS_WARNINGS_BEGIN
-#define UTEST_SURPRESS_WARNINGS_END
+#define UTEST_SURPRESS_COMPILER_WARNINGS_BEGIN
+#define UTEST_SURPRESS_COMPILER_WARNINGS_END
 #endif
+
+#define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
+  UTEST_SURPRESS_MSVC_WARNINGS_BEGIN UTEST_SURPRESS_COMPILER_WARNINGS_BEGIN
+#define UTEST_SURPRESS_WARNINGS_END                                            \
+  UTEST_SURPRESS_COMPILER_WARNINGS_END UTEST_SURPRESS_MSVC_WARNINGS_END
 
 #define UTEST(SET, NAME)                                                       \
   UTEST_SURPRESS_WARNINGS_BEGIN                                                \
@@ -1861,7 +1887,42 @@ cleanup:
    data without having to use the UTEST_MAIN macro, thus allowing them to write
    their own main() function.
 */
+#if defined(_MSC_VER)
+#if defined(__clang__)
+#define UTEST_DEFINE_PRINTF_CLANG_BEGIN                                        \
+  _Pragma("clang diagnostic push")                                             \
+      _Pragma("clang diagnostic ignored \"-Wformat-nonliteral\"")
+#define UTEST_DEFINE_PRINTF_CLANG_END _Pragma("clang diagnostic pop")
+#else
+#define UTEST_DEFINE_PRINTF_CLANG_BEGIN
+#define UTEST_DEFINE_PRINTF_CLANG_END
+#endif
+
+#define UTEST_DEFINE_PRINTF_HELPER()                                           \
+  __pragma(warning(push)) __pragma(warning(disable : 4710))                    \
+      UTEST_DEFINE_PRINTF_CLANG_BEGIN UTEST_C_FUNC __declspec(noinline) int    \
+      utest_printf_msvc(const char *format, ...) {                             \
+    int result;                                                                \
+    va_list args;                                                              \
+    if (utest_state.output) {                                                  \
+      va_start(args, format);                                                  \
+      (void)vfprintf(utest_state.output, format, args);                        \
+      va_end(args);                                                            \
+    }                                                                          \
+    va_start(args, format);                                                    \
+    result = vfprintf(stdout, format, args);                                   \
+    va_end(args);                                                              \
+    return result;                                                             \
+  }                                                                            \
+  UTEST_DEFINE_PRINTF_CLANG_END __pragma(warning(pop))
+
+#define UTEST_STATE()                                                          \
+  struct utest_state_s utest_state = {0, 0, 0};                                \
+  UTEST_DEFINE_PRINTF_HELPER()                                                 \
+  extern int utest_state_requires_trailing_semicolon
+#else
 #define UTEST_STATE() struct utest_state_s utest_state = {0, 0, 0}
+#endif
 
 /*
    define a main() function to call into utest.h and start executing tests! A
@@ -1875,5 +1936,9 @@ cleanup:
   int main(int argc, const char *const argv[]) {                               \
     return utest_main(argc, argv);                                             \
   }
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 #endif /* SHEREDOM_UTEST_H_INCLUDED */

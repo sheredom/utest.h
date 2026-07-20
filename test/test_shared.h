@@ -443,11 +443,18 @@ UTEST_TEST(Near) {
 #if defined(MEMORY_SANITIZER)
 __attribute__((no_sanitize("memory")))
 #endif
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4710)
+#endif
 static int UTEST_TEST_FIXTURE(foo)(int bar) {
   if (bar == 1)
     throw std::range_error("bad bar");
   return bar + 1;
 }
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 UTEST_TEST(Exception) {
   EXPECT_EXCEPTION(UTEST_TEST_FIXTURE(foo)(1), std::range_error);

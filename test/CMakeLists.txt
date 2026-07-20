@@ -30,6 +30,46 @@ include(CTest)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 
+# Verify that including utest.h restores the caller's MSVC warning state.
+# The undefined-macro warning is enabled as an error before the include and
+# deliberately triggered afterwards. The probe must therefore fail to compile;
+# if it succeeds, the header leaked its internal suppression into the source.
+if("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
+  set(UTEST_WARNING_STATE_PRAGMA "#pragma warning(error : 4668)")
+  set(UTEST_WARNING_STATE_EXPECTED_ERROR "C4668")
+elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang" AND
+       CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+  set(UTEST_WARNING_STATE_PRAGMA
+      "#pragma clang diagnostic error \"-Wundef\"")
+  set(UTEST_WARNING_STATE_EXPECTED_ERROR "Wundef")
+endif()
+
+if(DEFINED UTEST_WARNING_STATE_PRAGMA)
+  file(TO_CMAKE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../utest.h"
+       UTEST_HEADER_PATH)
+  set(UTEST_WARNING_STATE_PROBE
+      "${CMAKE_CURRENT_BINARY_DIR}/warning_state_probe.c")
+  file(WRITE "${UTEST_WARNING_STATE_PROBE}"
+    "${UTEST_WARNING_STATE_PRAGMA}\n"
+    "#include \"${UTEST_HEADER_PATH}\"\n"
+    "#if UTEST_UNDEFINED_WARNING_STATE_PROBE\n"
+    "#endif\n"
+    "int main(void) { return 0; }\n")
+  try_compile(UTEST_WARNING_STATE_PROBE_COMPILES
+    "${CMAKE_CURRENT_BINARY_DIR}/warning_state_probe"
+    SOURCES "${UTEST_WARNING_STATE_PROBE}"
+    CMAKE_FLAGS "-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY"
+    OUTPUT_VARIABLE UTEST_WARNING_STATE_PROBE_OUTPUT)
+  if(UTEST_WARNING_STATE_PROBE_COMPILES)
+    message(FATAL_ERROR "utest.h leaked its MSVC warning state")
+  elseif(NOT UTEST_WARNING_STATE_PROBE_OUTPUT MATCHES
+             "${UTEST_WARNING_STATE_EXPECTED_ERROR}")
+    message(FATAL_ERROR
+      "MSVC warning-state probe failed unexpectedly:\n"
+      "${UTEST_WARNING_STATE_PROBE_OUTPUT}")
+  endif()
+endif()
+
 # Base warning flags and whether -std= flags are supported.
 # MSVC and clang-cl use /std: and don't accept -std=, so we skip
 # the standard flag for those compilers.
