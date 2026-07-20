@@ -123,6 +123,102 @@ UTEST_TEST(EXPECT_STRNEQ) { EXPECT_STRNEQ("foo", "foobar", strlen("foo")); }
 
 UTEST_TEST(EXPECT_STRNNE) { EXPECT_STRNNE("foo", "barfoo", strlen("foo")); }
 
+UTEST_TEST(ASSERT_TRUE_MSG) { ASSERT_TRUE_MSG(1, "custom message"); }
+
+UTEST_TEST(ASSERT_FALSE_MSG) { ASSERT_FALSE_MSG(0, "custom message"); }
+
+UTEST_TEST(ASSERT_EQ_MSG) { ASSERT_EQ_MSG(1, 1, "custom message"); }
+
+UTEST_TEST(ASSERT_NE_MSG) { ASSERT_NE_MSG(1, 2, "custom message"); }
+
+UTEST_TEST(ASSERT_LT_MSG) { ASSERT_LT_MSG(1, 2, "custom message"); }
+
+UTEST_TEST(ASSERT_LE_MSG) {
+  ASSERT_LE_MSG(1, 1, "custom message");
+  ASSERT_LE_MSG(1, 2, "custom message");
+}
+
+UTEST_TEST(ASSERT_GT_MSG) { ASSERT_GT_MSG(2, 1, "custom message"); }
+
+UTEST_TEST(ASSERT_GE_MSG) {
+  ASSERT_GE_MSG(1, 1, "custom message");
+  ASSERT_GE_MSG(2, 1, "custom message");
+}
+
+UTEST_TEST(ASSERT_MEMEQ_MSG) {
+  const char a1[4] = {1, 2, 3, 4};
+  const char a2[4] = {1, 2, 3, 4};
+  ASSERT_MEMEQ_MSG(a1, a2, 4, "custom message");
+}
+
+UTEST_TEST(ASSERT_STREQ_MSG) {
+  ASSERT_STREQ_MSG("foo", "foo", "custom message");
+}
+
+UTEST_TEST(ASSERT_STRNE_MSG) {
+  ASSERT_STRNE_MSG("foo", "bar", "custom message");
+}
+
+UTEST_TEST(ASSERT_STRNEQ_MSG) {
+  ASSERT_STRNEQ_MSG("foo", "foobar", strlen("foo"), "custom message");
+}
+
+UTEST_TEST(ASSERT_STRNNE_MSG) {
+  ASSERT_STRNNE_MSG("foo", "barfoo", strlen("foo"), "custom message");
+}
+
+UTEST_TEST(ASSERT_NEAR_MSG) {
+  ASSERT_NEAR_MSG(42.0f, 42.01f, 0.01f, "custom message");
+}
+
+UTEST_TEST(EXPECT_TRUE_MSG) { EXPECT_TRUE_MSG(1, "custom message"); }
+
+UTEST_TEST(EXPECT_FALSE_MSG) { EXPECT_FALSE_MSG(0, "custom message"); }
+
+UTEST_TEST(EXPECT_EQ_MSG) { EXPECT_EQ_MSG(1, 1, "custom message"); }
+
+UTEST_TEST(EXPECT_NE_MSG) { EXPECT_NE_MSG(1, 2, "custom message"); }
+
+UTEST_TEST(EXPECT_LT_MSG) { EXPECT_LT_MSG(1, 2, "custom message"); }
+
+UTEST_TEST(EXPECT_LE_MSG) {
+  EXPECT_LE_MSG(1, 1, "custom message");
+  EXPECT_LE_MSG(1, 2, "custom message");
+}
+
+UTEST_TEST(EXPECT_GT_MSG) { EXPECT_GT_MSG(2, 1, "custom message"); }
+
+UTEST_TEST(EXPECT_GE_MSG) {
+  EXPECT_GE_MSG(1, 1, "custom message");
+  EXPECT_GE_MSG(2, 1, "custom message");
+}
+
+UTEST_TEST(EXPECT_MEMEQ_MSG) {
+  const char a1[4] = {1, 2, 3, 4};
+  const char a2[4] = {1, 2, 3, 4};
+  EXPECT_MEMEQ_MSG(a1, a2, 4, "custom message");
+}
+
+UTEST_TEST(EXPECT_STREQ_MSG) {
+  EXPECT_STREQ_MSG("foo", "foo", "custom message");
+}
+
+UTEST_TEST(EXPECT_STRNE_MSG) {
+  EXPECT_STRNE_MSG("foo", "bar", "custom message");
+}
+
+UTEST_TEST(EXPECT_STRNEQ_MSG) {
+  EXPECT_STRNEQ_MSG("foo", "foobar", strlen("foo"), "custom message");
+}
+
+UTEST_TEST(EXPECT_STRNNE_MSG) {
+  EXPECT_STRNNE_MSG("foo", "barfoo", strlen("foo"), "custom message");
+}
+
+UTEST_TEST(EXPECT_NEAR_MSG) {
+  EXPECT_NEAR_MSG(42.0f, 42.01f, 0.01f, "custom message");
+}
+
 UTEST_TEST(no_double_eval) {
   int i = 0;
   ASSERT_EQ(i++, 0);
@@ -358,12 +454,34 @@ UTEST_TEST(Exception) {
   ASSERT_EXCEPTION(UTEST_TEST_FIXTURE(foo)(1), std::range_error);
 }
 
+UTEST_TEST(EXPECT_EXCEPTION_MSG) {
+  EXPECT_EXCEPTION_MSG(UTEST_TEST_FIXTURE(foo)(1), std::range_error,
+                       "custom message");
+}
+
+UTEST_TEST(ASSERT_EXCEPTION_MSG) {
+  ASSERT_EXCEPTION_MSG(UTEST_TEST_FIXTURE(foo)(1), std::range_error,
+                       "custom message");
+}
+
 #if !defined(MEMORY_SANITIZER)
 UTEST_TEST(ExceptionWithMessage) {
   EXPECT_EXCEPTION_WITH_MESSAGE(UTEST_TEST_FIXTURE(foo)(1), std::range_error,
                                 "bad bar");
   ASSERT_EXCEPTION_WITH_MESSAGE(UTEST_TEST_FIXTURE(foo)(1), std::range_error,
                                 "bad bar");
+}
+
+UTEST_TEST(EXPECT_EXCEPTION_WITH_MESSAGE_MSG) {
+  EXPECT_EXCEPTION_WITH_MESSAGE_MSG(UTEST_TEST_FIXTURE(foo)(1),
+                                    std::range_error, "bad bar",
+                                    "custom message");
+}
+
+UTEST_TEST(ASSERT_EXCEPTION_WITH_MESSAGE_MSG) {
+  ASSERT_EXCEPTION_WITH_MESSAGE_MSG(UTEST_TEST_FIXTURE(foo)(1),
+                                    std::range_error, "bad bar",
+                                    "custom message");
 }
 #endif
 #endif
