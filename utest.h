@@ -1217,20 +1217,28 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
 
 #if defined(__clang__)
 #if __has_warning("-Wunsafe-buffer-usage-in-libc-call")
-#define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
-  _Pragma("clang diagnostic push")                                             \
-      _Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage\"")           \
-          _Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage-in-libc-call\"")
-#define UTEST_SURPRESS_WARNINGS_END _Pragma("clang diagnostic pop")
+#define UTEST_SURPRESS_UNSAFE_BUFFER_USAGE                                     \
+  _Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage\"")                \
+      _Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage-in-libc-call\"")
 #elif __has_warning("-Wunsafe-buffer-usage")
+#define UTEST_SURPRESS_UNSAFE_BUFFER_USAGE                                     \
+  _Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage\"")
+#else
+#define UTEST_SURPRESS_UNSAFE_BUFFER_USAGE
+#endif
+
+#if __has_warning("-Wglobal-constructors")
+#define UTEST_SURPRESS_GLOBAL_CONSTRUCTORS                                     \
+  _Pragma("clang diagnostic ignored \"-Wglobal-constructors\"")
+#else
+#define UTEST_SURPRESS_GLOBAL_CONSTRUCTORS
+#endif
+
 #define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
   _Pragma("clang diagnostic push")                                             \
-      _Pragma("clang diagnostic ignored \"-Wunsafe-buffer-usage\"")
+      UTEST_SURPRESS_UNSAFE_BUFFER_USAGE                                       \
+          UTEST_SURPRESS_GLOBAL_CONSTRUCTORS
 #define UTEST_SURPRESS_WARNINGS_END _Pragma("clang diagnostic pop")
-#else
-#define UTEST_SURPRESS_WARNINGS_BEGIN
-#define UTEST_SURPRESS_WARNINGS_END
-#endif
 #elif defined(__GNUC__) && __GNUC__ >= 8 && defined(__cplusplus)
 #define UTEST_SURPRESS_WARNINGS_BEGIN                                          \
   _Pragma("GCC diagnostic push")                                               \
