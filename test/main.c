@@ -33,13 +33,25 @@
 #endif
 #endif
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4710)
+#endif
 #include "subprocess.h"
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 // TODO: Broken under MINGW for some reason.
 #if !(defined(__MINGW32__) || defined(__MINGW64__))
 
 // 64k should be enough for anyone
 #define MAX_CHARS (64 * 1024)
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4711)
+#endif
 
 static size_t utest_cmdline_not_found(void) { return UTEST_CAST(size_t, -1); }
 
@@ -100,6 +112,10 @@ static int utest_cmdline_list_positions(const char *const *names,
 
   return return_code;
 }
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 UTEST(utest_cmdline, filter_with_list) {
   struct subprocess_s process;
