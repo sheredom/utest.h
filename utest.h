@@ -198,6 +198,9 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 #define UTEST_USE_CLOCKGETTIME
 #endif
 
+#elif defined(_AIX)
+#include <time.h>
+
 #elif defined(__APPLE__)
 #include <time.h>
 #endif
@@ -394,6 +397,10 @@ static UTEST_INLINE utest_int64_t utest_ns(void) {
   syscall(SYS_clock_gettime, cid, &ts);
 #endif
 #endif
+  return UTEST_CAST(utest_int64_t, ts.tv_sec) * 1000 * 1000 * 1000 + ts.tv_nsec;
+#elif defined(_AIX)
+  struct timespec ts = {0, 0};
+  clock_gettime(CLOCK_REALTIME, &ts);
   return UTEST_CAST(utest_int64_t, ts.tv_sec) * 1000 * 1000 * 1000 + ts.tv_nsec;
 #elif __EMSCRIPTEN__
   return emscripten_performance_now() * 1000000.0;
