@@ -1444,7 +1444,7 @@ double utest_fabs(double d) {
     utest_uint64_t u;
   } both;
   both.d = d;
-  both.u &= ~((utest_uint64_t)1 << 63);
+  both.u &= ~(UTEST_CAST(utest_uint64_t, 1) << 63);
   return both.d;
 }
 
@@ -1457,8 +1457,8 @@ int utest_isnan(double d) {
     utest_uint64_t u;
   } both;
   both.d = d;
-  both.u &= ~((utest_uint64_t)1 << 63);
-  return both.u > ((utest_uint64_t)0x7ff00000 << 32);
+  both.u &= ~(UTEST_CAST(utest_uint64_t, 1) << 63);
+  return both.u > (UTEST_CAST(utest_uint64_t, 0x7ff00000) << 32);
 }
 
 #ifdef __clang__
