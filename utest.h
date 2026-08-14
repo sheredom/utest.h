@@ -1482,58 +1482,34 @@ UTEST_WEAK int utest_should_filter_test(const char *filter,
     const char *filter_cur = filter;
     const char *testcase_cur = testcase;
     const char *filter_wildcard = UTEST_NULL;
+    const char *testcase_resume = UTEST_NULL;
 
-    while (('\0' != *filter_cur) && ('\0' != *testcase_cur)) {
-      if ('*' == *filter_cur) {
-        /* store the position of the wildcard */
-        filter_wildcard = filter_cur;
-
-        /* skip the wildcard character */
+    while ('\0' != *testcase_cur) {
+      if (('*' != *filter_cur) && (*filter_cur == *testcase_cur)) {
+        /* literal match, consume a character from each */
         filter_cur++;
-
-        while (('\0' != *filter_cur) && ('\0' != *testcase_cur)) {
-          if ('*' == *filter_cur) {
-            /*
-               we found another wildcard (filter is something like *foo*) so we
-               exit the current loop, and return to the parent loop to handle
-               the wildcard case
-            */
-            break;
-          } else if (*filter_cur != *testcase_cur) {
-            /* otherwise our filter didn't match, so reset it */
-            filter_cur = filter_wildcard;
-          }
-
-          /* move testcase along */
-          testcase_cur++;
-
-          /* move filter along */
-          filter_cur++;
-        }
-
-        if (('\0' == *filter_cur) && ('\0' == *testcase_cur)) {
-          return 0;
-        }
-
-        /* if the testcase has been exhausted, we don't have a match! */
-        if ('\0' == *testcase_cur) {
-          return 1;
-        }
+        testcase_cur++;
+      } else if ('*' == *filter_cur) {
+        /* remember where to resume should the rest fail to match */
+        filter_wildcard = filter_cur++;
+        testcase_resume = testcase_cur;
+      } else if (UTEST_NULL != filter_wildcard) {
+        /* let the last wildcard swallow one more character and retry */
+        filter_cur = filter_wildcard + 1;
+        testcase_resume++;
+        testcase_cur = testcase_resume;
       } else {
-        if (*testcase_cur != *filter_cur) {
-          /* test case doesn't match filter */
-          return 1;
-        } else {
-          /* move our filter and testcase forward */
-          testcase_cur++;
-          filter_cur++;
-        }
+        /* test case doesn't match filter */
+        return 1;
       }
     }
 
-    if (('\0' != *filter_cur) ||
-        (('\0' != *testcase_cur) &&
-         ((filter == filter_cur) || ('*' != filter_cur[-1])))) {
+    /* a wildcard may stand for nothing, so any left over still match */
+    while ('*' == *filter_cur) {
+      filter_cur++;
+    }
+
+    if ('\0' != *filter_cur) {
       /* we have a mismatch! */
       return 1;
     }
