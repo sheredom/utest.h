@@ -218,4 +218,50 @@ UTEST(utest_cmdline, list_tests_same_line_sorted_by_index) {
 }
 #endif
 
+/* utest_should_filter_test returns 0 to run a test and 1 to skip it. These
+   call it directly rather than spawning a binary, so they also run on MinGW. */
+
+UTEST(utest_filter, exact_name) {
+  EXPECT_EQ(0, utest_should_filter_test("foo.bar", "foo.bar"));
+  EXPECT_EQ(1, utest_should_filter_test("foo.baz", "foo.bar"));
+}
+
+UTEST(utest_filter, no_filter_runs_everything) {
+  EXPECT_EQ(0, utest_should_filter_test(UTEST_NULL, "foo.bar"));
+  EXPECT_EQ(0, utest_should_filter_test("*", "foo.bar"));
+}
+
+UTEST(utest_filter, leading_and_trailing_wildcards) {
+  EXPECT_EQ(0, utest_should_filter_test("foo.*", "foo.bar"));
+  EXPECT_EQ(0, utest_should_filter_test("*bar", "foo.bar"));
+  EXPECT_EQ(0, utest_should_filter_test("*.ba*", "foo.bar"));
+  EXPECT_EQ(1, utest_should_filter_test("*baz*", "foo.bar"));
+}
+
+/* A wildcard may stand for nothing, so a trailing one must still match when
+   the literal part reached the end of the name. */
+UTEST(utest_filter, trailing_wildcard_matches_empty_remainder) {
+  EXPECT_EQ(0, utest_should_filter_test("*bar*", "foo.bar"));
+  EXPECT_EQ(0, utest_should_filter_test("foo.bar*", "foo.bar"));
+  EXPECT_EQ(0, utest_should_filter_test("*foo.bar*", "foo.bar"));
+  EXPECT_EQ(0, utest_should_filter_test("*bar**", "foo.bar"));
+  EXPECT_EQ(0, utest_should_filter_test("*", ""));
+}
+
+/* The same shape, but the filter still has literal characters left over. */
+UTEST(utest_filter, literals_after_an_exhausted_name_do_not_match) {
+  EXPECT_EQ(1, utest_should_filter_test("*bar*baz", "foo.bar"));
+  EXPECT_EQ(1, utest_should_filter_test("foo.bar.", "foo.bar"));
+}
+
+/* A wildcard must be able to give characters back when the first place its
+   literal matched turns out to be the wrong one. */
+UTEST(utest_filter, wildcard_backtracks) {
+  EXPECT_EQ(0, utest_should_filter_test("*o.b*", "foo.bar"));
+  EXPECT_EQ(0, utest_should_filter_test("*a*a*", "banana"));
+  EXPECT_EQ(0, utest_should_filter_test("*ana*na", "banana"));
+  EXPECT_EQ(0, utest_should_filter_test("*oo*ar", "foo.bar"));
+  EXPECT_EQ(1, utest_should_filter_test("*oo*az", "foo.bar"));
+}
+
 UTEST_MAIN()
