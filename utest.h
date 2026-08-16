@@ -203,13 +203,40 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
 #endif
 
 #if defined(_MSC_VER) && (_MSC_VER < 1920)
-#define UTEST_PRId64 ".0f"
-#define UTEST_PRIu64 ".0f"
+#define UTEST_PRId64 "I64d"
+#define UTEST_PRIu64 "I64u"
+#define UTEST_INT64_ARG(x) (x)
+#define UTEST_UINT64_ARG(x) (x)
 #else
+/* NetBSD hides the PRI macros from C++ before C++11 unless this is defined. */
+#if defined(__cplusplus) && !defined(__STDC_FORMAT_MACROS)
+#define __STDC_FORMAT_MACROS 1
+#endif
 #include <inttypes.h>
+#include <limits.h>
 
+/* Where uint64_t is not unsigned long the PRI macros use the ll length
+   modifier, which C90 and C++98 do not have. Only those builds print through
+   double instead; every other target keeps using the macros unchanged.
+
+   _MSC_VER is listed explicitly because neither of the other tests recognises
+   it: Windows is LLP64, so unsigned long is 32 bits even on x64, and MSVC
+   reports __cplusplus as 199711L without /Zc:__cplusplus and defines no
+   __STDC_VERSION__ in its default C mode. Anything reaching here is 1920 or
+   newer and prints 64-bit integers fine. */
+#if defined(_MSC_VER) || (ULONG_MAX > 0xfffffffful) ||                         \
+    (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) ||            \
+    (defined(__cplusplus) && (__cplusplus >= 201103L))
+#define UTEST_PRId64 PRId64
+#define UTEST_PRIu64 PRIu64
+#define UTEST_INT64_ARG(x) (x)
+#define UTEST_UINT64_ARG(x) (x)
+#else
 #define UTEST_PRId64 ".0f"
 #define UTEST_PRIu64 ".0f"
+#define UTEST_INT64_ARG(x) UTEST_CAST(double, x)
+#define UTEST_UINT64_ARG(x) UTEST_CAST(double, x)
+#endif
 #endif
 
 #if defined(__cplusplus)
@@ -1414,7 +1441,7 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
         utest_state.tests[index].line = __LINE__;                              \
         iUp = UTEST_CAST(utest_uint64_t, i);                                   \
         UTEST_SNPRINTF(name, name_size, "%s/%" UTEST_PRIu64, name_part,        \
-                       UTEST_CAST(double, iUp));  \
+                       UTEST_UINT64_ARG(iUp));                                 \
       } else {                                                                 \
         if (utest_state.tests) {                                               \
           free(utest_state.tests);                                             \
@@ -1730,16 +1757,16 @@ int utest_main(int argc, const char *const argv[]) {
   }
 
   printf("%s[==========]%s Running %" UTEST_PRIu64 " test cases.\n",
-         colours[GREEN], colours[RESET], UTEST_CAST(double, ran_tests));
+         colours[GREEN], colours[RESET], UTEST_UINT64_ARG(ran_tests));
 
   if (utest_state.output) {
     fprintf(utest_state.output, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     fprintf(utest_state.output,
             "<testsuites tests=\"%" UTEST_PRIu64 "\" name=\"All\">\n",
-            UTEST_CAST(double, ran_tests));
+            UTEST_UINT64_ARG(ran_tests));
     fprintf(utest_state.output,
             "<testsuite name=\"Tests\" tests=\"%" UTEST_PRIu64 "\">\n",
-            UTEST_CAST(double, ran_tests));
+            UTEST_UINT64_ARG(ran_tests));
   }
 
   for (index = 0; index < utest_state.tests_length; index++) {
@@ -1820,30 +1847,27 @@ int utest_main(int argc, const char *const argv[]) {
       if (UTEST_TEST_FAILURE == result) {
         printf("%s[  FAILED  ]%s %s (%" UTEST_PRId64 "%s)\n", colours[RED],
                colours[RESET], utest_state.tests[index].name,
-               UTEST_CAST(double, time),
-               units[unit_index]);
+               UTEST_INT64_ARG(time), units[unit_index]);
       } else if (UTEST_TEST_SKIPPED == result) {
         printf("%s[  SKIPPED ]%s %s (%" UTEST_PRId64 "%s)\n", colours[YELLOW],
                colours[RESET], utest_state.tests[index].name,
-               UTEST_CAST(double, time),
-               units[unit_index]);
+               UTEST_INT64_ARG(time), units[unit_index]);
       } else {
         printf("%s[       OK ]%s %s (%" UTEST_PRId64 "%s)\n", colours[GREEN],
                colours[RESET], utest_state.tests[index].name,
-               UTEST_CAST(double, time),
-               units[unit_index]);
+               UTEST_INT64_ARG(time), units[unit_index]);
       }
     }
   }
 
   printf("%s[==========]%s %" UTEST_PRIu64 " test cases ran.\n", colours[GREEN],
-         colours[RESET], UTEST_CAST(double, ran_tests));
+         colours[RESET], UTEST_UINT64_ARG(ran_tests));
   printf("%s[  PASSED  ]%s %" UTEST_PRIu64 " tests.\n", colours[GREEN],
-         colours[RESET], UTEST_CAST(double, ran_tests - failed - skipped));
+         colours[RESET], UTEST_UINT64_ARG(ran_tests - failed - skipped));
 
   if (0 != skipped) {
     printf("%s[  SKIPPED ]%s %" UTEST_PRIu64 " tests, listed below:\n",
-           colours[YELLOW], colours[RESET], UTEST_CAST(double, skipped));
+           colours[YELLOW], colours[RESET], UTEST_UINT64_ARG(skipped));
     for (index = 0; index < skipped_testcases_length; index++) {
       printf("%s[  SKIPPED ]%s %s\n", colours[YELLOW], colours[RESET],
              utest_state.tests[skipped_testcases[index]].name);
@@ -1852,7 +1876,7 @@ int utest_main(int argc, const char *const argv[]) {
 
   if (0 != failed) {
     printf("%s[  FAILED  ]%s %" UTEST_PRIu64 " tests, listed below:\n",
-           colours[RED], colours[RESET], UTEST_CAST(double, failed));
+           colours[RED], colours[RESET], UTEST_UINT64_ARG(failed));
     for (index = 0; index < failed_testcases_length; index++) {
       printf("%s[  FAILED  ]%s %s\n", colours[RED], colours[RESET],
              utest_state.tests[failed_testcases[index]].name);
