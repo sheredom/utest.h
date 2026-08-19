@@ -226,10 +226,16 @@ UTEST_C_FUNC __declspec(dllimport) int __stdcall QueryPerformanceFrequency(
    it: Windows is LLP64, so unsigned long is 32 bits even on x64, and MSVC
    reports __cplusplus as 199711L without /Zc:__cplusplus and defines no
    __STDC_VERSION__ in its default C mode. Anything reaching here is 1920 or
-   newer and prints 64-bit integers fine. */
-#if defined(_MSC_VER) || (ULONG_MAX > 0xfffffffful) ||                         \
-    (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) ||            \
-    (defined(__cplusplus) && (__cplusplus >= 201103L))
+   newer and prints 64-bit integers fine.
+
+   The PRI macros are tested for directly because the define above only works
+   when nothing has pulled <inttypes.h> in first. NetBSD reaches them through
+   <sys/inttypes.h>, which is guarded, so a header included earlier can settle
+   the question before this one is read. */
+#if (defined(PRId64) && defined(PRIu64)) &&                                    \
+    (defined(_MSC_VER) || (ULONG_MAX > 0xfffffffful) ||                        \
+     (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) ||           \
+     (defined(__cplusplus) && (__cplusplus >= 201103L)))
 #define UTEST_PRId64 PRId64
 #define UTEST_PRIu64 PRIu64
 #define UTEST_INT64_ARG(x) (x)

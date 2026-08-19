@@ -168,6 +168,7 @@ utest_set_cxx_flags(test11.cpp "-std=c++11" "-Wno-c++98-compat")
 utest_set_cxx_flags(test14.cpp "-std=c++14" "-Wno-c++98-compat")
 utest_set_cxx_flags(test17.cpp "-std=c++17" "-Wno-c++98-compat")
 utest_set_cxx_flags(test20.cpp "-std=c++20" "-Wno-c++98-compat")
+utest_set_cxx_flags(inttypes_include.cpp "-std=gnu++98")
 if(MSVC OR CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
   utest_set_cxx_flags(test_no_exceptions.cpp "" "/EHs-c-")
 else()
@@ -190,6 +191,7 @@ set(UTEST_TEST_SOURCES
   test20.cpp
   test_no_exceptions.cpp
   stdint_include.c
+  inttypes_include.cpp
   type_printers.c
   type_printers.cpp
   side_effects.c
