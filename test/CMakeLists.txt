@@ -30,6 +30,13 @@ include(CTest)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 
+# Strict -std=c99/-std=c11/-std=c++XX modes on glibc hide POSIX/GNU
+# declarations the vendored subprocess.h uses unless feature test macros are
+# enabled.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  add_compile_definitions(_GNU_SOURCE)
+endif()
+
 # Verify that including utest.h restores the caller's MSVC warning state.
 # The undefined-macro warning is enabled as an error before the include and
 # deliberately triggered afterwards. The probe must therefore fail to compile;
