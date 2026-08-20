@@ -1,0 +1,110 @@
+name: Portability
+
+# Dimensions cmake.yml does not reach: 32-bit, non-x86, BSD, older macOS.
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  linux-32-bit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install multilib
+        run: sudo apt-get update && sudo apt-get install -y gcc-multilib g++-multilib
+      - name: Build and test
+        run: |
+          cmake -S test -B build \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_C_FLAGS=-m32 \
+            -DCMAKE_CXX_FLAGS=-m32 \
+            -DCMAKE_EXE_LINKER_FLAGS=-m32
+          cmake --build build -j
+          ctest --test-dir build --output-on-failure
+
+  windows-x86:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cmake -S test -B build -A Win32
+      - run: cmake --build build --config RelWithDebInfo
+      - run: ctest --test-dir build -C RelWithDebInfo --output-on-failure
+
+  musl:
+    runs-on: ubuntu-latest
+    container: alpine:3
+    steps:
+      - name: Install toolchain
+        run: apk add --no-cache gcc g++ musl-dev cmake make linux-headers git
+      - uses: actions/checkout@v4
+      - name: Build and test
+        run: |
+          cmake -S test -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build build -j
+          ctest --test-dir build --output-on-failure
+
+  foreign-arch:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [ppc64le, riscv64, s390x, armv7]
+    name: linux ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: uraimo/run-on-arch-action@v3
+        with:
+          arch: ${{ matrix.arch }}
+          distro: ubuntu_latest
+          install: |
+            apt-get update -q
+            apt-get install -q -y build-essential cmake
+          run: |
+            cmake -S test -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+            cmake --build build -j
+            ctest --test-dir build --output-on-failure
+
+  # NetBSD twice on purpose: 9.x and 10.x differ in what <sys/inttypes.h> exposes.
+  bsd:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: freebsd, version: "14.3", pkg: "sudo pkg install -y cmake" }
+          - { os: netbsd,  version: "9.4",  pkg: "sudo pkgin -y install cmake" }
+          - { os: netbsd,  version: "10.1", pkg: "sudo pkgin -y install cmake" }
+          - { os: openbsd, version: "7.9",  pkg: "sudo pkg_add cmake" }
+    name: ${{ matrix.os }} ${{ matrix.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cross-platform-actions/action@v1.4.0
+        with:
+          operating_system: ${{ matrix.os }}
+          version: ${{ matrix.version }}
+          run: |
+            ${{ matrix.pkg }}
+            cmake -S test -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+            cmake --build build
+            ctest --test-dir build --output-on-failure
+
+  macos-deployment-target:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ["10.14", "10.15", "11.0"]
+    name: macOS deployment target ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and test
+        run: |
+          cmake -S test -B build \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.target }}
+          cmake --build build -j
+          ctest --test-dir build --output-on-failure
