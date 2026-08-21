@@ -30,13 +30,6 @@ include(CTest)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 
-# Strict -std=c99/-std=c11/-std=c++XX modes on glibc hide POSIX/GNU
-# declarations the vendored subprocess.h uses unless feature test macros are
-# enabled.
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  add_compile_definitions(_GNU_SOURCE)
-endif()
-
 # Verify that including utest.h restores the caller's MSVC warning state.
 # The undefined-macro warning is enabled as an error before the include and
 # deliberately triggered afterwards. The probe must therefore fail to compile;
@@ -154,6 +147,13 @@ endfunction()
 
 # C files — each compiled under a specific C standard.
 utest_set_c_flags(main.c  "-std=gnu89")
+# main.c is the only translation unit that includes the vendored subprocess.h,
+# which calls pipe2 and posix_spawn_file_actions_addchdir_np. glibc declares
+# those only under _GNU_SOURCE, and -std=gnu89 does not set it. Scoped to this
+# file so every other unit still compiles without it.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  set_source_files_properties(main.c PROPERTIES COMPILE_DEFINITIONS _GNU_SOURCE)
+endif()
 utest_set_c_flags(test.c  "-std=gnu89")
 utest_set_c_flags(order.c "-std=gnu89")
 utest_set_c_flags(test99.c "-std=c99")
