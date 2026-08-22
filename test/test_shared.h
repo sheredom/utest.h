@@ -51,6 +51,18 @@
 #define UTEST_TEST_HAS_CPP11 1
 #endif
 
+#if !defined(__TINYC__) &&                                                     \
+    (!defined(__cplusplus) || defined(UTEST_TEST_HAS_CPP11))
+struct UtestOpaque;
+
+UTEST_TEST(OPAQUE_POINTER_NULL) {
+  struct UtestOpaque *opaque = UTEST_NULL;
+  struct UtestOpaque *expected = UTEST_NULL;
+  EXPECT_EQ(expected, opaque);
+  ASSERT_EQ(expected, opaque);
+}
+#endif
+
 UTEST_TEST(ASSERT_TRUE) { ASSERT_TRUE(1); }
 
 UTEST_TEST(ASSERT_FALSE) { ASSERT_FALSE(0); }

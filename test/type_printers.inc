@@ -2,6 +2,8 @@
 
 #if __STDC_VERSION__ >= 201112L || __cplusplus >= 201103L
 
+struct UtestTypePrinterOpaque;
+
 #ifdef __cplusplus
 UTEST(type_printers, cpp) {
 #elif defined(UTEST_OVERLOADABLE)
@@ -26,6 +28,7 @@ UTEST(type_printers, stdc) {
   float f = 0.f;
   double d = 0.;
   long double ld = 0.l;
+  struct UtestTypePrinterOpaque *opaque = NULL;
   utest_type_printer(i);
   utest_type_printer(l);
   utest_type_printer(ll);
@@ -35,11 +38,12 @@ UTEST(type_printers, stdc) {
   utest_type_printer(f);
   utest_type_printer(d);
   utest_type_printer(ld);
+  utest_type_printer(opaque);
 
   char expected[1024] = {0};
-  size_t expected_len =
-      UTEST_SNPRINTF(expected, sizeof expected - 1, "%d%ld%lld%u%lu%llu%f%f%Lf",
-                     i, l, ll, u, ul, ull, f, d, ld);
+  size_t expected_len = UTEST_SNPRINTF(
+      expected, sizeof expected - 1, "%d%ld%lld%u%lu%llu%f%f%Lf%p", i, l, ll, u,
+      ul, ull, f, d, ld, UTEST_PTR_CAST(void *, opaque));
   fflush(out);
   rewind(out);
   char buf[1024] = {'\0'};

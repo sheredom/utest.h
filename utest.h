@@ -721,25 +721,90 @@ utest_type_printer(long long unsigned int i) {
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) &&            \
         !(defined(__MINGW32__) || defined(__MINGW64__)) ||                     \
     defined(__TINYC__)
+static UTEST_INLINE void utest_type_printer_bool(_Bool value) {
+  UTEST_PRINTF("%d", UTEST_CAST(int, value));
+}
+
+static UTEST_INLINE void utest_type_printer_char(char value) {
+  UTEST_PRINTF("%d", UTEST_CAST(int, value));
+}
+
+static UTEST_INLINE void utest_type_printer_signed_char(signed char value) {
+  UTEST_PRINTF("%d", UTEST_CAST(int, value));
+}
+
+static UTEST_INLINE void utest_type_printer_unsigned_char(unsigned char value) {
+  UTEST_PRINTF("%u", UTEST_CAST(unsigned int, value));
+}
+
+static UTEST_INLINE void utest_type_printer_short(short value) {
+  UTEST_PRINTF("%d", UTEST_CAST(int, value));
+}
+
+static UTEST_INLINE void
+utest_type_printer_unsigned_short(unsigned short value) {
+  UTEST_PRINTF("%u", UTEST_CAST(unsigned int, value));
+}
+
+static UTEST_INLINE void utest_type_printer_int(int value) {
+  UTEST_PRINTF("%d", value);
+}
+
+static UTEST_INLINE void utest_type_printer_long(long value) {
+  UTEST_PRINTF("%ld", value);
+}
+
+static UTEST_INLINE void utest_type_printer_long_long(long long value) {
+  UTEST_PRINTF("%lld", value);
+}
+
+static UTEST_INLINE void utest_type_printer_unsigned(unsigned value) {
+  UTEST_PRINTF("%u", value);
+}
+
+static UTEST_INLINE void utest_type_printer_unsigned_long(unsigned long value) {
+  UTEST_PRINTF("%lu", value);
+}
+
+static UTEST_INLINE void
+utest_type_printer_unsigned_long_long(unsigned long long value) {
+  UTEST_PRINTF("%llu", value);
+}
+
+static UTEST_INLINE void utest_type_printer_float(float value) {
+  UTEST_PRINTF("%f", UTEST_CAST(double, value));
+}
+
+static UTEST_INLINE void utest_type_printer_double(double value) {
+  UTEST_PRINTF("%f", value);
+}
+
+static UTEST_INLINE void utest_type_printer_long_double(long double value) {
+  UTEST_PRINTF("%Lf", value);
+}
+
+static UTEST_INLINE void utest_type_printer_pointer(const void *value) {
+  UTEST_PRINTF("%p", value);
+}
+
 #define utest_type_printer(val)                                                \
-  UTEST_PRINTF(                                                                \
-      _Generic((val),                                                          \
-      char: "%d",                                                              \
-      signed char: "%d",                                                       \
-      unsigned char: "%u",                                                     \
-      short: "%d",                                                             \
-      unsigned short: "%u",                                                    \
-      int: "%d",                                                               \
-      long: "%ld",                                                             \
-      long long: "%lld",                                                       \
-      unsigned: "%u",                                                          \
-      unsigned long: "%lu",                                                    \
-      unsigned long long: "%llu",                                              \
-      float: "%f",                                                             \
-      double: "%f",                                                            \
-      long double: "%Lf",                                                      \
-      default: _Generic((val - val), ptrdiff_t: "%p", default: "undef")),      \
-      (val))
+  _Generic((val),                                                              \
+      _Bool: utest_type_printer_bool,                                          \
+      char: utest_type_printer_char,                                           \
+      signed char: utest_type_printer_signed_char,                             \
+      unsigned char: utest_type_printer_unsigned_char,                         \
+      short: utest_type_printer_short,                                         \
+      unsigned short: utest_type_printer_unsigned_short,                       \
+      int: utest_type_printer_int,                                             \
+      long: utest_type_printer_long,                                           \
+      long long: utest_type_printer_long_long,                                 \
+      unsigned: utest_type_printer_unsigned,                                   \
+      unsigned long: utest_type_printer_unsigned_long,                         \
+      unsigned long long: utest_type_printer_unsigned_long_long,               \
+      float: utest_type_printer_float,                                         \
+      double: utest_type_printer_double,                                       \
+      long double: utest_type_printer_long_double,                             \
+      default: utest_type_printer_pointer)((val))
 #else
 /*
    we don't have the ability to print the values we got, so we create a macro
