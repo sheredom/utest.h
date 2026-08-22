@@ -724,6 +724,7 @@ utest_type_printer(long long unsigned int i) {
 #define utest_type_printer(val)                                                \
   UTEST_PRINTF(                                                                \
       _Generic((val),                                                          \
+      char: "%d",                                                              \
       signed char: "%d",                                                       \
       unsigned char: "%u",                                                     \
       short: "%d",                                                             \
@@ -797,7 +798,11 @@ utest_type_printer(long long unsigned int i) {
           _Pragma("clang diagnostic pop")
 /* clang-format on */
 #else
+#if defined(__TINYC__)
 #define UTEST_AUTO(x) __typeof__(x + 0)
+#else
+#define UTEST_AUTO(x) __typeof__((void)0, (x))
+#endif
 #endif
 
 #else
