@@ -356,30 +356,38 @@ UTEST(foo, bar) {
 }
 ```
 
-### ASSERT_STRNEQ(x, y)
+### ASSERT_STRNEQ(x, y, n)
 
-Asserts that the strings x and y are equal up to the length of the string x.
+Asserts that the strings x and y are equal when comparing at most `n` bytes with `strncmp`.
+Comparison stops at a null terminator; `n` is an explicit bound, not a length
+inferred from either string.
+
+Use `ASSERT_STRNEQ_MSG(x, y, n, msg)` to add a custom failure message.
 
 ```c
 UTEST(foo, bar) {
-  char* a = "foobar";
-  char* b = "foo";
-  ASSERT_STRNEQ(a, a); // pass!
-  ASSERT_STRNEQ(b, b); // pass!
-  ASSERT_STRNEQ(a, b); // pass!
+  const char* a = "foobar";
+  const char* b = "foo";
+  ASSERT_STRNEQ(a, a, 3); // pass!
+  ASSERT_STRNEQ(b, b, 3); // pass!
+  ASSERT_STRNEQ(a, b, 3); // pass!
 }
 ```
 
-### ASSERT_STRNNE(x, y)
+### ASSERT_STRNNE(x, y, n)
 
-Asserts that the strings x and y are not equal up to the length of the string x.
+Asserts that the strings x and y are not equal when comparing at most `n` bytes with `strncmp`.
+Comparison stops at a null terminator; `n` is an explicit bound, not a length
+inferred from either string.
+
+Use `ASSERT_STRNNE_MSG(x, y, n, msg)` to add a custom failure message.
 
 ```c
 UTEST(foo, bar) {
-  char* a = "foobar";
-  char* b = "bar";
-  ASSERT_STRNNE(a, b); // pass!
-  ASSERT_STRNNE(a, a); // fail!
+  const char* a = "foobar";
+  const char* b = "bar";
+  ASSERT_STRNNE(a, b, 3); // pass!
+  ASSERT_STRNNE(a, a, 3); // fail!
 }
 ```
 
@@ -583,30 +591,38 @@ UTEST(foo, bar) {
 }
 ```
 
-### EXPECT_STRNEQ(x, y)
+### EXPECT_STRNEQ(x, y, n)
 
-Expects that the strings x and y are equal up to the length of the string x.
+Expects that the strings x and y are equal when comparing at most `n` bytes with `strncmp`.
+Comparison stops at a null terminator; `n` is an explicit bound, not a length
+inferred from either string.
+
+Use `EXPECT_STRNEQ_MSG(x, y, n, msg)` to add a custom failure message.
 
 ```c
 UTEST(foo, bar) {
-  char* a = "foobar";
-  char* b = "foo";
-  EXPECT_STRNEQ(a, a); // pass!
-  EXPECT_STRNEQ(b, b); // pass!
-  EXPECT_STRNEQ(a, b); // pass!
+  const char* a = "foobar";
+  const char* b = "foo";
+  EXPECT_STRNEQ(a, a, 3); // pass!
+  EXPECT_STRNEQ(b, b, 3); // pass!
+  EXPECT_STRNEQ(a, b, 3); // pass!
 }
 ```
 
-### EXPECT_STRNNE(x, y)
+### EXPECT_STRNNE(x, y, n)
 
-Expects that the strings x and y are not equal up to the length of the string x.
+Expects that the strings x and y are not equal when comparing at most `n` bytes with `strncmp`.
+Comparison stops at a null terminator; `n` is an explicit bound, not a length
+inferred from either string.
+
+Use `EXPECT_STRNNE_MSG(x, y, n, msg)` to add a custom failure message.
 
 ```c
 UTEST(foo, bar) {
-  char* a = "foobar";
-  char* b = "bar";
-  EXPECT_STRNNE(a, b); // pass!
-  EXPECT_STRNNE(a, a); // fail!
+  const char* a = "foobar";
+  const char* b = "bar";
+  EXPECT_STRNNE(a, b, 3); // pass!
+  EXPECT_STRNNE(a, a, 3); // fail!
 }
 ```
 
