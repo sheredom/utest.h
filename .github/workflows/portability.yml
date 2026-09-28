@@ -75,10 +75,34 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: freebsd, version: "14.3", pkg: "sudo pkg install -y cmake" }
-          - { os: netbsd,  version: "9.4",  pkg: "sudo pkgin -y install cmake" }
-          - { os: netbsd,  version: "10.1", pkg: "sudo pkgin -y install cmake" }
-          - { os: openbsd, version: "7.9",  pkg: "sudo pkg_add cmake" }
+          - os: freebsd
+            version: "14.3"
+            run: |
+              sudo pkg install -y cmake
+              cmake -S test -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+              cmake --build build
+              ctest --test-dir build --output-on-failure
+          # 9.x pkgsrc binaries are gone from the CDN; base compilers still
+          # exercise the distinct <sys/inttypes.h> include-order behavior.
+          - os: netbsd
+            version: "9.4"
+            run: |
+              cc -I. -c test/stdint_include.c -o stdint_include.o
+              c++ -I. -std=gnu++98 -c test/inttypes_include.cpp -o inttypes_include.o
+          - os: netbsd
+            version: "10.1"
+            run: |
+              sudo pkgin -y install cmake
+              cmake -S test -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+              cmake --build build
+              ctest --test-dir build --output-on-failure
+          - os: openbsd
+            version: "7.9"
+            run: |
+              sudo pkg_add cmake
+              cmake -S test -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+              cmake --build build
+              ctest --test-dir build --output-on-failure
     name: ${{ matrix.os }} ${{ matrix.version }}
     steps:
       - uses: actions/checkout@v4
@@ -87,10 +111,7 @@ jobs:
           operating_system: ${{ matrix.os }}
           version: ${{ matrix.version }}
           run: |
-            ${{ matrix.pkg }}
-            cmake -S test -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
-            cmake --build build
-            ctest --test-dir build --output-on-failure
+            ${{ matrix.run }}
 
   macos-deployment-target:
     runs-on: macos-latest
