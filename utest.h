@@ -907,6 +907,21 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   } while (0)
 
 #if defined(__clang__)
+#define UTEST_SUPPRESS_SIGN_COMPARE_BEGIN                                     \
+  _Pragma("clang diagnostic push")                                            \
+      _Pragma("clang diagnostic ignored \"-Wsign-compare\"")
+#define UTEST_SUPPRESS_SIGN_COMPARE_END _Pragma("clang diagnostic pop")
+#elif defined(__GNUC__) && !defined(__TINYC__)
+#define UTEST_SUPPRESS_SIGN_COMPARE_BEGIN                                     \
+  _Pragma("GCC diagnostic push")                                              \
+      _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
+#define UTEST_SUPPRESS_SIGN_COMPARE_END _Pragma("GCC diagnostic pop")
+#else
+#define UTEST_SUPPRESS_SIGN_COMPARE_BEGIN
+#define UTEST_SUPPRESS_SIGN_COMPARE_END
+#endif
+
+#if defined(__clang__)
 #define UTEST_COND(x, y, cond, msg, is_assert)                                 \
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     _Pragma("clang diagnostic push")                                           \
@@ -915,7 +930,9 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
                 _Pragma("clang diagnostic ignored \"-Wfloat-equal\"")          \
                     UTEST_AUTO(x) xEval = (x);                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
+    UTEST_SUPPRESS_SIGN_COMPARE_BEGIN                                         \
     if (!((xEval)cond(yEval))) {                                               \
+      UTEST_SUPPRESS_SIGN_COMPARE_END                                         \
       const char *const xAsString = #x;                                        \
       const char *const yAsString = #y;                                        \
       _Pragma("clang diagnostic pop")                                          \
@@ -944,7 +961,9 @@ utest_strncpy_gcc(char *const dst, const char *const src, const size_t size) {
   UTEST_SURPRESS_WARNING_BEGIN do {                                            \
     UTEST_AUTO(x) xEval = (x);                                                 \
     UTEST_AUTO(y) yEval = (y);                                                 \
+    UTEST_SUPPRESS_SIGN_COMPARE_BEGIN                                         \
     if (!((xEval)cond(yEval))) {                                               \
+      UTEST_SUPPRESS_SIGN_COMPARE_END                                         \
       const char *const xAsString = #x;                                        \
       const char *const yAsString = #y;                                        \
       UTEST_PRINTF("%s:%i: Failure\n", __FILE__, __LINE__);                    \

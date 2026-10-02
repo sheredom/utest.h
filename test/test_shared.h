@@ -63,6 +63,24 @@ UTEST_TEST(OPAQUE_POINTER_NULL) {
 }
 #endif
 
+enum comparison_value { comparison_zero, comparison_one, comparison_two };
+
+UTEST_TEST(EnumConstantsAndVariables) {
+  enum comparison_value value = comparison_one;
+  ASSERT_EQ(comparison_one, value);
+  EXPECT_EQ(value, comparison_one);
+  ASSERT_NE(comparison_zero, value);
+  EXPECT_NE(value, comparison_zero);
+  ASSERT_LT(comparison_zero, value);
+  EXPECT_LT(value, comparison_two);
+  ASSERT_LE(comparison_one, value);
+  EXPECT_LE(value, comparison_two);
+  ASSERT_GT(comparison_two, value);
+  EXPECT_GT(value, comparison_zero);
+  ASSERT_GE(comparison_one, value);
+  EXPECT_GE(value, comparison_zero);
+}
+
 UTEST_TEST(ASSERT_TRUE) { ASSERT_TRUE(1); }
 
 UTEST_TEST(ASSERT_FALSE) { ASSERT_FALSE(0); }
