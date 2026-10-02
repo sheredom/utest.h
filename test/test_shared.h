@@ -63,8 +63,9 @@ UTEST_TEST(OPAQUE_POINTER_NULL) {
 }
 #endif
 
+enum comparison_value { comparison_zero, comparison_one, comparison_two };
+
 UTEST_TEST(EnumConstantsAndVariables) {
-  enum comparison_value { comparison_zero, comparison_one, comparison_two };
   enum comparison_value value = comparison_one;
   ASSERT_EQ(comparison_one, value);
   EXPECT_EQ(value, comparison_one);
