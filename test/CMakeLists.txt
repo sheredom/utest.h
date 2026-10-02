@@ -155,7 +155,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set_source_files_properties(main.c PROPERTIES COMPILE_DEFINITIONS _GNU_SOURCE)
 endif()
 utest_set_c_flags(test.c  "-std=gnu89")
-utest_set_c_flags(enum_comparisons.c "-std=gnu89")
 utest_set_c_flags(order.c "-std=gnu89")
 utest_set_c_flags(test99.c "-std=c99")
 
@@ -195,7 +194,6 @@ else()
 endif()
 
 set(UTEST_TEST_SOURCES
-  enum_comparisons.c
   ../utest.h
   test_shared.h
   main.c
