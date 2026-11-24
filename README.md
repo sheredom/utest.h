@@ -69,6 +69,50 @@ int main(int argc, const char *const argv[]) {
 }
 ```
 
+### Tests in a static library
+
+GNU ld normally extracts only archive members needed to resolve referenced
+symbols. A test's registration initializer alone does not pull its object file
+out of an archive, so an executable can report zero tests even though the
+archive contains tests. Keep `UTEST_MAIN()` in the executable, in
+exactly one source file.
+
+For example, with GCC and GNU ld on Linux, put `utest.h` in the current directory
+and create `main.c`:
+
+```c
+#include "utest.h"
+UTEST_MAIN()
+```
+
+Create `tests.c`:
+
+```c
+#include "utest.h"
+UTEST(archived, example) {
+  ASSERT_EQ(2, 1 + 1);
+}
+```
+
+Include every object in the test archive by placing it between the linker flags:
+
+```sh
+gcc -std=gnu99 -c tests.c -o tests.o
+ar rcs libtests.a tests.o
+gcc -std=gnu99 main.c -Wl,--whole-archive libtests.a -Wl,--no-whole-archive -o tests
+./tests --list-tests
+./tests
+```
+
+The list should contain `archived.example`, and the run should pass one test.
+End the whole-archive scope immediately after the test archives so it does not
+apply to the compiler's runtime libraries. These are GNU ld options.
+Alternatively, link the test object directly:
+
+```sh
+gcc -std=gnu99 main.c tests.o -o tests
+```
+
 ## Define a Testcase
 
 To define a test case to run, you can do the following;
